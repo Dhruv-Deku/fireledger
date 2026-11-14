@@ -201,7 +201,7 @@ def fit_all(cc: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     for name in STATIC_FACTORS:
         num, den, y0, y1 = FACTORS[name]
         if cfg.get("industrial", True):
-            f = fit_factor(static, name, num, den, y0, y1, cells, cfg)
+            f = fit_factor(static, name, num, den, y0, y1, cells, cfg, static=True)
         else:
             f = calib[["cell", "m", "dn", name, f"s_{name}", f"den_{name}"]]
         calib = calib.merge(f.rename(columns={name: f"{name}_st", f"s_{name}": f"s_{name}_st",

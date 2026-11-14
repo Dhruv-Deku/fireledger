@@ -4,13 +4,17 @@
 
 Full write-up, diagnosis tables and every experiment: `docs/experiments_2012.md`.
 
-**Result on our copy of your 27 checks** (`pipeline/check_2012.py`, live API): **20 → 21 pass**, no
+**Result on our copy of your 27 checks** (`pipeline/check_2012.py`, live API): **20 → 22 pass**, no
 regressions.
-- **Now passing:** Patagonia (+8.0% → +2%). Western Europe is also back within 5 points, though
-  the region check as a whole still fails.
-- **Better, still failing:** Northern Europe (+267 → +24 points) and California (+26.6% → +17%).
+- **Now passing:** Patagonia (+8.0% → +1.1%) and California (+26.6% → +0.6%).
+- **Better, still failing:** Northern Europe (+267 → +24 points). Western Europe is back within
+  5 points, though the region check as a whole still fails.
 - **Accuracy:** held-out error went from 4.18% to 4.03% (region × month) and from 17.6% to 17.1%
-  (cell × month). Band coverage is 89%.
+  (cell × month). Band coverage is 89%. Industrial sites: held-out error 23.4% → 21.0%, bias
+  −17% → +3%.
+- **Search:** a full grid of 166,404 setting combinations found no way to pass the other 5 without
+  breaking held-out error, the held-back areas or Punjab's season months. Details in
+  `docs/experiments_2012.md`.
 - Please re-run `mock/evaluate_api.py`. Ours mirrors it but isn't it.
 
 **What changed in the method:**
@@ -23,6 +27,10 @@ regressions.
      flare fields).
    - It also helps 2026: near-real-time rows have no FIRMS type, and these places are now caught
      by location.
+3. **Industrial sites get their own fit.** MODIS misses most small flares and plants, so each region
+   keeps VIIRS's industrial total, fitted on 2012–15, with day and night sharing a ratio.
+   - The `industrial` share of a pre-2012 month is now about right: before, it ran ~17% low.
+   - `/api/proof` has a new `industrial_heldout` block with these numbers.
 2. **The S-NPP → NOAA-20 factor is smoothed.** Same instrument on both satellites, so its
    place-to-place scatter was noise, and its own held-out error fell from 2.05% to 1.8%.
 
@@ -48,7 +56,7 @@ Volcanic regions move a lot, because their eruptions now count as industrial: Ic
   - The burning days line up: daily rank correlation 0.89.
   - Good for the Method & Trust page.
 
-**About the 6 checks that still fail** (numbers in the write-up):
+**About the 5 checks that still fail** (numbers in the write-up):
 - At state scale, MODIS's own change is a rough yardstick. Across 323 5° blocks between 2012–15
   and 2016–19, when VIIRS's real change is known, MODIS's change landed within 5 points of it in
   only 59%.
@@ -58,7 +66,7 @@ Volcanic regions move a lot, because their eruptions now count as industrial: Ic
 - We tried 11 fix families: month pooling, Aqua-only conversion, mass balancing, shorter windows
   and more. Each one that would pass one more check broke another or made the record less
   accurate in held-out years. Month pooling, for example, would bias Punjab's April by +71%.
-- The 6 held-back areas: 5/6 within 5% (4/6 before). Saskatchewan improved +10.8% → +0.1%.
+- The 6 held-back areas: 5/6 within 5% (4/6 before). Saskatchewan improved +10.8% → −0.3%.
 
 The real API now answers in `mock.json`'s shape. `docs/api-samples/api_as_mock.json` holds **real
 answers** for `mock.json`'s `request_example` (Punjab box, 2001-01 → 2026-11), in the same

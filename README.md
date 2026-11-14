@@ -130,8 +130,10 @@ How the factors are learned (`pipeline/calibrate.py`):
 - **Settings in one file.** `pipeline/harmonize_config.json` holds the fitting choices (static
   mask, smoothing strengths, month pooling) that `calibrate.py`, `flags.py` and `validate.py` read.
   The S-NPP → NOAA-20 factor is pooled almost to its month × day/night value, since the two
-  carry the same instrument. Each 1° cell borrows 10% from its neighbouring months. How they
-  were chosen, with the full results table: `docs/experiments_2012.md`.
+  carry the same instrument. Industrial sites get their own fit: each region keeps VIIRS's
+  industrial total (MODIS misses most small flares), fitted on 2012–15, with day and night
+  sharing a ratio. That cut the industrial held-out bias from −17% to +3%. How all of this was
+  chosen, including a 166,404-combination search: `docs/experiments_2012.md`.
 - **Uncertainty.** Monthly totals get **conformal** 90% bands, learned from the held-out
   errors in `pipeline/validate.py`. The band width depends on the size of the total: bigger
   totals get tighter bands. The NOAA-20 part is observed and has no band. The S-NPP part

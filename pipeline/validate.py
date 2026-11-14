@@ -349,6 +349,27 @@ def snpp_link(cc: pd.DataFrame, sub: pd.Series) -> pd.DataFrame:
     return pd.concat(parts)
 
 
+def industrial_heldout(cc: pd.DataFrame, sub: pd.Series) -> dict:
+    """Leave-one-year-out MODIS -> S-NPP for industrial / persistent hot spots (the *_st factors),
+    shipped settings vs the Nov 14 ones. Small hot sources are what MODIS misses most."""
+    st = cc.assign(n_veg=cc.n_all - cc.n_veg)
+    out = {}
+    for label, cfg in [("shipped", CFG), ("nov14", DEFAULT_CFG)]:
+        parts = []
+        for y in TEST_YEARS:
+            test = held_out(st, y)
+            keys = test[["cell", "m", "dn"]]
+            win = st[(st.y >= 2012) & (st.y <= 2019) & (st.y != y)]
+            f = keys.merge(fit_factor(win, "k_ta", ["SNPP"], MODIS, 2012, 2019, keys, cfg, static=True),
+                           on=["cell", "m", "dn"], how="left")
+            parts.append(predict(test, f.k_ta).assign(y=y, region=sub.reindex(test.cell.to_numpy()).fillna("Other").to_numpy()))
+        df = pd.concat(parts)
+        e_r, _ = wape(df, ["y", "region", "m"])
+        e_c, b = wape(df, ["y", "cell", "m"])
+        out[label] = {"wape_region_month": round(e_r, 4), "wape_cell_month": round(e_c, 4), "bias": round(b, 4)}
+    return out
+
+
 # ---------------------------------------------------------------- jump tests
 
 def pettitt(x: np.ndarray) -> tuple[int, float]:
@@ -411,8 +432,8 @@ def jump_tests(sub_of_cell: pd.Series) -> list[dict]:
 def main() -> None:
     t0 = time.time()
     cc = pd.read_parquet(DER / "cellcounts.parquet",
-                         columns=["cell", "y", "m", "dn", "sat", "flags", "n_veg", "lfrp_sum", "larea_sum"])
-    cc = cc.astype({"cell": "int64", "y": "int16", "m": "int8", "flags": "int8", "n_veg": "int32"})
+                         columns=["cell", "y", "m", "dn", "sat", "flags", "n_all", "n_veg", "lfrp_sum", "larea_sum"])
+    cc = cc.astype({"cell": "int64", "y": "int16", "m": "int8", "flags": "int8", "n_veg": "int32", "n_all": "int32"})
     sub = cell_subregions(np.sort(cc.cell.unique()))
     print(f"loaded {len(cc):,} cell counts, {sub.nunique()} subregions  [{time.time() - t0:.0f}s]", flush=True)
 
@@ -457,6 +478,7 @@ def main() -> None:
     print(f"  conformal bands done  [{time.time() - t0:.0f}s]", flush=True)
     jumps = jump_tests(sub)
     jv = jump_variants(cc, sub, feats)
+    ind = industrial_heldout(cc, sub)
 
     proof = {
         "method": "leave-one-year-out over 2012-2019; MODIS (Terra+Aqua) -> S-NPP on matched days, vegetation fires",
@@ -467,6 +489,7 @@ def main() -> None:
         "snpp_to_noaa20_wape": snpp_err,
         "jumps": jumps,
         "jump_gap_by_method": jv,
+        "industrial_heldout": ind,
         "built_seconds": round(time.time() - t0),
     }
     (DER / "proof.json").write_text(json.dumps(proof, indent=1, ensure_ascii=False), encoding="utf-8")

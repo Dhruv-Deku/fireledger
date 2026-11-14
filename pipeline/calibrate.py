@@ -91,6 +91,10 @@ DEFAULT_CFG = {
     "pool_levels": ["block", "cell"],  # where F10 pools neighbouring months
     "pool_mode": "sum",           # F10: "sum" adds w x the neighbours' counts (busy months dominate quiet
                                   # ones); "ratio" moves each month w of the way to each neighbour's ratio
+    "dn_pool": 0.0,               # F12: move day and night each w of the way toward the other's ratio
+    "year_tau": None,             # F4b: weight overlap year y by exp(-(y - 2012) / tau) (MODIS links only)
+    "factor_cfg": {},             # per-factor overrides of any of the above, e.g. {"k_s": {"n0": 3e4}}
+    "static_cfg": {},             # overrides for the industrial / persistent (*_st) factors only
 }
 CFG_PATH = Path(__file__).resolve().parent / "harmonize_config.json"
 
@@ -187,9 +191,25 @@ def log_spread(per_year: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
     return lr.groupby(keys).lr.agg(sd="std", ny="count").reset_index()
 
 
-def pooled(df: pd.DataFrame, keys: list[str], w: float, mode: str = "sum") -> pd.DataFrame:
+def dn_blend(g: pd.DataFrame, keys: list[str], w: float) -> pd.DataFrame:
+    """F12: day rows gain w x their den at the night ratio of the same keys x month, and vice versa."""
+    r = g[g.den > 0].assign(r=lambda t: t.num / t.den)[keys + ["m", "dn", "r"]]
+    r["dn"] = r.dn.map({"D": "N", "N": "D"})
+    out = g.merge(r, on=keys + ["m", "dn"], how="left")
+    has = out.r.notna() & (out.den > 0)
+    out.loc[has, "num"] = out.num[has] + w * out.den[has] * out.r[has]
+    out.loc[has, "den"] = out.den[has] * (1 + w)
+    return out.drop(columns="r")
+
+
+def pooled(df: pd.DataFrame, keys: list[str], w: float, mode: str = "sum", dn_w: float = 0.0) -> pd.DataFrame:
     """num, den summed per keys x m x dn; with w > 0 each neighbouring calendar month adds w of its own
-    (mode "sum"), or adds w x this month's den at the neighbour's ratio (mode "ratio")."""
+    (mode "sum"), or adds w x this month's den at the neighbour's ratio (mode "ratio"); then F12."""
+    g = _pooled(df, keys, w, mode)
+    return dn_blend(g, keys, dn_w) if dn_w else g
+
+
+def _pooled(df: pd.DataFrame, keys: list[str], w: float, mode: str) -> pd.DataFrame:
     g = df.groupby(keys + ["m", "dn"], as_index=False)[["num", "den"]].sum()
     if not w:
         return g
@@ -222,15 +242,21 @@ def mid_of(cell, deg: int):
 
 
 def fit_factor(cc: pd.DataFrame, name: str, num, den, y0, y1, cells: pd.DataFrame,
-               cfg: dict | None = None) -> pd.DataFrame:
+               cfg: dict | None = None, static: bool = False) -> pd.DataFrame:
     cfg = {**DEFAULT_CFG, **(CFG if cfg is None else cfg)}
     if name in cfg["n0_factor"]:
         cfg = cfg | dict(zip(["n0", "n0_block"], cfg["n0_factor"][name]))
+    cfg = cfg | cfg["factor_cfg"].get(name, {})
+    if static:
+        cfg = cfg | cfg["static_cfg"]
     if cfg["fit_years"] and name in MODIS_LINKS:
         y0, y1 = max(y0, cfg["fit_years"][0]), min(y1, cfg["fit_years"][1])
     py = factor_counts(cc, num, den, y0, y1, cfg["matched"])
+    if cfg["year_tau"] and name in MODIS_LINKS:
+        wy = np.exp(-(py.y.astype(float) - 2012) / cfg["year_tau"])
+        py = py.assign(num=py.num * wy, den=py.den * wy)
     py["block"] = block_of(py.cell)
-    pool = cfg["month_pool"]
+    pool, dn_w, mode = cfg["month_pool"], cfg["dn_pool"], cfg["pool_mode"]
 
     # global, per calendar month x day/night
     g = py.groupby(["m", "dn"], as_index=False)[["num", "den"]].sum()
@@ -242,12 +268,12 @@ def fit_factor(cc: pd.DataFrame, name: str, num, den, y0, y1, cells: pd.DataFram
     if cfg["mid"]:
         deg = int(cfg["mid"])
         py["mid"] = mid_of(py.cell, deg)
-        md = pooled(py, ["mid"], pool, cfg["pool_mode"]).merge(g[["m", "dn", "k_g"]], on=["m", "dn"])
+        md = pooled(py, ["mid"], pool, mode, dn_w).merge(g[["m", "dn", "k_g"]], on=["m", "dn"])
         md["k_p"] = (md.num + cfg["n0_mid"] * md.k_g) / (md.den + cfg["n0_mid"])
         parent, pkeys = md[["mid", "m", "dn", "k_p"]], ["mid", "m", "dn"]
     else:
         parent, pkeys = g[["m", "dn", "k_g"]].rename(columns={"k_g": "k_p"}), ["m", "dn"]
-    b = pooled(py, ["block"], pool if "block" in cfg["pool_levels"] else 0.0, cfg["pool_mode"])
+    b = pooled(py, ["block"], pool if "block" in cfg["pool_levels"] else 0.0, mode, dn_w)
     if cfg["mid"]:
         b["mid"] = mid_of((b.block // 72) * 5 * 360 + (b.block % 72) * 5, deg)
     b = b.merge(parent, on=pkeys, how="left").merge(g[["m", "dn", "k_g"]], on=["m", "dn"], how="left")
@@ -255,7 +281,7 @@ def fit_factor(cc: pd.DataFrame, name: str, num, den, y0, y1, cells: pd.DataFram
     b["k_b"] = (b.num + cfg["n0_block"] * b.k_p) / (b.den + cfg["n0_block"])
 
     # 1 deg cell, shrunk to block
-    c = pooled(py, ["cell"], pool if "cell" in cfg["pool_levels"] else 0.0, cfg["pool_mode"])
+    c = pooled(py, ["cell"], pool if "cell" in cfg["pool_levels"] else 0.0, mode, dn_w)
 
     # year-to-year spread of log ratio: block level, shrunk toward the global spread
     by = py.groupby(["block", "m", "dn", "y"], as_index=False)[["num", "den"]].sum()
@@ -374,7 +400,7 @@ def main() -> None:
     static = cc.assign(n_veg=cc.n_all - cc.n_veg)  # fit_factor counts the n_veg column
     for name in STATIC_FACTORS:
         num, den, y0, y1 = FACTORS[name]
-        f = fit_factor(static, name, num, den, y0, y1, cells)
+        f = fit_factor(static, name, num, den, y0, y1, cells, static=True)
         f = f.rename(columns={name: f"{name}_st", f"s_{name}": f"s_{name}_st", f"den_{name}": f"den_{name}_st"})
         calib = calib.merge(f, on=["cell", "m", "dn"], how="left")
         q = f[f"{name}_st"].quantile([0.1, 0.5, 0.9]).round(2).tolist()
