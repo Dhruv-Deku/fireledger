@@ -1,0 +1,28 @@
+[
+ {
+  "id": "PAK-1113",
+  "name": "Punjab",
+  "kind": "state",
+  "country": "Pakistan",
+  "subregion": "Southern Asia",
+  "bbox": [
+   69.333,
+   27.701,
+   75.359,
+   34.021
+  ]
+ },
+ {
+  "id": "IND-3249",
+  "name": "Punjab",
+  "kind": "state",
+  "country": "India",
+  "subregion": "Southern Asia",
+  "bbox": [
+   73.842,
+   29.56,
+   76.91,
+   32.517
+  ]
+ }
+]

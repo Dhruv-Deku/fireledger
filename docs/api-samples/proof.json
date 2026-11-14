@@ -1,0 +1,1232 @@
+{
+ "method": "leave-one-year-out over 2012-2019; MODIS (Terra+Aqua) -> S-NPP on matched days, vegetation fires",
+ "test_years": [
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019
+ ],
+ "ablation": [
+  {
+   "step": "No correction (raw MODIS)",
+   "wape_cell_month": 0.773,
+   "bias_cell_month": -0.771,
+   "wape_region_month": 0.771,
+   "bias_region_month": -0.771,
+   "wape_world_month": 0.771,
+   "bias_world_month": -0.771,
+   "error_cut_vs_global_ratio_cell": -1.78
+  },
+  {
+   "step": "One global ratio",
+   "wape_cell_month": 0.2781,
+   "bias_cell_month": 0.0,
+   "wape_region_month": 0.1483,
+   "bias_region_month": 0.0,
+   "wape_world_month": 0.0684,
+   "bias_world_month": 0.0,
+   "error_cut_vs_global_ratio_cell": 0.0
+  },
+  {
+   "step": "+ per month and day/night",
+   "wape_cell_month": 0.2748,
+   "bias_cell_month": 0.0005,
+   "wape_region_month": 0.1422,
+   "bias_region_month": 0.0005,
+   "wape_world_month": 0.0248,
+   "bias_world_month": 0.0005,
+   "error_cut_vs_global_ratio_cell": 0.012
+  },
+  {
+   "step": "+ per 5° region (shrunk)",
+   "wape_cell_month": 0.2123,
+   "bias_cell_month": 0.0037,
+   "wape_region_month": 0.0424,
+   "bias_region_month": 0.0037,
+   "wape_world_month": 0.0198,
+   "bias_world_month": 0.0037,
+   "error_cut_vs_global_ratio_cell": 0.237
+  },
+  {
+   "step": "+ per 1° cell (shrunk) = FireLedger",
+   "wape_cell_month": 0.1759,
+   "bias_cell_month": 0.0032,
+   "wape_region_month": 0.0418,
+   "bias_region_month": 0.0032,
+   "wape_world_month": 0.02,
+   "bias_world_month": 0.0032,
+   "error_cut_vs_global_ratio_cell": 0.367
+  },
+  {
+   "step": "+ FRP-aware adjustment",
+   "wape_cell_month": 0.1741,
+   "bias_cell_month": 0.0036,
+   "wape_region_month": 0.0411,
+   "bias_region_month": 0.0036,
+   "wape_world_month": 0.0197,
+   "bias_world_month": 0.0036,
+   "error_cut_vs_global_ratio_cell": 0.374
+  },
+  {
+   "step": "+ quantile mapping (zero-aware)",
+   "wape_cell_month": 0.1738,
+   "bias_cell_month": -0.0046,
+   "wape_region_month": 0.0414,
+   "bias_region_month": -0.0046,
+   "wape_world_month": 0.0193,
+   "bias_world_month": -0.0046,
+   "error_cut_vs_global_ratio_cell": 0.375
+  },
+  {
+   "step": "− without shrinkage",
+   "wape_cell_month": 0.2,
+   "bias_cell_month": 0.0248,
+   "wape_region_month": 0.0508,
+   "bias_region_month": 0.0248,
+   "wape_world_month": 0.0283,
+   "bias_world_month": 0.0248,
+   "error_cut_vs_global_ratio_cell": 0.281
+  },
+  {
+   "step": "− without matched days",
+   "wape_cell_month": 0.178,
+   "bias_cell_month": -0.0031,
+   "wape_region_month": 0.0472,
+   "bias_region_month": -0.0031,
+   "wape_world_month": 0.027,
+   "bias_world_month": -0.0031,
+   "error_cut_vs_global_ratio_cell": 0.36
+  },
+  {
+   "step": "− without drift-aware window",
+   "wape_cell_month": 0.1749,
+   "bias_cell_month": 0.0123,
+   "wape_region_month": 0.0455,
+   "bias_region_month": 0.0123,
+   "wape_world_month": 0.0228,
+   "bias_world_month": 0.0123,
+   "error_cut_vs_global_ratio_cell": 0.371
+  }
+ ],
+ "band_coverage_90": {
+  "cell_month": {
+   "n": 758247,
+   "coverage": 0.284,
+   "coverage_with_count_noise": 0.504,
+   "conformal_widen_factor": 4.72
+  },
+  "region_month": {
+   "n": 2178,
+   "coverage": 0.824,
+   "coverage_with_count_noise": 0.863,
+   "conformal_widen_factor": 1.24
+  },
+  "world_month": {
+   "n": 96,
+   "coverage": 1.0,
+   "coverage_with_count_noise": 1.0,
+   "conformal_widen_factor": 0.17
+  }
+ },
+ "conformal_bands": {
+  "edges": [
+   0,
+   3,
+   10,
+   30,
+   100,
+   300,
+   1000,
+   3000,
+   10000,
+   30000,
+   100000,
+   null
+  ],
+  "modis_to_snpp": {
+   "table": [
+    2.3979,
+    1.6499,
+    1.3493,
+    0.9324,
+    0.6363,
+    0.4449,
+    0.3135,
+    0.2352,
+    0.1986,
+    0.1375,
+    0.0834
+   ],
+   "tables": {
+    "all": [
+     2.3979,
+     1.6499,
+     1.3493,
+     0.9324,
+     0.6363,
+     0.4449,
+     0.3135,
+     0.2352,
+     0.1986,
+     0.1375,
+     0.0834
+    ],
+    "cell_month": {
+     "all": [
+      2.3979,
+      1.6438,
+      1.3443,
+      0.93,
+      0.6365,
+      0.4446,
+      0.3132,
+      0.3132,
+      0.3132,
+      0.1375,
+      0.0834
+     ],
+     "tropics": [
+      2.4849,
+      1.6751,
+      1.347,
+      0.9073,
+      0.6018,
+      0.4147,
+      0.2809,
+      0.2072,
+      0.2072,
+      0.1375,
+      0.0834
+     ],
+     "midlat": [
+      2.3026,
+      1.6088,
+      1.3336,
+      0.9434,
+      0.6846,
+      0.5072,
+      0.4551,
+      0.4551,
+      0.4253,
+      0.1375,
+      0.0834
+     ],
+     "highlat": [
+      2.1972,
+      1.6701,
+      1.3837,
+      1.003,
+      0.6987,
+      0.5459,
+      0.4695,
+      0.4695,
+      0.4695,
+      0.1375,
+      0.0834
+     ]
+    },
+    "block_month": {
+     "all": [
+      2.9957,
+      1.7869,
+      1.4142,
+      0.9524,
+      0.6328,
+      0.4449,
+      0.3134,
+      0.2463,
+      0.1903,
+      0.145,
+      0.0972
+     ],
+     "tropics": [
+      2.8332,
+      1.6964,
+      1.3029,
+      0.9183,
+      0.6041,
+      0.4101,
+      0.2885,
+      0.2294,
+      0.1722,
+      0.1293,
+      0.0822
+     ],
+     "midlat": [
+      3.091,
+      1.7831,
+      1.4113,
+      0.9557,
+      0.6469,
+      0.4626,
+      0.3272,
+      0.3148,
+      0.3148,
+      0.3148,
+      0.0972
+     ],
+     "highlat": [
+      3.0445,
+      1.8834,
+      1.6991,
+      1.0098,
+      0.6577,
+      0.5067,
+      0.3807,
+      0.3807,
+      0.3807,
+      0.3807,
+      0.0972
+     ]
+    },
+    "region_month": {
+     "all": [
+      2.3026,
+      1.9622,
+      1.9622,
+      1.5057,
+      1.1547,
+      0.5106,
+      0.3845,
+      0.2315,
+      0.1513,
+      0.1123,
+      0.097
+     ],
+     "tropics": [
+      2.3979,
+      1.8742,
+      1.8742,
+      1.5057,
+      1.1547,
+      0.365,
+      0.2783,
+      0.1837,
+      0.1222,
+      0.096,
+      0.0824
+     ],
+     "midlat": [
+      2.3026,
+      1.9622,
+      1.9622,
+      1.5057,
+      1.0222,
+      0.5134,
+      0.3845,
+      0.2497,
+      0.1618,
+      0.1265,
+      0.097
+     ],
+     "highlat": [
+      2.2078,
+      1.9622,
+      1.9622,
+      1.6999,
+      1.6999,
+      1.1557,
+      0.3845,
+      0.2315,
+      0.1513,
+      0.1191,
+      0.1191
+     ]
+    },
+    "world_month": {
+     "all": [
+      2.3979,
+      1.6499,
+      1.3493,
+      0.9324,
+      0.6363,
+      0.4449,
+      0.3135,
+      0.2352,
+      0.1986,
+      0.1375,
+      0.0415
+     ],
+     "tropics": [
+      2.3979,
+      1.6499,
+      1.3493,
+      0.9324,
+      0.6363,
+      0.4449,
+      0.3135,
+      0.2352,
+      0.1986,
+      0.1375,
+      0.0415
+     ],
+     "midlat": [
+      2.3979,
+      1.6499,
+      1.3493,
+      0.9324,
+      0.6363,
+      0.4449,
+      0.3135,
+      0.2352,
+      0.1986,
+      0.1375,
+      0.0415
+     ],
+     "highlat": [
+      2.3979,
+      1.6499,
+      1.3493,
+      0.9324,
+      0.6363,
+      0.4449,
+      0.3135,
+      0.2352,
+      0.1986,
+      0.1375,
+      0.0415
+     ]
+    }
+   },
+   "coverage_crossfit": {
+    "cell_month": 0.899,
+    "block_month": 0.9,
+    "region_month": 0.89,
+    "world_month": 0.885
+   },
+   "coverage_block_by_latitude": {
+    "tropics": 0.899,
+    "midlat": 0.899,
+    "highlat": 0.902
+   },
+   "n": {
+    "cell_month": 758247,
+    "block_month": 66154,
+    "region_month": 2178,
+    "world_month": 96
+   }
+  },
+  "snpp_to_noaa20": {
+   "table": [
+    1.1853,
+    1.0952,
+    0.7867,
+    0.5314,
+    0.3573,
+    0.255,
+    0.1761,
+    0.1322,
+    0.1131,
+    0.0767,
+    0.0434
+   ],
+   "tables": {
+    "all": [
+     1.1853,
+     1.0952,
+     0.7867,
+     0.5314,
+     0.3573,
+     0.255,
+     0.1761,
+     0.1322,
+     0.1131,
+     0.0767,
+     0.0434
+    ],
+    "cell_month": {
+     "all": [
+      1.1887,
+      1.0983,
+      0.7903,
+      0.5351,
+      0.3591,
+      0.2552,
+      0.1782,
+      0.1782,
+      0.1782,
+      0.0767,
+      0.0434
+     ],
+     "tropics": [
+      1.2436,
+      1.1563,
+      0.7925,
+      0.5302,
+      0.3525,
+      0.2434,
+      0.1594,
+      0.1235,
+      0.1235,
+      0.0767,
+      0.0434
+     ],
+     "midlat": [
+      1.1957,
+      1.0797,
+      0.7971,
+      0.5456,
+      0.3676,
+      0.2772,
+      0.2554,
+      0.2554,
+      0.2554,
+      0.0767,
+      0.0434
+     ],
+     "highlat": [
+      1.0986,
+      1.0179,
+      0.747,
+      0.5201,
+      0.3733,
+      0.3014,
+      0.2568,
+      0.2289,
+      0.2289,
+      0.0767,
+      0.0434
+     ]
+    },
+    "block_month": {
+     "all": [
+      1.1019,
+      1.0082,
+      0.7187,
+      0.497,
+      0.3502,
+      0.2551,
+      0.1794,
+      0.1433,
+      0.1034,
+      0.0814,
+      0.0558
+     ],
+     "tropics": [
+      1.2206,
+      1.0563,
+      0.7595,
+      0.5156,
+      0.3551,
+      0.2624,
+      0.18,
+      0.1351,
+      0.0932,
+      0.0743,
+      0.0547
+     ],
+     "midlat": [
+      1.1602,
+      1.0132,
+      0.7156,
+      0.4977,
+      0.3529,
+      0.2501,
+      0.1939,
+      0.1939,
+      0.1939,
+      0.1939,
+      0.0558
+     ],
+     "highlat": [
+      1.0986,
+      0.9455,
+      0.6698,
+      0.4556,
+      0.3254,
+      0.2514,
+      0.1869,
+      0.185,
+      0.1488,
+      0.1117,
+      0.0558
+     ]
+    },
+    "region_month": {
+     "all": [
+      1.3707,
+      1.1611,
+      1.0609,
+      0.5314,
+      0.2623,
+      0.1828,
+      0.1479,
+      0.0995,
+      0.0759,
+      0.0506,
+      0.0427
+     ],
+     "tropics": [
+      1.2241,
+      0.9384,
+      0.9171,
+      0.5314,
+      0.2623,
+      0.1528,
+      0.1528,
+      0.0901,
+      0.0723,
+      0.0471,
+      0.0394
+     ],
+     "midlat": [
+      1.3707,
+      1.1611,
+      1.0609,
+      0.5314,
+      0.2323,
+      0.2323,
+      0.1417,
+      0.1044,
+      0.0942,
+      0.0942,
+      0.0942
+     ],
+     "highlat": [
+      1.6879,
+      1.271,
+      1.0609,
+      0.5314,
+      0.2634,
+      0.2252,
+      0.2252,
+      0.0995,
+      0.0759,
+      0.0415,
+      0.0415
+     ]
+    },
+    "world_month": {
+     "all": [
+      1.1853,
+      1.0952,
+      0.7867,
+      0.5314,
+      0.3573,
+      0.255,
+      0.1761,
+      0.1322,
+      0.1131,
+      0.0767,
+      0.0243
+     ],
+     "tropics": [
+      1.1853,
+      1.0952,
+      0.7867,
+      0.5314,
+      0.3573,
+      0.255,
+      0.1761,
+      0.1322,
+      0.1131,
+      0.0767,
+      0.0243
+     ],
+     "midlat": [
+      1.1853,
+      1.0952,
+      0.7867,
+      0.5314,
+      0.3573,
+      0.255,
+      0.1761,
+      0.1322,
+      0.1131,
+      0.0767,
+      0.0243
+     ],
+     "highlat": [
+      1.1853,
+      1.0952,
+      0.7867,
+      0.5314,
+      0.3573,
+      0.255,
+      0.1761,
+      0.1322,
+      0.1131,
+      0.0767,
+      0.0243
+     ]
+    }
+   },
+   "coverage_crossfit": {
+    "cell_month": 0.897,
+    "block_month": 0.901,
+    "region_month": 0.896,
+    "world_month": 0.892
+   },
+   "coverage_block_by_latitude": {
+    "tropics": 0.9,
+    "midlat": 0.905,
+    "highlat": 0.896
+   },
+   "n": {
+    "cell_month": 776172,
+    "block_month": 65757,
+    "region_month": 2129,
+    "world_month": 93
+   }
+  }
+ },
+ "snpp_to_noaa20_wape": {
+  "cell_month": 0.1023,
+  "region_month": 0.0205,
+  "world_month": 0.0103
+ },
+ "jumps": [
+  {
+   "region": "World",
+   "hotspots_per_year": 21083243,
+   "step2012_modis": -0.018,
+   "step2012_raw_merged": 3.351,
+   "step2012_harmonized": -0.013,
+   "step2012_modis_vegetation": -0.024,
+   "step2012_harmonized_vegetation": -0.031,
+   "industrial_share": 0.068,
+   "step2018_snpp": -0.014,
+   "step2018_harmonized": -0.02,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2009,
+    "p": 0.0098
+   }
+  },
+  {
+   "region": "Middle Africa",
+   "hotspots_per_year": 4327170,
+   "step2012_modis": -0.043,
+   "step2012_raw_merged": 2.733,
+   "step2012_harmonized": -0.063,
+   "step2012_modis_vegetation": -0.042,
+   "step2012_harmonized_vegetation": -0.063,
+   "industrial_share": 0.002,
+   "step2018_snpp": -0.027,
+   "step2018_harmonized": -0.032,
+   "pettitt_raw": {
+    "year": 2013,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2006,
+    "p": 0.5776
+   }
+  },
+  {
+   "region": "Eastern Africa",
+   "hotspots_per_year": 3824780,
+   "step2012_modis": 0.009,
+   "step2012_raw_merged": 3.689,
+   "step2012_harmonized": -0.018,
+   "step2012_modis_vegetation": 0.009,
+   "step2012_harmonized_vegetation": -0.018,
+   "industrial_share": 0.003,
+   "step2018_snpp": -0.065,
+   "step2018_harmonized": -0.067,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2017,
+    "p": 0.0577
+   }
+  },
+  {
+   "region": "South America",
+   "hotspots_per_year": 2764069,
+   "step2012_modis": -0.179,
+   "step2012_raw_merged": 2.236,
+   "step2012_harmonized": -0.166,
+   "step2012_modis_vegetation": -0.194,
+   "step2012_harmonized_vegetation": -0.186,
+   "industrial_share": 0.028,
+   "step2018_snpp": 0.061,
+   "step2018_harmonized": 0.058,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2008,
+    "p": 0.0766
+   }
+  },
+  {
+   "region": "Western Africa",
+   "hotspots_per_year": 1943932,
+   "step2012_modis": -0.098,
+   "step2012_raw_merged": 2.989,
+   "step2012_harmonized": -0.127,
+   "step2012_modis_vegetation": -0.097,
+   "step2012_harmonized_vegetation": -0.126,
+   "industrial_share": 0.014,
+   "step2018_snpp": -0.078,
+   "step2018_harmonized": -0.081,
+   "pettitt_raw": {
+    "year": 2013,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2014,
+    "p": 0.0003
+   }
+  },
+  {
+   "region": "Eastern Europe",
+   "hotspots_per_year": 1476192,
+   "step2012_modis": 0.143,
+   "step2012_raw_merged": 3.666,
+   "step2012_harmonized": 0.205,
+   "step2012_modis_vegetation": 0.148,
+   "step2012_harmonized_vegetation": 0.207,
+   "industrial_share": 0.128,
+   "step2018_snpp": 0.15,
+   "step2018_harmonized": 0.141,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2013,
+    "p": 0.3276
+   }
+  },
+  {
+   "region": "Australia and New Zealand",
+   "hotspots_per_year": 1301979,
+   "step2012_modis": 0.139,
+   "step2012_raw_merged": 4.327,
+   "step2012_harmonized": 0.141,
+   "step2012_modis_vegetation": 0.14,
+   "step2012_harmonized_vegetation": 0.138,
+   "industrial_share": 0.011,
+   "step2018_snpp": 0.232,
+   "step2018_harmonized": 0.219,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2013,
+    "p": 0.7946
+   }
+  },
+  {
+   "region": "South-Eastern Asia",
+   "hotspots_per_year": 1299836,
+   "step2012_modis": 0.107,
+   "step2012_raw_merged": 4.382,
+   "step2012_harmonized": 0.068,
+   "step2012_modis_vegetation": 0.093,
+   "step2012_harmonized_vegetation": 0.064,
+   "industrial_share": 0.018,
+   "step2018_snpp": -0.083,
+   "step2018_harmonized": -0.09,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2016,
+    "p": 0.0369
+   }
+  },
+  {
+   "region": "Northern America",
+   "hotspots_per_year": 845369,
+   "step2012_modis": 0.148,
+   "step2012_raw_merged": 4.195,
+   "step2012_harmonized": 0.333,
+   "step2012_modis_vegetation": 0.134,
+   "step2012_harmonized_vegetation": 0.228,
+   "industrial_share": 0.115,
+   "step2018_snpp": -0.113,
+   "step2018_harmonized": -0.126,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2012,
+    "p": 0.0369
+   }
+  },
+  {
+   "region": "Southern Asia",
+   "hotspots_per_year": 798045,
+   "step2012_modis": -0.04,
+   "step2012_raw_merged": 5.522,
+   "step2012_harmonized": -0.019,
+   "step2012_modis_vegetation": -0.004,
+   "step2012_harmonized_vegetation": -0.012,
+   "industrial_share": 0.251,
+   "step2018_snpp": -0.049,
+   "step2018_harmonized": -0.046,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2016,
+    "p": 0.0068
+   }
+  },
+  {
+   "region": "Eastern Asia",
+   "hotspots_per_year": 548456,
+   "step2012_modis": 0.179,
+   "step2012_raw_merged": 5.11,
+   "step2012_harmonized": 0.36,
+   "step2012_modis_vegetation": 0.179,
+   "step2012_harmonized_vegetation": 0.198,
+   "industrial_share": 0.376,
+   "step2018_snpp": -0.176,
+   "step2018_harmonized": -0.182,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2008,
+    "p": 0.0139
+   }
+  },
+  {
+   "region": "Central America",
+   "hotspots_per_year": 450115,
+   "step2012_modis": -0.164,
+   "step2012_raw_merged": 2.878,
+   "step2012_harmonized": -0.145,
+   "step2012_modis_vegetation": -0.178,
+   "step2012_harmonized_vegetation": -0.172,
+   "industrial_share": 0.072,
+   "step2018_snpp": 0.103,
+   "step2018_harmonized": 0.103,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2014,
+    "p": 1.0
+   }
+  },
+  {
+   "region": "Southern Africa",
+   "hotspots_per_year": 355529,
+   "step2012_modis": -0.218,
+   "step2012_raw_merged": 2.405,
+   "step2012_harmonized": -0.239,
+   "step2012_modis_vegetation": -0.223,
+   "step2012_harmonized_vegetation": -0.272,
+   "industrial_share": 0.091,
+   "step2018_snpp": 0.029,
+   "step2018_harmonized": 0.023,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2014,
+    "p": 0.3627
+   }
+  },
+  {
+   "region": "Northern Africa",
+   "hotspots_per_year": 331091,
+   "step2012_modis": 0.1,
+   "step2012_raw_merged": 6.723,
+   "step2012_harmonized": 0.105,
+   "step2012_modis_vegetation": 0.12,
+   "step2012_harmonized_vegetation": 0.095,
+   "industrial_share": 0.439,
+   "step2018_snpp": 0.066,
+   "step2018_harmonized": 0.053,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2009,
+    "p": 0.5776
+   }
+  },
+  {
+   "region": "Central Asia",
+   "hotspots_per_year": 293659,
+   "step2012_modis": -0.062,
+   "step2012_raw_merged": 2.934,
+   "step2012_harmonized": -0.16,
+   "step2012_modis_vegetation": -0.102,
+   "step2012_harmonized_vegetation": -0.125,
+   "industrial_share": 0.375,
+   "step2018_snpp": -0.13,
+   "step2018_harmonized": -0.144,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0026
+   },
+   "pettitt_harmonized": {
+    "year": 2011,
+    "p": 0.0008
+   }
+  },
+  {
+   "region": "Western Asia",
+   "hotspots_per_year": 282367,
+   "step2012_modis": -0.009,
+   "step2012_raw_merged": 3.8,
+   "step2012_harmonized": -0.046,
+   "step2012_modis_vegetation": -0.383,
+   "step2012_harmonized_vegetation": -0.398,
+   "industrial_share": 0.708,
+   "step2018_snpp": -0.022,
+   "step2018_harmonized": -0.035,
+   "pettitt_raw": {
+    "year": 2013,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2015,
+    "p": 0.0316
+   }
+  },
+  {
+   "region": "Southern Europe",
+   "hotspots_per_year": 85020,
+   "step2012_modis": 0.008,
+   "step2012_raw_merged": 3.042,
+   "step2012_harmonized": 0.148,
+   "step2012_modis_vegetation": -0.002,
+   "step2012_harmonized_vegetation": 0.029,
+   "industrial_share": 0.17,
+   "step2018_snpp": -0.26,
+   "step2018_harmonized": -0.265,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2013,
+    "p": 0.4004
+   }
+  },
+  {
+   "region": "Caribbean",
+   "hotspots_per_year": 46144,
+   "step2012_modis": -0.264,
+   "step2012_raw_merged": 2.502,
+   "step2012_harmonized": -0.237,
+   "step2012_modis_vegetation": -0.267,
+   "step2012_harmonized_vegetation": -0.252,
+   "industrial_share": 0.059,
+   "step2018_snpp": -0.049,
+   "step2018_harmonized": -0.047,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2012,
+    "p": 0.3276
+   }
+  },
+  {
+   "region": "Western Europe",
+   "hotspots_per_year": 45106,
+   "step2012_modis": 0.01,
+   "step2012_raw_merged": 6.616,
+   "step2012_harmonized": 0.138,
+   "step2012_modis_vegetation": -0.047,
+   "step2012_harmonized_vegetation": -0.418,
+   "industrial_share": 0.731,
+   "step2018_snpp": 0.026,
+   "step2018_harmonized": 0.017,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2007,
+    "p": 0.7369
+   }
+  },
+  {
+   "region": "Melanesia",
+   "hotspots_per_year": 42514,
+   "step2012_modis": 0.017,
+   "step2012_raw_merged": 4.328,
+   "step2012_harmonized": 0.043,
+   "step2012_modis_vegetation": -0.005,
+   "step2012_harmonized_vegetation": 0.027,
+   "industrial_share": 0.085,
+   "step2018_snpp": -0.392,
+   "step2018_harmonized": -0.409,
+   "pettitt_raw": {
+    "year": 2012,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2005,
+    "p": 0.3276
+   }
+  },
+  {
+   "region": "Northern Europe",
+   "hotspots_per_year": 21050,
+   "step2012_modis": 0.826,
+   "step2012_raw_merged": 12.637,
+   "step2012_harmonized": 1.831,
+   "step2012_modis_vegetation": -0.258,
+   "step2012_harmonized_vegetation": 2.413,
+   "industrial_share": 0.427,
+   "step2018_snpp": -0.044,
+   "step2018_harmonized": -0.055,
+   "pettitt_raw": {
+    "year": 2013,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2013,
+    "p": 0.2648
+   }
+  }
+ ],
+ "jump_gap_by_method": {
+  "frp_slopes": {
+   "x_frp": -0.148,
+   "x_area": 0.231
+  },
+  "regions": {
+   "South America": {
+    "modis": -0.206,
+    "ratio": 0.006,
+    "frp": 0.007,
+    "qm": 0.013
+   },
+   "Australia and New Zealand": {
+    "modis": 0.091,
+    "ratio": -0.016,
+    "frp": -0.015,
+    "qm": -0.009
+   },
+   "Southern Africa": {
+    "modis": -0.228,
+    "ratio": -0.051,
+    "frp": -0.049,
+    "qm": -0.048
+   },
+   "Eastern Africa": {
+    "modis": -0.004,
+    "ratio": -0.024,
+    "frp": -0.024,
+    "qm": -0.02
+   },
+   "Melanesia": {
+    "modis": 0.014,
+    "ratio": 0.025,
+    "frp": 0.024,
+    "qm": 0.047
+   },
+   "Middle Africa": {
+    "modis": -0.039,
+    "ratio": -0.024,
+    "frp": -0.024,
+    "qm": -0.021
+   },
+   "South-Eastern Asia": {
+    "modis": 0.102,
+    "ratio": -0.043,
+    "frp": -0.042,
+    "qm": -0.013
+   },
+   "Western Africa": {
+    "modis": -0.081,
+    "ratio": -0.031,
+    "frp": -0.03,
+    "qm": -0.033
+   },
+   "Southern Asia": {
+    "modis": -0.011,
+    "ratio": -0.014,
+    "frp": -0.014,
+    "qm": 0.011
+   },
+   "Central America": {
+    "modis": -0.18,
+    "ratio": 0.005,
+    "frp": 0.006,
+    "qm": 0.017
+   },
+   "Northern Africa": {
+    "modis": 0.142,
+    "ratio": -0.043,
+    "frp": -0.044,
+    "qm": -0.005
+   },
+   "Caribbean": {
+    "modis": -0.292,
+    "ratio": 0.01,
+    "frp": 0.009,
+    "qm": 0.019
+   },
+   "Western Asia": {
+    "modis": -0.397,
+    "ratio": -0.012,
+    "frp": -0.011,
+    "qm": 0.073
+   },
+   "Northern America": {
+    "modis": 0.13,
+    "ratio": 0.103,
+    "frp": 0.106,
+    "qm": 0.178
+   },
+   "Eastern Asia": {
+    "modis": 0.167,
+    "ratio": -0.01,
+    "frp": -0.01,
+    "qm": 0.025
+   },
+   "Southern Europe": {
+    "modis": -0.008,
+    "ratio": 0.025,
+    "frp": 0.023,
+    "qm": 0.068
+   },
+   "Central Asia": {
+    "modis": -0.104,
+    "ratio": -0.034,
+    "frp": -0.033,
+    "qm": 0.001
+   },
+   "Eastern Europe": {
+    "modis": 0.148,
+    "ratio": 0.049,
+    "frp": 0.05,
+    "qm": 0.087
+   },
+   "World": {
+    "modis": -0.028,
+    "ratio": -0.009,
+    "frp": -0.009,
+    "qm": 0.002
+   }
+  },
+  "mean_abs_gap": {
+   "ratio": 0.029,
+   "frp": 0.029,
+   "qm": 0.038
+  }
+ },
+ "built_seconds": 176
+}

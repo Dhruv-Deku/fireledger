@@ -1,0 +1,20 @@
+# raw FIRMS archive and everything derived from it (regenerate with pipeline/)
+nasa-firms-data/
+data/
+*.parquet
+*.zip
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# node
+node_modules/
+.next/
+out/
+.env*
+!.env.example
+
+.DS_Store
+Thumbs.db

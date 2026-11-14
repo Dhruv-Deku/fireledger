@@ -1,0 +1,13 @@
+{
+ "type": "Feature",
+ "properties": {
+  "id": "ARG-1299",
+  "name": "Córdoba",
+  "kind": "state",
+  "country": "Argentina"
+ },
+ "geometry": {
+  "type": "Polygon",
+  "coordinates": "...trimmed..."
+ }
+}
