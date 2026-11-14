@@ -457,7 +457,11 @@ def proof():
     path = DER / "proof.json"
     if not path.exists():
         raise HTTPException(503, "proof not built yet: run pipeline/validate.py")
-    return json.loads(path.read_text(encoding="utf-8"))
+    out = json.loads(path.read_text(encoding="utf-8"))
+    ba = DER / "burned_area.json"  # independent check against burned area (pipeline/burned_area.py)
+    if ba.exists():
+        out["burned_area"] = json.loads(ba.read_text(encoding="utf-8"))
+    return out
 
 
 @app.get("/api/regions")

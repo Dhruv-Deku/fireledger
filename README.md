@@ -15,6 +15,7 @@ NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 | `pipeline/calibrate.py` | learns conversion factors from the overlap years → `data/derived/{avail,calib,cellcounts}.parquet` |
 | `pipeline/build_regions.py` | country + state presets from Natural Earth → `data/derived/regions.parquet` |
 | `pipeline/validate.py` | proof pack (ablation, jump tests, band coverage) and conformal bands → `data/derived/{proof,bands}.json` |
+| `pipeline/burned_area.py` | independent check against MODIS burned area (MCD64CMQ, GFED regions) → `data/derived/burned_area.json` |
 | `pipeline/build_grid.py` | harmonized 0.25° monthly grid → `data/derived/grid.parquet` (fast path for big areas, map layer) |
 | `pipeline/fetch_recent.py` | the current year (no archive zip yet) from the FIRMS area API → `data/hotspots/<product>_<year>.parquet` |
 | `run_api.bat`, `update_data.bat` | Windows: start the API; download this year's hotspots and swap them in |
@@ -37,6 +38,7 @@ python pipeline/build_grid.py      # ~1.5 min
 python pipeline/build_regions.py   # seconds; needs the Natural Earth zips in data/external/boundaries
 python pipeline/validate.py        # ~3.5 min; proof pack + conformal error bands
 python pipeline/experiments.py     # ~1.5 min; optional: noise floor, backcast, Aqua blend, N. America
+python pipeline/burned_area.py     # 30 s; needs MCD64CMQ + one GFED4.1s file in data/external (see the script)
 
 # API on port 8000 (reachable from the LAN); on Windows, double-click run_api.bat instead
 python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
@@ -220,6 +222,26 @@ per-factor band, because the conformal tables were learned on Terra + Aqua years
 - **Same-day de-duplication** of overlapping-orbit detections at high latitudes.
 - **Land-cover-specific factors**, which need the land-cover download.
 - **Virtual MODIS (VIIRS → MODIS)**, so the MODIS-equivalent unit survives after MODIS ends in 2027.
+
+## Burned-area check (`pipeline/burned_area.py`, in `GET /api/proof` as `burned_area`)
+
+An outside check that doesn't use our own factors. MODIS burned area (MCD64CMQ, burn scars at
+0.25° per month) is a different measurement taken by MODIS alone, so it has no 2012 sensor
+change. We count vegetation-fire hotspots **per km² burned** in the 14 GFED regions, 2001–2019
+(burned area itself changes once the MODIS orbits drift, so later years are left out).
+
+| | Raw MODIS | Raw merged (MODIS → VIIRS) | FireLedger |
+|---|---|---|---|
+| World: change in hotspots per km² burned, 2012–15 vs 2008–11 | +4% | **+344%** | **+4%** |
+| Regions within 8 points of MODIS's own change | | 0 of 14 | **14 of 14** |
+| Change point in the ratio (Pettitt) | | 2011–12 in 14 of 14, p = 0.003 | none at p < 0.05 |
+| Year-to-year agreement with burned area (Spearman ρ, World) | | −0.46 | **+0.78** |
+| Same, range over the 14 regions | | −0.45 to +0.62 | **+0.45 to +0.93** |
+
+The raw merged record says fires suddenly got 4× denser per km² burned in 2012, and its ups and
+downs don't follow burned area. The harmonized record follows burned area through the switch.
+(The 2012 step and the gap to MODIS are the jump test seen through burned area; the
+year-to-year agreement is the new, independent part.)
 
 ## API
 
