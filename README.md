@@ -18,6 +18,8 @@ NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 | `pipeline/burned_area.py` | independent check against MODIS burned area (MCD64CMQ, GFED regions) → `data/derived/burned_area.json` |
 | `pipeline/build_grid.py` | harmonized 0.25° monthly grid → `data/derived/grid.parquet` (fast path for big areas, map layer) |
 | `pipeline/fetch_recent.py` | the current year (no archive zip yet) from the FIRMS area API → `data/hotspots/<product>_<year>.parquet` |
+| `pipeline/harmonize_config.json` | the shipped fitting settings, read by calibrate, flags and validate |
+| `pipeline/check_2012.py`, `pipeline/jump2012.py` | the app's accuracy checks against the live API; fast what-if runs of the factor table (`pipeline/experiments_2012.md`) |
 | `pipeline/fetch_extras.py` | context and validation data that needs no account (CREAMS bulletins, GFED5, weather, fire weather, population, GOES, protected areas, crop calendars) → `data/external/` |
 | `run_api.bat`, `update_data.bat` | Windows: start the API; download this year's hotspots and swap them in |
 | `api/` | FastAPI backend (`main.py`), shared weight logic (`weights.py`) |
@@ -33,7 +35,7 @@ pip install -r requirements.txt
 
 # once, ~7 min total on a laptop
 python pipeline/ingest.py          # ~4.5 min, 6 worker processes
-python pipeline/flags.py           # ~1.5 min; persistent hot spots (flares, industry, volcanoes)
+python pipeline/flags.py           # ~2.5 min; persistent hot spots + places either sensor types static
 python pipeline/calibrate.py       # ~1.5 min
 python pipeline/build_grid.py      # ~1.5 min
 python pipeline/build_regions.py   # seconds; needs the Natural Earth zips in data/external/boundaries
@@ -120,6 +122,16 @@ How the factors are learned (`pipeline/calibrate.py`):
   more small hot industrial sources than MODIS. Converting them with the vegetation-fire ratio
   invented 2012 jumps in industrial regions: Chinese steel plants, the 2011–14 Bakken gas-flare
   boom, Russian flares. "Hide industrial" removes all of them, and the CSV has a `persistent` column.
+- **One static mask for all sensors.** FIRMS's own type disagrees between sensors. At Holuhraun
+  (Iceland, 2014), VIIRS typed the lava as vegetation fire and MODIS typed it as a static source.
+  At Réunion in 2010, MODIS typed an eruption as vegetation. So a 0.05° place where either sensor
+  family types at least half its detections as 1–3 counts as static for every sensor and year,
+  plus a one-cell margin around places VIIRS types static (`data/derived/typed_static.parquet`).
+- **Settings in one file.** `pipeline/harmonize_config.json` holds the fitting choices (static
+  mask, smoothing strengths, month pooling) that `calibrate.py`, `flags.py` and `validate.py` read.
+  The S-NPP → NOAA-20 factor is pooled almost to its month × day/night value, since the two
+  carry the same instrument. Each 1° cell borrows 10% from its neighbouring months. How they
+  were chosen, with the full results table: `pipeline/experiments_2012.md`.
 - **Uncertainty.** Monthly totals get **conformal** 90% bands, learned from the held-out
   errors in `pipeline/validate.py`. The band width depends on the size of the total: bigger
   totals get tighter bands. The NOAA-20 part is observed and has no band. The S-NPP part
@@ -138,16 +150,20 @@ with what S-NPP actually saw (vegetation fires, matched days). The error is
 
 | Step | 1° cell × month | region × month | world × month |
 |---|---|---|---|
-| No correction (raw MODIS) | 77.3% | 77.1% | 77.1% |
-| One global ratio | 27.8% | 14.8% | 6.8% |
-| + per month and day/night | 27.5% | 14.2% | 2.5% |
-| + per 5° region (shrunk) | 21.2% | 4.2% | 2.0% |
-| **+ per 1° cell (shrunk) = FireLedger** | **17.6%** | **4.2%** | **2.0%** |
-| − without shrinkage | 20.0% | 5.1% | 2.8% |
-| − without matched days | 17.8% | 4.7% | 2.7% |
-| − without drift-aware window | 17.5% | 4.5% | 2.3% (bias +1.2% vs +0.3%) |
-| *tried:* + FRP-aware adjustment | 17.4% | 4.1% | 2.0% |
-| *tried:* + zero-aware quantile mapping | 17.4% | 4.1% | 1.9% (bias −0.5%) |
+| No correction (raw MODIS) | 77.2% | 77.0% | 77.0% |
+| One global ratio | 27.4% | 14.7% | 6.8% |
+| + per month and day/night | 27.0% | 14.1% | 2.4% |
+| + per 5° region (shrunk) | 20.8% | 4.1% | 1.9% |
+| **+ per 1° cell (shrunk) = FireLedger** | **17.1%** | **4.0%** | **1.9%** |
+| − without shrinkage | 19.5% | 4.9% | 2.8% |
+| − without matched days | 17.3% | 4.6% | 2.6% |
+| − without drift-aware window | 17.0% | 4.4% | 2.2% (bias +1.3% vs +0.4%) |
+| *tried:* + FRP-aware adjustment | 17.0% | 4.0% | 1.9% |
+| *tried:* + zero-aware quantile mapping | 16.9% | 4.0% | 1.8% (bias −0.4%) |
+
+Before the 15 Nov work (`pipeline/experiments_2012.md`) FireLedger's row was 17.6% / 4.18% / 2.0%.
+Most of the gain is the static mask built from both sensors: vegetation factors no longer learn
+from lava and flares.
 
 **Tried and not adopted.**
 
@@ -161,8 +177,8 @@ with what S-NPP actually saw (vegetation fires, matched days). The error is
 
 By the plan's rule, keep a step only if it wins; neither won clearly enough to ship.
 
-The S-NPP → NOAA-20 link was tested the same way over 2018–2025. Its error is 10.2% per 1° cell
-× month, 2.1% per region × month and 1.0% per world × month.
+The S-NPP → NOAA-20 link was tested the same way over 2018–2025. Its error is 9.0% per 1° cell
+× month, 1.8% per region × month and 0.8% per world × month.
 
 **The 2012 jump.** MODIS observes continuously through 2012, so its own change from 2009–11 to
 2012–14 is the real change:
@@ -171,14 +187,18 @@ The S-NPP → NOAA-20 link was tested the same way over 2018–2025. Its error i
 |---|---|---|---|---|---|
 | MODIS (the real change) | −2% | −18% | −4% | +18% | +15% |
 | Raw merged record (MODIS until 2011, VIIRS after) | +335% | +224% | +552% | +511% | +420% |
-| Harmonized, all hot spots | −1% | −17% | −2% | +36% | +33% |
-| Harmonized, **vegetation fires** vs MODIS vegetation | −3% vs −2% | −19% vs −19% | −1% vs −0% | **+20% vs +18%** | +23% vs +13% |
+| Harmonized, all hot spots | −2% | −17% | −2% | +31% | +33% |
+| Harmonized, **vegetation fires** vs MODIS vegetation | −3% vs −3% | −19% vs −20% | −1% vs −0% | **+17% vs +17%** | +22% vs +13% |
 
 For the raw merged record, a Pettitt test puts the break at 2012 or 2013 (p < 0.001) in every
 region.
 
 For **vegetation fires**, the harmonized record matches MODIS's real change within 3 points in
-10 of 12 regions. The exceptions are Eastern Europe (+6 points) and Northern America (+10).
+13 of 20 regions and within 5 points in 17. The exceptions:
+- Northern Europe (+24): a few thousand fires a year plus the edges of Icelandic lava fields.
+- Northern America (+9): Alaska's 2009 fires vs the Northwest Territories' 2014 fires, places with
+  different conversion factors.
+- Eastern Europe (+6): Moscow's 2010 peat fires vs Yakutia in 2012–14.
 
 Industrial hot spots are the part that **cannot** be fully harmonized: MODIS misses most small
 gas flares and furnaces. When the Bakken flares or Chinese industry grew, MODIS barely saw it,
@@ -233,11 +253,11 @@ change. We count vegetation-fire hotspots **per km² burned** in the 14 GFED reg
 
 | | Raw MODIS | Raw merged (MODIS → VIIRS) | FireLedger |
 |---|---|---|---|
-| World: change in hotspots per km² burned, 2012–15 vs 2008–11 | +4% | **+344%** | **+4%** |
-| Regions within 8 points of MODIS's own change | | 0 of 14 | **14 of 14** |
+| World: change in hotspots per km² burned, 2012–15 vs 2008–11 | +4% | **+343%** | **+3%** |
+| Regions within 8 points of MODIS's own change | | 0 of 14 | **13 of 14** (Boreal Asia +8.3; mean gap 3.1) |
 | Change point in the ratio (Pettitt) | | 2011–12 in 14 of 14, p = 0.003 | none at p < 0.05 |
-| Year-to-year agreement with burned area (Spearman ρ, World) | | −0.46 | **+0.78** |
-| Same, range over the 14 regions | | −0.45 to +0.62 | **+0.45 to +0.93** |
+| Year-to-year agreement with burned area (Spearman ρ, World) | | −0.46 | **+0.80** |
+| Same, range over the 14 regions | | −0.45 to +0.62 | **+0.43 to +0.93** |
 
 The raw merged record says fires suddenly got 4× denser per km² burned in 2012, and its ups and
 downs don't follow burned area. The harmonized record follows burned area through the switch.

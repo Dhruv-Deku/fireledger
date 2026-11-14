@@ -42,7 +42,7 @@ from shapely.geometry import shape
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pipeline"))
-from calibrate import BIT, block_of, fit_factor, fit_frp, modis_features  # noqa: E402
+from calibrate import BIT, CFG, DEFAULT_CFG, block_of, fit_factor, fit_frp, modis_features  # noqa: E402
 
 DER = ROOT / "data" / "derived"
 Z90 = 1.6449
@@ -144,11 +144,12 @@ def variants(cc: pd.DataFrame, y: int, H: dict, allkeys: pd.DataFrame, feats: pd
     def blk(df):
         b = block_of(df.cell)
         return df.assign(cell=((b // 72) * 5 * 360 + (b % 72) * 5).astype("int64"))
-    fb = fit_factor(blk(win), "k_ta", ["SNPP"], MODIS, 2012, 2019, blk(keys).drop_duplicates())
+    fb = fit_factor(blk(win), "k_ta", ["SNPP"], MODIS, 2012, 2019, blk(keys).drop_duplicates(), DEFAULT_CFG)
     k = blk(keys).merge(fb, on=["cell", "m", "dn"], how="left").k_ta
     out["+ per 5° region (shrunk)"] = predict(test, k)
 
-    full = fit_factor(win, "k_ta", ["SNPP"], MODIS, 2012, 2019, allkeys)
+    # the shipped method (pipeline/harmonize_config.json); the rows above are the build-up
+    full = fit_factor(win, "k_ta", ["SNPP"], MODIS, 2012, 2019, allkeys, CFG)
     f = keys.merge(full, on=["cell", "m", "dn"], how="left")
     out[FULL] = predict(test, f.k_ta, f.s_k_ta)
 
@@ -172,11 +173,11 @@ def variants(cc: pd.DataFrame, y: int, H: dict, allkeys: pd.DataFrame, feats: pd
     k = k.fillna(keys.merge(mdn, on=["m", "dn"], how="left").k).fillna(g)
     out["− without shrinkage"] = predict(test, k)
 
-    nomatch = fit_factor(win.assign(flags=15), "k_ta", ["SNPP"], MODIS, 2012, 2019, keys)
+    nomatch = fit_factor(win.assign(flags=15), "k_ta", ["SNPP"], MODIS, 2012, 2019, keys, CFG)
     out["− without matched days"] = predict(test, keys.merge(nomatch, on=["cell", "m", "dn"], how="left").k_ta)
 
     allyrs = cc[(cc.y >= 2012) & (cc.y != y)]
-    drift = fit_factor(allyrs, "k_ta", ["SNPP"], MODIS, 2012, 2025, keys)
+    drift = fit_factor(allyrs, "k_ta", ["SNPP"], MODIS, 2012, 2025, keys, CFG | {"fit_years": None})
     out["− without drift-aware window"] = predict(test, keys.merge(drift, on=["cell", "m", "dn"], how="left").k_ta)
     return out
 

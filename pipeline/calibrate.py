@@ -32,6 +32,7 @@ vegetation-fire ratio would invent jumps where industry is dense (gas flares, st
 """
 from __future__ import annotations
 
+import json
 import sys
 import time
 from datetime import date
@@ -70,6 +71,38 @@ FACTORS = {
 }
 
 STATIC_FACTORS = ["k_s", "k_ta", "k_t", "k_a"]  # refit on industrial / persistent hot spots as *_st
+MODIS_LINKS = ["k_ta", "k_t", "k_a"]            # the MODIS -> S-NPP factors (what the 2012 switch rests on)
+
+# How the factors are fitted. The shipped choice lives in pipeline/harmonize_config.json, so the
+# pipeline, the proof (validate.py) and the experiments all read one config, not code edits.
+DEFAULT_CFG = {
+    "static_mask": "persistent",  # F6: "persistent", or "persistent+typed" (+ places either sensor types as static)
+    "industrial": True,           # F7: industrial / persistent rows get their own *_st factors
+    "n0": N0,                     # F8: prior strength (denominator hotspots), 1 deg cell -> parent
+    "n0_block": N0,               #     5 deg block -> parent
+    "mid": None,                  # F8: None, or the size in degrees of a level between block and globe
+    "n0_mid": N0,                 #     mid level -> globe
+    "month_pool": 0.0,            # F10: weight of each neighbouring calendar month at cell and block level
+    "mass": False,                # F1: rescale so each 5 deg block x month x day/night keeps its VIIRS total
+    "n0_mass": 300.0,             #     prior strength of that rescaling (predicted hotspots)
+    "fit_years": None,            # F4: e.g. [2012, 2015]: years the MODIS -> S-NPP factors are fitted on
+    "matched": True,              # F5: False = fit on all days, not only days both sensors observed
+    "n0_factor": {},              # F8: per-factor overrides, e.g. {"k_s": [300, 300]} = [cell n0, block n0]
+    "pool_levels": ["block", "cell"],  # where F10 pools neighbouring months
+    "pool_mode": "sum",           # F10: "sum" adds w x the neighbours' counts (busy months dominate quiet
+                                  # ones); "ratio" moves each month w of the way to each neighbour's ratio
+}
+CFG_PATH = Path(__file__).resolve().parent / "harmonize_config.json"
+
+
+def load_cfg() -> dict:
+    cfg = dict(DEFAULT_CFG)
+    if CFG_PATH.exists():
+        cfg.update(json.loads(CFG_PATH.read_text(encoding="utf-8")).get("config", {}))
+    return cfg
+
+
+CFG = load_cfg()
 
 CELL_SQL = "(least(CAST(floor(lat) AS INT), 89) + 90) * 360 + (least(CAST(floor(lon) AS INT), 179) + 180)"
 
@@ -134,9 +167,10 @@ def build_cellcounts(con) -> None:
 BIT = {"Terra": 1, "Aqua": 2, "SNPP": 4, "NOAA20": 8}
 
 
-def factor_counts(cc: pd.DataFrame, num: list[str], den: list[str], y0: int, y1: int) -> pd.DataFrame:
+def factor_counts(cc: pd.DataFrame, num: list[str], den: list[str], y0: int, y1: int,
+                  matched: bool = True) -> pd.DataFrame:
     """Numerator / denominator counts per cell x m x dn x year on days all involved sats observed."""
-    need = sum(BIT[s] for s in set(num) | set(den))
+    need = sum(BIT[s] for s in set(num) | set(den)) if matched else 0
     sub = cc[(cc.y >= y0) & (cc.y <= y1) & ((cc["flags"] & need) == need)]
     sub = sub.assign(num=np.where(sub.sat.isin(num), sub.n_veg, 0),
                      den=np.where(sub.sat.isin(den), sub.n_veg, 0))
@@ -153,9 +187,50 @@ def log_spread(per_year: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
     return lr.groupby(keys).lr.agg(sd="std", ny="count").reset_index()
 
 
-def fit_factor(cc: pd.DataFrame, name: str, num, den, y0, y1, cells: pd.DataFrame) -> pd.DataFrame:
-    py = factor_counts(cc, num, den, y0, y1)
+def pooled(df: pd.DataFrame, keys: list[str], w: float, mode: str = "sum") -> pd.DataFrame:
+    """num, den summed per keys x m x dn; with w > 0 each neighbouring calendar month adds w of its own
+    (mode "sum"), or adds w x this month's den at the neighbour's ratio (mode "ratio")."""
+    g = df.groupby(keys + ["m", "dn"], as_index=False)[["num", "den"]].sum()
+    if not w:
+        return g
+    if mode == "ratio":
+        out = g.copy()
+        for sh in (-1, 1):
+            nb = g.copy()
+            nb["m"] = ((nb.m.astype(int) - 1 - sh) % 12 + 1).astype(g.m.dtype)  # neighbour's row, moved onto m
+            nb = nb[nb.den > 0].assign(r=lambda t: t.num / t.den)[keys + ["m", "dn", "r"]]
+            out = out.merge(nb, on=keys + ["m", "dn"], how="left")
+            has = out.r.notna() & (out.den > 0)
+            out.loc[has, "num"] = out.num[has] + w * out.den[has] * out.r[has]
+            out.loc[has, "den"] = out.den[has] * (1 + w)
+            out = out.drop(columns="r")
+        return out
+    parts = [g]
+    for sh in (-1, 1):
+        t = g.copy()
+        t["m"] = ((t.m.astype(int) - 1 + sh) % 12 + 1).astype(g.m.dtype)
+        t[["num", "den"]] = t[["num", "den"]] * w
+        parts.append(t)
+    return pd.concat(parts).groupby(keys + ["m", "dn"], as_index=False)[["num", "den"]].sum()
+
+
+def mid_of(cell, deg: int):
+    """Id of the deg x deg box a 1 deg cell falls in (the F8 middle level)."""
+    lat_i = cell // 360 - 90
+    lon_i = cell % 360 - 180
+    return (np.floor_divide(lat_i + 90, deg) * 1000 + np.floor_divide(lon_i + 180, deg)).astype("int64")
+
+
+def fit_factor(cc: pd.DataFrame, name: str, num, den, y0, y1, cells: pd.DataFrame,
+               cfg: dict | None = None) -> pd.DataFrame:
+    cfg = {**DEFAULT_CFG, **(CFG if cfg is None else cfg)}
+    if name in cfg["n0_factor"]:
+        cfg = cfg | dict(zip(["n0", "n0_block"], cfg["n0_factor"][name]))
+    if cfg["fit_years"] and name in MODIS_LINKS:
+        y0, y1 = max(y0, cfg["fit_years"][0]), min(y1, cfg["fit_years"][1])
+    py = factor_counts(cc, num, den, y0, y1, cfg["matched"])
     py["block"] = block_of(py.cell)
+    pool = cfg["month_pool"]
 
     # global, per calendar month x day/night
     g = py.groupby(["m", "dn"], as_index=False)[["num", "den"]].sum()
@@ -163,12 +238,24 @@ def fit_factor(cc: pd.DataFrame, name: str, num, den, y0, y1, cells: pd.DataFram
     g_all = py.num.sum() / max(py.den.sum(), 1)
     g["k_g"] = g.k_g.fillna(g_all)
 
-    # 5 deg block, shrunk to global
-    b = py.groupby(["block", "m", "dn"], as_index=False)[["num", "den"]].sum().merge(g[["m", "dn", "k_g"]])
-    b["k_b"] = shrink(b.num, b.den, b.k_g)
+    # optional middle level (F8) shrunk to global; the 5 deg block is shrunk to its parent
+    if cfg["mid"]:
+        deg = int(cfg["mid"])
+        py["mid"] = mid_of(py.cell, deg)
+        md = pooled(py, ["mid"], pool, cfg["pool_mode"]).merge(g[["m", "dn", "k_g"]], on=["m", "dn"])
+        md["k_p"] = (md.num + cfg["n0_mid"] * md.k_g) / (md.den + cfg["n0_mid"])
+        parent, pkeys = md[["mid", "m", "dn", "k_p"]], ["mid", "m", "dn"]
+    else:
+        parent, pkeys = g[["m", "dn", "k_g"]].rename(columns={"k_g": "k_p"}), ["m", "dn"]
+    b = pooled(py, ["block"], pool if "block" in cfg["pool_levels"] else 0.0, cfg["pool_mode"])
+    if cfg["mid"]:
+        b["mid"] = mid_of((b.block // 72) * 5 * 360 + (b.block % 72) * 5, deg)
+    b = b.merge(parent, on=pkeys, how="left").merge(g[["m", "dn", "k_g"]], on=["m", "dn"], how="left")
+    b["k_p"] = b.k_p.fillna(b.k_g)
+    b["k_b"] = (b.num + cfg["n0_block"] * b.k_p) / (b.den + cfg["n0_block"])
 
     # 1 deg cell, shrunk to block
-    c = py.groupby(["cell", "m", "dn"], as_index=False)[["num", "den"]].sum()
+    c = pooled(py, ["cell"], pool if "cell" in cfg["pool_levels"] else 0.0, cfg["pool_mode"])
 
     # year-to-year spread of log ratio: block level, shrunk toward the global spread
     by = py.groupby(["block", "m", "dn", "y"], as_index=False)[["num", "den"]].sum()
@@ -185,8 +272,27 @@ def fit_factor(cc: pd.DataFrame, name: str, num, den, y0, y1, cells: pd.DataFram
               .merge(sb, on=["block", "m", "dn"], how="left")
               .merge(sg, on=["m", "dn"], how="left"))
     out["k_g"] = out.k_g.fillna(g_all)
+    if cfg["mid"]:  # a cell whose block has no data falls back to its middle-level box
+        out["mid"] = mid_of(out.cell, deg)
+        out["k_g"] = out.merge(parent, on=pkeys, how="left").k_p.fillna(out.k_g).to_numpy()
     out["k_b"] = out.k_b.fillna(out.k_g)
-    out[name] = shrink(out.num.fillna(0), out.den.fillna(0), out.k_b)
+    out[name] = (out.num.fillna(0) + cfg["n0"] * out.k_b) / (out.den.fillna(0) + cfg["n0"])
+
+    if cfg["mass"]:
+        # F1: VIIRS hotspots in cell-months where MODIS saw nothing can't ride on a ratio, and
+        # shrinkage moves mass between cells. So each block x month x day/night is rescaled until its
+        # training-years prediction adds up to what VIIRS saw there (shrunk toward month x day/night).
+        tr = py[["cell", "block", "m", "dn", "num", "den"]].merge(
+            out[["cell", "m", "dn", name]], on=["cell", "m", "dn"], how="left")
+        tr["P"] = tr.den * tr[name].fillna(0)
+        rg = tr.groupby(["m", "dn"], as_index=False)[["num", "P"]].sum()
+        rg["r_g"] = (rg.num / rg.P.where(rg.P > 0)).fillna(1.0)
+        rb = tr.groupby(["block", "m", "dn"], as_index=False)[["num", "P"]].sum().merge(rg[["m", "dn", "r_g"]])
+        rb["r_b"] = (rb.num + cfg["n0_mass"] * rb.r_g) / (rb.P + cfg["n0_mass"])
+        r = (out[["block", "m", "dn"]].merge(rb[["block", "m", "dn", "r_b"]], on=["block", "m", "dn"], how="left")
+                .merge(rg[["m", "dn", "r_g"]], on=["m", "dn"], how="left"))
+        out[name] = out[name].to_numpy() * r.r_b.fillna(r.r_g).fillna(1.0).to_numpy()
+
     sd_g = out.sd_g.fillna(sd_g_all)
     ny = out.ny.fillna(0)
     out[f"s_{name}"] = np.sqrt((ny * out.sd.fillna(0) ** 2 + 3 * sd_g ** 2) / (ny + 3))

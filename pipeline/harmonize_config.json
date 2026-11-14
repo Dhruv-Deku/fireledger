@@ -1,0 +1,17 @@
+{
+  "note": "Shipped harmonization settings (read by calibrate.py, flags.py, validate.py). Chosen 15 Nov 2026 by the search in pipeline/experiments_2012.md: each setting kept only if it passed more checks with no regressions, strengths set by held-out error.",
+  "config": {
+    "static_mask": "persistent+typed_vbuffer",
+    "n0_factor": {
+      "k_s": [
+        30000.0,
+        30000.0
+      ]
+    }
+  },
+  "why": {
+    "static_mask": "F6: FIRMS types the same volcano or flare differently per sensor (Holuhraun 2014: VIIRS 'vegetation', MODIS 'static'). A 0.05 deg place either sensor family types static (>= 50% of its detections) is static for every sensor and year, plus a one-cell margin around places VIIRS types static (MODIS's coarse pixels scatter detections of the same source). A margin around MODIS-only places too scored about the same (3.93% vs 3.95% held-out) but moved 7.1% instead of 2.8% of Mato Grosso's fires into 'industrial'.",
+    "n0_factor.k_s": "F8: S-NPP and NOAA-20 carry the same instrument, so the S-NPP -> NOAA-20 factor is pooled almost to its month x day/night value; its own held-out error drops from 2.05% to 1.80% (region x month).",
+    "month_pool (not used)": "F10 pooling of neighbouring months lowered the world held-out error a little (4.03% -> 3.95% at 0.10) but in held-out years it biased the start-of-season months where a quiet month sits next to a busy one: Punjab April predicted/actual 1.25 -> 1.71, September 0.99 -> 0.61; Haryana September 1.08 -> 0.73. Season start and critical months are what the app shows, so it is off. Blending ratios instead of counts was worse (4.27%, Haryana fails)."
+  }
+}

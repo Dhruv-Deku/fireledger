@@ -22,11 +22,18 @@ Z90 = 1.6449
 
 CELL_SQL = "(least(CAST(floor(h.lat) AS INT), 89) + 90) * 360 + (least(CAST(floor(h.lon) AS INT), 179) + 180)"
 
-# persistent hot spots (pipeline/flags.py), with a 3x3-cell buffer for geolocation scatter
+# persistent hot spots (pipeline/flags.py), with a 3x3-cell buffer for geolocation scatter, plus
+# (when flags.py wrote typed_static.parquet) every 0.01 deg cell of the 0.05 deg cells that either
+# sensor family's own FIRMS type marks as static (volcano, industry, offshore): one mask for all sensors
 PERS_TABLE_SQL = """
-    CREATE TABLE pers AS SELECT DISTINCT p.iy + dy AS iy, p.ix + dx AS ix
-    FROM read_parquet('{path}') p, range(-1, 2) t1(dy), range(-1, 2) t2(dx)
+    CREATE TABLE pers AS SELECT DISTINCT iy, ix FROM (
+        SELECT p.iy + dy AS iy, p.ix + dx AS ix
+        FROM read_parquet('{path}') p, range(-1, 2) t1(dy), range(-1, 2) t2(dx)
+        {typed}
+    )
 """
+TYPED_SQL = """UNION ALL SELECT t.cy * 5 + dy AS iy, t.cx * 5 + dx AS ix
+        FROM read_parquet('{path}') t, range(0, 5) t1(dy), range(0, 5) t2(dx)"""
 PERS_EMPTY_SQL = "CREATE TABLE pers (iy INTEGER, ix INTEGER)"
 PERS_JOIN = "LEFT JOIN pers p ON p.iy = CAST(floor(h.lat * 100) AS INT) AND p.ix = CAST(floor(h.lon * 100) AS INT)"
 
@@ -41,8 +48,12 @@ JOINS = f"""
 
 
 def create_pers(con, derived) -> None:
-    path = derived / "persistent.parquet"
-    con.execute(PERS_TABLE_SQL.format(path=path.as_posix()) if path.exists() else PERS_EMPTY_SQL)
+    path, typed = derived / "persistent.parquet", derived / "typed_static.parquet"
+    if not path.exists():
+        con.execute(PERS_EMPTY_SQL)
+        return
+    con.execute(PERS_TABLE_SQL.format(path=path.as_posix(),
+                                      typed=TYPED_SQL.format(path=typed.as_posix()) if typed.exists() else ""))
 
 
 # raw VIIRS as the record shows it: NOAA-20, or S-NPP on days without NOAA-20

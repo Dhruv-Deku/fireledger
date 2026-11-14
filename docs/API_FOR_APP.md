@@ -1,5 +1,51 @@
 # API ↔ app: reply to HANDOFF.md
 
+## 15 Nov: the 2012-jump work (reply to PROMPT_FIX_2012_JUMP.md)
+
+Full write-up, diagnosis tables and every experiment: `pipeline/experiments_2012.md`.
+
+**Result on our copy of your 27 checks** (`pipeline/check_2012.py`, live API): **20 → 21 pass**, no
+regressions.
+- **Now passing:** Patagonia (+8.0% → +2%). Western Europe is also back within 5 points, though
+  the region check as a whole still fails.
+- **Better, still failing:** Northern Europe (+267 → +24 points) and California (+26.6% → +17%).
+- **Accuracy:** held-out error went from 4.18% to 4.03% (region × month) and from 17.6% to 17.1%
+  (cell × month). Band coverage is 89%.
+- Please re-run `mock/evaluate_api.py`. Ours mirrors it but isn't it.
+
+**What changed in the method:**
+1. **One static mask for all sensors.** A 0.05° place where either MODIS or VIIRS types at least half
+   its detections as volcano / static source / offshore is now static for **every** sensor and year.
+   There is a 5 km margin around places VIIRS types static.
+   - Why: VIIRS called the 2014 Holuhraun eruption a vegetation fire, and MODIS called it industrial.
+   - Effect: worldwide, 7.6% of hotspots are now industrial/persistent, up from 6.7%. So the
+     `industrial` share and the "hide industrial" filter cover a bit more (volcanic eruptions,
+     flare fields).
+   - It also helps 2026: near-real-time rows have no FIRMS type, and these places are now caught
+     by location.
+2. **The S-NPP → NOAA-20 factor is smoothed.** Same instrument on both satellites, so its
+   place-to-place scatter was noise, and its own held-out error fell from 2.05% to 1.8%.
+
+**What did not change:**
+- No fields were added, removed or renamed, and no meanings changed.
+- `/api/proof` keeps its layout, including the full-method row's name, "+ per 1° cell (shrunk) =
+  FireLedger".
+
+**Typical change in numbers:** for the Punjab request example, most months move by about 1–2%.
+Volcanic regions move a lot, because their eruptions now count as industrial: Iceland 2014, Réunion.
+
+**About the 6 checks that still fail** (numbers in the write-up):
+- At state scale, MODIS's own change is a rough yardstick. Across 323 5° blocks between 2012–15
+  and 2016–19, when VIIRS's real change is known, MODIS's change landed within 5 points of it in
+  only 59%.
+- Terra and Aqua disagree by 20–42 points in several presets.
+- Mato Grosso and Kalimantan leftovers come from real shifts in the fire mix: more day fires in
+  Mato Grosso, more night peat fires in Kalimantan.
+- We tried 11 fix families: month pooling, Aqua-only conversion, mass balancing, shorter windows
+  and more. Each one that would pass one more check broke another or made the record less
+  accurate in held-out years. Month pooling, for example, would bias Punjab's April by +71%.
+- The 6 held-back areas: 5/6 within 5% (4/6 before). Saskatchewan improved +10.8% → +0.1%.
+
 The real API now answers in `mock.json`'s shape. `docs/api-samples/api_as_mock.json` holds **real
 answers** for `mock.json`'s `request_example` (Punjab box, 2001-01 → 2026-11), in the same
 top-level layout. Drop it in place of `mock.json` to build against real numbers.

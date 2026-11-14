@@ -13,123 +13,123 @@
  "ablation": [
   {
    "step": "No correction (raw MODIS)",
-   "wape_cell_month": 0.773,
-   "bias_cell_month": -0.771,
-   "wape_region_month": 0.771,
-   "bias_region_month": -0.771,
-   "wape_world_month": 0.771,
-   "bias_world_month": -0.771,
-   "error_cut_vs_global_ratio_cell": -1.78
+   "wape_cell_month": 0.7721,
+   "bias_cell_month": -0.7701,
+   "wape_region_month": 0.7701,
+   "bias_region_month": -0.7701,
+   "wape_world_month": 0.7701,
+   "bias_world_month": -0.7701,
+   "error_cut_vs_global_ratio_cell": -1.819
   },
   {
    "step": "One global ratio",
-   "wape_cell_month": 0.2781,
+   "wape_cell_month": 0.2739,
    "bias_cell_month": 0.0,
-   "wape_region_month": 0.1483,
+   "wape_region_month": 0.1472,
    "bias_region_month": 0.0,
-   "wape_world_month": 0.0684,
+   "wape_world_month": 0.0683,
    "bias_world_month": 0.0,
    "error_cut_vs_global_ratio_cell": 0.0
   },
   {
    "step": "+ per month and day/night",
-   "wape_cell_month": 0.2748,
+   "wape_cell_month": 0.2704,
    "bias_cell_month": 0.0005,
-   "wape_region_month": 0.1422,
+   "wape_region_month": 0.1412,
    "bias_region_month": 0.0005,
-   "wape_world_month": 0.0248,
+   "wape_world_month": 0.0242,
    "bias_world_month": 0.0005,
-   "error_cut_vs_global_ratio_cell": 0.012
+   "error_cut_vs_global_ratio_cell": 0.013
   },
   {
    "step": "+ per 5° region (shrunk)",
-   "wape_cell_month": 0.2123,
-   "bias_cell_month": 0.0037,
-   "wape_region_month": 0.0424,
-   "bias_region_month": 0.0037,
-   "wape_world_month": 0.0198,
-   "bias_world_month": 0.0037,
-   "error_cut_vs_global_ratio_cell": 0.237
+   "wape_cell_month": 0.2078,
+   "bias_cell_month": 0.0042,
+   "wape_region_month": 0.041,
+   "bias_region_month": 0.0042,
+   "wape_world_month": 0.019,
+   "bias_world_month": 0.0042,
+   "error_cut_vs_global_ratio_cell": 0.241
   },
   {
    "step": "+ per 1° cell (shrunk) = FireLedger",
-   "wape_cell_month": 0.1759,
-   "bias_cell_month": 0.0032,
-   "wape_region_month": 0.0418,
-   "bias_region_month": 0.0032,
-   "wape_world_month": 0.02,
-   "bias_world_month": 0.0032,
-   "error_cut_vs_global_ratio_cell": 0.367
-  },
-  {
-   "step": "+ FRP-aware adjustment",
-   "wape_cell_month": 0.1741,
-   "bias_cell_month": 0.0036,
-   "wape_region_month": 0.0411,
-   "bias_region_month": 0.0036,
-   "wape_world_month": 0.0197,
-   "bias_world_month": 0.0036,
+   "wape_cell_month": 0.1714,
+   "bias_cell_month": 0.0038,
+   "wape_region_month": 0.0403,
+   "bias_region_month": 0.0038,
+   "wape_world_month": 0.0191,
+   "bias_world_month": 0.0038,
    "error_cut_vs_global_ratio_cell": 0.374
   },
   {
+   "step": "+ FRP-aware adjustment",
+   "wape_cell_month": 0.1696,
+   "bias_cell_month": 0.0042,
+   "wape_region_month": 0.0395,
+   "bias_region_month": 0.0042,
+   "wape_world_month": 0.0189,
+   "bias_world_month": 0.0042,
+   "error_cut_vs_global_ratio_cell": 0.381
+  },
+  {
    "step": "+ quantile mapping (zero-aware)",
-   "wape_cell_month": 0.1738,
-   "bias_cell_month": -0.0046,
-   "wape_region_month": 0.0414,
-   "bias_region_month": -0.0046,
-   "wape_world_month": 0.0193,
-   "bias_world_month": -0.0046,
-   "error_cut_vs_global_ratio_cell": 0.375
+   "wape_cell_month": 0.1694,
+   "bias_cell_month": -0.0038,
+   "wape_region_month": 0.0402,
+   "bias_region_month": -0.0038,
+   "wape_world_month": 0.0185,
+   "bias_world_month": -0.0038,
+   "error_cut_vs_global_ratio_cell": 0.382
   },
   {
    "step": "− without shrinkage",
-   "wape_cell_month": 0.2,
-   "bias_cell_month": 0.0248,
-   "wape_region_month": 0.0508,
-   "bias_region_month": 0.0248,
-   "wape_world_month": 0.0283,
-   "bias_world_month": 0.0248,
-   "error_cut_vs_global_ratio_cell": 0.281
+   "wape_cell_month": 0.1946,
+   "bias_cell_month": 0.0245,
+   "wape_region_month": 0.0489,
+   "bias_region_month": 0.0245,
+   "wape_world_month": 0.028,
+   "bias_world_month": 0.0245,
+   "error_cut_vs_global_ratio_cell": 0.29
   },
   {
    "step": "− without matched days",
-   "wape_cell_month": 0.178,
-   "bias_cell_month": -0.0031,
-   "wape_region_month": 0.0472,
-   "bias_region_month": -0.0031,
-   "wape_world_month": 0.027,
-   "bias_world_month": -0.0031,
-   "error_cut_vs_global_ratio_cell": 0.36
+   "wape_cell_month": 0.1735,
+   "bias_cell_month": -0.0026,
+   "wape_region_month": 0.0456,
+   "bias_region_month": -0.0026,
+   "wape_world_month": 0.0261,
+   "bias_world_month": -0.0026,
+   "error_cut_vs_global_ratio_cell": 0.367
   },
   {
    "step": "− without drift-aware window",
-   "wape_cell_month": 0.1749,
-   "bias_cell_month": 0.0123,
-   "wape_region_month": 0.0455,
-   "bias_region_month": 0.0123,
-   "wape_world_month": 0.0228,
-   "bias_world_month": 0.0123,
-   "error_cut_vs_global_ratio_cell": 0.371
+   "wape_cell_month": 0.1704,
+   "bias_cell_month": 0.0129,
+   "wape_region_month": 0.0437,
+   "bias_region_month": 0.0129,
+   "wape_world_month": 0.0224,
+   "bias_world_month": 0.0129,
+   "error_cut_vs_global_ratio_cell": 0.378
   }
  ],
  "band_coverage_90": {
   "cell_month": {
-   "n": 758247,
-   "coverage": 0.284,
-   "coverage_with_count_noise": 0.504,
-   "conformal_widen_factor": 4.72
+   "n": 746162,
+   "coverage": 0.283,
+   "coverage_with_count_noise": 0.506,
+   "conformal_widen_factor": 4.71
   },
   "region_month": {
-   "n": 2178,
-   "coverage": 0.824,
-   "coverage_with_count_noise": 0.863,
-   "conformal_widen_factor": 1.24
+   "n": 2164,
+   "coverage": 0.839,
+   "coverage_with_count_noise": 0.872,
+   "conformal_widen_factor": 1.04
   },
   "world_month": {
    "n": 96,
    "coverage": 1.0,
    "coverage_with_count_noise": 1.0,
-   "conformal_widen_factor": 0.17
+   "conformal_widen_factor": 0.16
   }
  },
  "conformal_bands": {
@@ -149,548 +149,548 @@
   ],
   "modis_to_snpp": {
    "table": [
-    2.3979,
-    1.6499,
-    1.3493,
-    0.9324,
-    0.6363,
-    0.4449,
-    0.3135,
-    0.2352,
-    0.1986,
-    0.1375,
-    0.0834
+    2.3026,
+    1.639,
+    1.3285,
+    0.9119,
+    0.622,
+    0.4367,
+    0.3087,
+    0.2313,
+    0.1953,
+    0.1325,
+    0.086
    ],
    "tables": {
     "all": [
-     2.3979,
-     1.6499,
-     1.3493,
-     0.9324,
-     0.6363,
-     0.4449,
-     0.3135,
-     0.2352,
-     0.1986,
-     0.1375,
-     0.0834
+     2.3026,
+     1.639,
+     1.3285,
+     0.9119,
+     0.622,
+     0.4367,
+     0.3087,
+     0.2313,
+     0.1953,
+     0.1325,
+     0.086
     ],
     "cell_month": {
      "all": [
-      2.3979,
-      1.6438,
-      1.3443,
-      0.93,
-      0.6365,
-      0.4446,
-      0.3132,
-      0.3132,
-      0.3132,
-      0.1375,
-      0.0834
+      2.3026,
+      1.6338,
+      1.3269,
+      0.9139,
+      0.6243,
+      0.4393,
+      0.3096,
+      0.278,
+      0.278,
+      0.1325,
+      0.086
      ],
      "tropics": [
       2.4849,
-      1.6751,
-      1.347,
-      0.9073,
-      0.6018,
-      0.4147,
-      0.2809,
-      0.2072,
-      0.2072,
-      0.1375,
-      0.0834
+      1.6669,
+      1.3364,
+      0.8968,
+      0.5973,
+      0.4133,
+      0.28,
+      0.1954,
+      0.1883,
+      0.1325,
+      0.086
      ],
      "midlat": [
-      2.3026,
-      1.6088,
-      1.3336,
-      0.9434,
-      0.6846,
-      0.5072,
-      0.4551,
-      0.4551,
-      0.4253,
-      0.1375,
-      0.0834
+      2.1972,
+      1.6013,
+      1.3102,
+      0.9166,
+      0.6606,
+      0.4894,
+      0.4581,
+      0.4581,
+      0.4125,
+      0.1325,
+      0.086
      ],
      "highlat": [
       2.1972,
-      1.6701,
-      1.3837,
-      1.003,
-      0.6987,
-      0.5459,
-      0.4695,
-      0.4695,
-      0.4695,
-      0.1375,
-      0.0834
+      1.6502,
+      1.3605,
+      0.9727,
+      0.6701,
+      0.53,
+      0.4613,
+      0.4558,
+      0.4558,
+      0.1325,
+      0.086
      ]
     },
     "block_month": {
      "all": [
-      2.9957,
-      1.7869,
-      1.4142,
-      0.9524,
-      0.6328,
-      0.4449,
-      0.3134,
-      0.2463,
-      0.1903,
-      0.145,
+      2.8904,
+      1.7574,
+      1.3503,
+      0.8929,
+      0.604,
+      0.4216,
+      0.303,
+      0.2429,
+      0.1914,
+      0.1416,
       0.0972
      ],
      "tropics": [
-      2.8332,
-      1.6964,
-      1.3029,
-      0.9183,
-      0.6041,
-      0.4101,
-      0.2885,
-      0.2294,
-      0.1722,
-      0.1293,
-      0.0822
+      2.7081,
+      1.685,
+      1.2418,
+      0.8931,
+      0.5874,
+      0.401,
+      0.2828,
+      0.2251,
+      0.1696,
+      0.1282,
+      0.0808
      ],
      "midlat": [
-      3.091,
-      1.7831,
-      1.4113,
-      0.9557,
-      0.6469,
-      0.4626,
-      0.3272,
-      0.3148,
-      0.3148,
-      0.3148,
+      3.0445,
+      1.7561,
+      1.3432,
+      0.8683,
+      0.6044,
+      0.4247,
+      0.312,
+      0.312,
+      0.312,
+      0.312,
       0.0972
      ],
      "highlat": [
-      3.0445,
-      1.8834,
-      1.6991,
-      1.0098,
-      0.6577,
-      0.5067,
-      0.3807,
-      0.3807,
-      0.3807,
-      0.3807,
+      2.9444,
+      1.8745,
+      1.655,
+      0.9455,
+      0.6579,
+      0.479,
+      0.346,
+      0.2973,
+      0.2886,
+      0.2814,
       0.0972
      ]
     },
     "region_month": {
      "all": [
-      2.3026,
-      1.9622,
-      1.9622,
-      1.5057,
-      1.1547,
-      0.5106,
-      0.3845,
-      0.2315,
-      0.1513,
-      0.1123,
-      0.097
+      2.3979,
+      1.9282,
+      1.9282,
+      1.721,
+      0.9039,
+      0.4729,
+      0.3232,
+      0.1976,
+      0.1358,
+      0.1115,
+      0.0963
      ],
      "tropics": [
       2.3979,
-      1.8742,
-      1.8742,
-      1.5057,
-      1.1547,
-      0.365,
-      0.2783,
-      0.1837,
-      0.1222,
-      0.096,
-      0.0824
+      1.9131,
+      1.9131,
+      1.721,
+      0.9039,
+      0.3711,
+      0.2529,
+      0.1625,
+      0.1174,
+      0.0965,
+      0.0803
      ],
      "midlat": [
-      2.3026,
-      1.9622,
-      1.9622,
-      1.5057,
-      1.0222,
-      0.5134,
-      0.3845,
-      0.2497,
-      0.1618,
-      0.1265,
-      0.097
+      2.3979,
+      1.9282,
+      1.9282,
+      1.721,
+      0.7575,
+      0.5236,
+      0.3234,
+      0.2169,
+      0.1582,
+      0.1192,
+      0.0963
      ],
      "highlat": [
-      2.2078,
-      1.9622,
-      1.9622,
-      1.6999,
-      1.6999,
-      1.1557,
-      0.3845,
-      0.2315,
-      0.1513,
-      0.1191,
-      0.1191
+      2.2499,
+      1.9282,
+      1.9282,
+      1.721,
+      1.1233,
+      0.9275,
+      0.3232,
+      0.1976,
+      0.1358,
+      0.1234,
+      0.1234
      ]
     },
     "world_month": {
      "all": [
-      2.3979,
-      1.6499,
-      1.3493,
-      0.9324,
-      0.6363,
-      0.4449,
-      0.3135,
-      0.2352,
-      0.1986,
-      0.1375,
-      0.0415
+      2.3026,
+      1.639,
+      1.3285,
+      0.9119,
+      0.622,
+      0.4367,
+      0.3087,
+      0.2313,
+      0.1953,
+      0.1325,
+      0.0387
      ],
      "tropics": [
-      2.3979,
-      1.6499,
-      1.3493,
-      0.9324,
-      0.6363,
-      0.4449,
-      0.3135,
-      0.2352,
-      0.1986,
-      0.1375,
-      0.0415
+      2.3026,
+      1.639,
+      1.3285,
+      0.9119,
+      0.622,
+      0.4367,
+      0.3087,
+      0.2313,
+      0.1953,
+      0.1325,
+      0.0387
      ],
      "midlat": [
-      2.3979,
-      1.6499,
-      1.3493,
-      0.9324,
-      0.6363,
-      0.4449,
-      0.3135,
-      0.2352,
-      0.1986,
-      0.1375,
-      0.0415
+      2.3026,
+      1.639,
+      1.3285,
+      0.9119,
+      0.622,
+      0.4367,
+      0.3087,
+      0.2313,
+      0.1953,
+      0.1325,
+      0.0387
      ],
      "highlat": [
-      2.3979,
-      1.6499,
-      1.3493,
-      0.9324,
-      0.6363,
-      0.4449,
-      0.3135,
-      0.2352,
-      0.1986,
-      0.1375,
-      0.0415
+      2.3026,
+      1.639,
+      1.3285,
+      0.9119,
+      0.622,
+      0.4367,
+      0.3087,
+      0.2313,
+      0.1953,
+      0.1325,
+      0.0387
      ]
     }
    },
    "coverage_crossfit": {
-    "cell_month": 0.899,
+    "cell_month": 0.896,
     "block_month": 0.9,
-    "region_month": 0.89,
-    "world_month": 0.885
+    "region_month": 0.891,
+    "world_month": 0.896
    },
    "coverage_block_by_latitude": {
-    "tropics": 0.899,
-    "midlat": 0.899,
-    "highlat": 0.902
+    "tropics": 0.9,
+    "midlat": 0.9,
+    "highlat": 0.9
    },
    "n": {
-    "cell_month": 758247,
-    "block_month": 66154,
-    "region_month": 2178,
+    "cell_month": 746162,
+    "block_month": 65529,
+    "region_month": 2164,
     "world_month": 96
    }
   },
   "snpp_to_noaa20": {
    "table": [
-    1.1853,
-    1.0952,
-    0.7867,
-    0.5314,
-    0.3573,
-    0.255,
-    0.1761,
-    0.1322,
-    0.1131,
-    0.0767,
-    0.0434
+    1.106,
+    1.0714,
+    0.7283,
+    0.4807,
+    0.3211,
+    0.2257,
+    0.1526,
+    0.1136,
+    0.0881,
+    0.0688,
+    0.0406
    ],
    "tables": {
     "all": [
-     1.1853,
-     1.0952,
-     0.7867,
-     0.5314,
-     0.3573,
-     0.255,
-     0.1761,
-     0.1322,
-     0.1131,
-     0.0767,
-     0.0434
+     1.106,
+     1.0714,
+     0.7283,
+     0.4807,
+     0.3211,
+     0.2257,
+     0.1526,
+     0.1136,
+     0.0881,
+     0.0688,
+     0.0406
     ],
     "cell_month": {
      "all": [
-      1.1887,
-      1.0983,
-      0.7903,
-      0.5351,
-      0.3591,
-      0.2552,
-      0.1782,
-      0.1782,
-      0.1782,
-      0.0767,
-      0.0434
+      1.1064,
+      1.0757,
+      0.7318,
+      0.4839,
+      0.3221,
+      0.2264,
+      0.1519,
+      0.1119,
+      0.1026,
+      0.0688,
+      0.0406
      ],
      "tropics": [
-      1.2436,
-      1.1563,
-      0.7925,
-      0.5302,
-      0.3525,
-      0.2434,
-      0.1594,
-      0.1235,
-      0.1235,
-      0.0767,
-      0.0434
+      1.2588,
+      1.0896,
+      0.7367,
+      0.4886,
+      0.3216,
+      0.2207,
+      0.1455,
+      0.1067,
+      0.1028,
+      0.0688,
+      0.0406
      ],
      "midlat": [
-      1.1957,
-      1.0797,
-      0.7971,
-      0.5456,
-      0.3676,
-      0.2772,
-      0.2554,
-      0.2554,
-      0.2554,
-      0.0767,
-      0.0434
+      1.1067,
+      1.0436,
+      0.7357,
+      0.4829,
+      0.3211,
+      0.2406,
+      0.189,
+      0.1721,
+      0.0858,
+      0.0688,
+      0.0406
      ],
      "highlat": [
       1.0986,
-      1.0179,
-      0.747,
-      0.5201,
-      0.3733,
-      0.3014,
-      0.2568,
-      0.2289,
-      0.2289,
-      0.0767,
-      0.0434
+      0.9721,
+      0.6866,
+      0.4664,
+      0.3301,
+      0.238,
+      0.1664,
+      0.1259,
+      0.1106,
+      0.0688,
+      0.0406
      ]
     },
     "block_month": {
      "all": [
-      1.1019,
-      1.0082,
-      0.7187,
-      0.497,
-      0.3502,
-      0.2551,
-      0.1794,
-      0.1433,
-      0.1034,
-      0.0814,
-      0.0558
+      1.0986,
+      0.9747,
+      0.6703,
+      0.4506,
+      0.3146,
+      0.2224,
+      0.157,
+      0.121,
+      0.0868,
+      0.0728,
+      0.0514
      ],
      "tropics": [
-      1.2206,
-      1.0563,
-      0.7595,
-      0.5156,
-      0.3551,
-      0.2624,
-      0.18,
-      0.1351,
-      0.0932,
-      0.0743,
-      0.0547
+      1.1986,
+      1.0179,
+      0.7001,
+      0.4706,
+      0.3361,
+      0.2325,
+      0.1615,
+      0.1233,
+      0.0844,
+      0.0719,
+      0.0494
      ],
      "midlat": [
-      1.1602,
-      1.0132,
-      0.7156,
-      0.4977,
-      0.3529,
-      0.2501,
-      0.1939,
-      0.1939,
-      0.1939,
-      0.1939,
-      0.0558
+      1.109,
+      0.9771,
+      0.6647,
+      0.4481,
+      0.3073,
+      0.218,
+      0.1527,
+      0.1152,
+      0.1102,
+      0.0759,
+      0.0514
      ],
      "highlat": [
       1.0986,
-      0.9455,
-      0.6698,
-      0.4556,
-      0.3254,
-      0.2514,
-      0.1869,
-      0.185,
-      0.1488,
-      0.1117,
-      0.0558
+      0.9146,
+      0.6127,
+      0.4,
+      0.2836,
+      0.206,
+      0.1454,
+      0.1148,
+      0.0832,
+      0.0739,
+      0.0514
      ]
     },
     "region_month": {
      "all": [
-      1.3707,
-      1.1611,
-      1.0609,
-      0.5314,
-      0.2623,
-      0.1828,
-      0.1479,
-      0.0995,
-      0.0759,
-      0.0506,
-      0.0427
+      1.3841,
+      1.0746,
+      0.9752,
+      0.3868,
+      0.2506,
+      0.1923,
+      0.1183,
+      0.1095,
+      0.0703,
+      0.0485,
+      0.0406
      ],
      "tropics": [
-      1.2241,
-      0.9384,
-      0.9171,
-      0.5314,
-      0.2623,
-      0.1528,
-      0.1528,
-      0.0901,
-      0.0723,
-      0.0471,
-      0.0394
+      1.2083,
+      0.9517,
+      0.9008,
+      0.3868,
+      0.2506,
+      0.1919,
+      0.1255,
+      0.091,
+      0.0657,
+      0.0435,
+      0.037
      ],
      "midlat": [
-      1.3707,
-      1.1611,
-      1.0609,
-      0.5314,
-      0.2323,
-      0.2323,
-      0.1417,
-      0.1044,
-      0.0942,
-      0.0942,
-      0.0942
+      1.3841,
+      1.0746,
+      0.9752,
+      0.3868,
+      0.2639,
+      0.215,
+      0.1198,
+      0.1198,
+      0.0732,
+      0.0637,
+      0.0503
      ],
      "highlat": [
-      1.6879,
-      1.271,
-      1.0609,
-      0.5314,
-      0.2634,
-      0.2252,
-      0.2252,
-      0.0995,
-      0.0759,
-      0.0415,
-      0.0415
+      2.0794,
+      1.2644,
+      0.9752,
+      0.3868,
+      0.2333,
+      0.1751,
+      0.1095,
+      0.1095,
+      0.0703,
+      0.0387,
+      0.0387
      ]
     },
     "world_month": {
      "all": [
-      1.1853,
-      1.0952,
-      0.7867,
-      0.5314,
-      0.3573,
-      0.255,
-      0.1761,
-      0.1322,
-      0.1131,
-      0.0767,
-      0.0243
+      1.106,
+      1.0714,
+      0.7283,
+      0.4807,
+      0.3211,
+      0.2257,
+      0.1526,
+      0.1136,
+      0.0881,
+      0.0688,
+      0.0173
      ],
      "tropics": [
-      1.1853,
-      1.0952,
-      0.7867,
-      0.5314,
-      0.3573,
-      0.255,
-      0.1761,
-      0.1322,
-      0.1131,
-      0.0767,
-      0.0243
+      1.106,
+      1.0714,
+      0.7283,
+      0.4807,
+      0.3211,
+      0.2257,
+      0.1526,
+      0.1136,
+      0.0881,
+      0.0688,
+      0.0173
      ],
      "midlat": [
-      1.1853,
-      1.0952,
-      0.7867,
-      0.5314,
-      0.3573,
-      0.255,
-      0.1761,
-      0.1322,
-      0.1131,
-      0.0767,
-      0.0243
+      1.106,
+      1.0714,
+      0.7283,
+      0.4807,
+      0.3211,
+      0.2257,
+      0.1526,
+      0.1136,
+      0.0881,
+      0.0688,
+      0.0173
      ],
      "highlat": [
-      1.1853,
-      1.0952,
-      0.7867,
-      0.5314,
-      0.3573,
-      0.255,
-      0.1761,
-      0.1322,
-      0.1131,
-      0.0767,
-      0.0243
+      1.106,
+      1.0714,
+      0.7283,
+      0.4807,
+      0.3211,
+      0.2257,
+      0.1526,
+      0.1136,
+      0.0881,
+      0.0688,
+      0.0173
      ]
     }
    },
    "coverage_crossfit": {
     "cell_month": 0.897,
-    "block_month": 0.901,
-    "region_month": 0.896,
+    "block_month": 0.899,
+    "region_month": 0.892,
     "world_month": 0.892
    },
    "coverage_block_by_latitude": {
     "tropics": 0.9,
-    "midlat": 0.905,
-    "highlat": 0.896
+    "midlat": 0.9,
+    "highlat": 0.897
    },
    "n": {
-    "cell_month": 776172,
-    "block_month": 65757,
-    "region_month": 2129,
+    "cell_month": 765250,
+    "block_month": 65250,
+    "region_month": 2113,
     "world_month": 93
    }
   }
  },
  "snpp_to_noaa20_wape": {
-  "cell_month": 0.1023,
-  "region_month": 0.0205,
-  "world_month": 0.0103
+  "cell_month": 0.0901,
+  "region_month": 0.0181,
+  "world_month": 0.0084
  },
  "jumps": [
   {
    "region": "World",
-   "hotspots_per_year": 21083243,
+   "hotspots_per_year": 20995800,
    "step2012_modis": -0.018,
    "step2012_raw_merged": 3.351,
-   "step2012_harmonized": -0.013,
-   "step2012_modis_vegetation": -0.024,
-   "step2012_harmonized_vegetation": -0.031,
-   "industrial_share": 0.068,
+   "step2012_harmonized": -0.015,
+   "step2012_modis_vegetation": -0.025,
+   "step2012_harmonized_vegetation": -0.034,
+   "industrial_share": 0.078,
    "step2018_snpp": -0.014,
-   "step2018_harmonized": -0.02,
+   "step2018_harmonized": -0.015,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
@@ -702,55 +702,55 @@
   },
   {
    "region": "Middle Africa",
-   "hotspots_per_year": 4327170,
+   "hotspots_per_year": 4319756,
    "step2012_modis": -0.043,
    "step2012_raw_merged": 2.733,
    "step2012_harmonized": -0.063,
    "step2012_modis_vegetation": -0.042,
    "step2012_harmonized_vegetation": -0.063,
-   "industrial_share": 0.002,
+   "industrial_share": 0.004,
    "step2018_snpp": -0.027,
-   "step2018_harmonized": -0.032,
+   "step2018_harmonized": -0.031,
    "pettitt_raw": {
     "year": 2013,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2006,
-    "p": 0.5776
+    "p": 0.6283
    }
   },
   {
    "region": "Eastern Africa",
-   "hotspots_per_year": 3824780,
+   "hotspots_per_year": 3815527,
    "step2012_modis": 0.009,
    "step2012_raw_merged": 3.689,
-   "step2012_harmonized": -0.018,
+   "step2012_harmonized": -0.015,
    "step2012_modis_vegetation": 0.009,
-   "step2012_harmonized_vegetation": -0.018,
-   "industrial_share": 0.003,
+   "step2012_harmonized_vegetation": -0.015,
+   "industrial_share": 0.006,
    "step2018_snpp": -0.065,
-   "step2018_harmonized": -0.067,
+   "step2018_harmonized": -0.064,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2017,
-    "p": 0.0577
+    "p": 0.0879
    }
   },
   {
    "region": "South America",
-   "hotspots_per_year": 2764069,
+   "hotspots_per_year": 2761132,
    "step2012_modis": -0.179,
    "step2012_raw_merged": 2.236,
-   "step2012_harmonized": -0.166,
-   "step2012_modis_vegetation": -0.194,
-   "step2012_harmonized_vegetation": -0.186,
-   "industrial_share": 0.028,
+   "step2012_harmonized": -0.167,
+   "step2012_modis_vegetation": -0.195,
+   "step2012_harmonized_vegetation": -0.188,
+   "industrial_share": 0.037,
    "step2018_snpp": 0.061,
-   "step2018_harmonized": 0.058,
+   "step2018_harmonized": 0.06,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
@@ -762,15 +762,15 @@
   },
   {
    "region": "Western Africa",
-   "hotspots_per_year": 1943932,
+   "hotspots_per_year": 1936427,
    "step2012_modis": -0.098,
    "step2012_raw_merged": 2.989,
    "step2012_harmonized": -0.127,
    "step2012_modis_vegetation": -0.097,
    "step2012_harmonized_vegetation": -0.126,
-   "industrial_share": 0.014,
+   "industrial_share": 0.019,
    "step2018_snpp": -0.078,
-   "step2018_harmonized": -0.081,
+   "step2018_harmonized": -0.078,
    "pettitt_raw": {
     "year": 2013,
     "p": 0.0003
@@ -782,135 +782,135 @@
   },
   {
    "region": "Eastern Europe",
-   "hotspots_per_year": 1476192,
+   "hotspots_per_year": 1464471,
    "step2012_modis": 0.143,
    "step2012_raw_merged": 3.666,
-   "step2012_harmonized": 0.205,
-   "step2012_modis_vegetation": 0.148,
-   "step2012_harmonized_vegetation": 0.207,
-   "industrial_share": 0.128,
+   "step2012_harmonized": 0.204,
+   "step2012_modis_vegetation": 0.15,
+   "step2012_harmonized_vegetation": 0.213,
+   "industrial_share": 0.145,
    "step2018_snpp": 0.15,
-   "step2018_harmonized": 0.141,
+   "step2018_harmonized": 0.149,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2013,
-    "p": 0.3276
+    "p": 0.4004
    }
   },
   {
    "region": "Australia and New Zealand",
-   "hotspots_per_year": 1301979,
+   "hotspots_per_year": 1297331,
    "step2012_modis": 0.139,
    "step2012_raw_merged": 4.327,
-   "step2012_harmonized": 0.141,
+   "step2012_harmonized": 0.134,
    "step2012_modis_vegetation": 0.14,
-   "step2012_harmonized_vegetation": 0.138,
-   "industrial_share": 0.011,
+   "step2012_harmonized_vegetation": 0.131,
+   "industrial_share": 0.014,
    "step2018_snpp": 0.232,
-   "step2018_harmonized": 0.219,
+   "step2018_harmonized": 0.221,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2013,
-    "p": 0.7946
+    "p": 0.8542
    }
   },
   {
    "region": "South-Eastern Asia",
-   "hotspots_per_year": 1299836,
+   "hotspots_per_year": 1289313,
    "step2012_modis": 0.107,
    "step2012_raw_merged": 4.382,
-   "step2012_harmonized": 0.068,
-   "step2012_modis_vegetation": 0.093,
-   "step2012_harmonized_vegetation": 0.064,
-   "industrial_share": 0.018,
+   "step2012_harmonized": 0.067,
+   "step2012_modis_vegetation": 0.091,
+   "step2012_harmonized_vegetation": 0.053,
+   "industrial_share": 0.031,
    "step2018_snpp": -0.083,
-   "step2018_harmonized": -0.09,
+   "step2018_harmonized": -0.081,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2016,
-    "p": 0.0369
+    "p": 0.0429
    }
   },
   {
    "region": "Northern America",
-   "hotspots_per_year": 845369,
+   "hotspots_per_year": 838261,
    "step2012_modis": 0.148,
    "step2012_raw_merged": 4.195,
    "step2012_harmonized": 0.333,
-   "step2012_modis_vegetation": 0.134,
-   "step2012_harmonized_vegetation": 0.228,
-   "industrial_share": 0.115,
+   "step2012_modis_vegetation": 0.129,
+   "step2012_harmonized_vegetation": 0.218,
+   "industrial_share": 0.137,
    "step2018_snpp": -0.113,
-   "step2018_harmonized": -0.126,
+   "step2018_harmonized": -0.113,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2012,
-    "p": 0.0369
+    "p": 0.027
    }
   },
   {
    "region": "Southern Asia",
-   "hotspots_per_year": 798045,
+   "hotspots_per_year": 793995,
    "step2012_modis": -0.04,
    "step2012_raw_merged": 5.522,
-   "step2012_harmonized": -0.019,
+   "step2012_harmonized": -0.023,
    "step2012_modis_vegetation": -0.004,
-   "step2012_harmonized_vegetation": -0.012,
-   "industrial_share": 0.251,
+   "step2012_harmonized_vegetation": -0.008,
+   "industrial_share": 0.269,
    "step2018_snpp": -0.049,
-   "step2018_harmonized": -0.046,
+   "step2018_harmonized": -0.037,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2016,
-    "p": 0.0068
+    "p": 0.0047
    }
   },
   {
    "region": "Eastern Asia",
-   "hotspots_per_year": 548456,
+   "hotspots_per_year": 542316,
    "step2012_modis": 0.179,
    "step2012_raw_merged": 5.11,
-   "step2012_harmonized": 0.36,
-   "step2012_modis_vegetation": 0.179,
-   "step2012_harmonized_vegetation": 0.198,
-   "industrial_share": 0.376,
+   "step2012_harmonized": 0.312,
+   "step2012_modis_vegetation": 0.167,
+   "step2012_harmonized_vegetation": 0.173,
+   "industrial_share": 0.436,
    "step2018_snpp": -0.176,
-   "step2018_harmonized": -0.182,
+   "step2018_harmonized": -0.153,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
-    "year": 2008,
-    "p": 0.0139
+    "year": 2007,
+    "p": 0.0165
    }
   },
   {
    "region": "Central America",
-   "hotspots_per_year": 450115,
+   "hotspots_per_year": 449636,
    "step2012_modis": -0.164,
    "step2012_raw_merged": 2.878,
-   "step2012_harmonized": -0.145,
+   "step2012_harmonized": -0.147,
    "step2012_modis_vegetation": -0.178,
    "step2012_harmonized_vegetation": -0.172,
-   "industrial_share": 0.072,
+   "industrial_share": 0.085,
    "step2018_snpp": 0.103,
-   "step2018_harmonized": 0.103,
+   "step2018_harmonized": 0.106,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
@@ -922,15 +922,15 @@
   },
   {
    "region": "Southern Africa",
-   "hotspots_per_year": 355529,
+   "hotspots_per_year": 355849,
    "step2012_modis": -0.218,
    "step2012_raw_merged": 2.405,
-   "step2012_harmonized": -0.239,
-   "step2012_modis_vegetation": -0.223,
-   "step2012_harmonized_vegetation": -0.272,
-   "industrial_share": 0.091,
+   "step2012_harmonized": -0.243,
+   "step2012_modis_vegetation": -0.225,
+   "step2012_harmonized_vegetation": -0.274,
+   "industrial_share": 0.111,
    "step2018_snpp": 0.029,
-   "step2018_harmonized": 0.023,
+   "step2018_harmonized": 0.024,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
@@ -942,35 +942,55 @@
   },
   {
    "region": "Northern Africa",
-   "hotspots_per_year": 331091,
+   "hotspots_per_year": 332542,
    "step2012_modis": 0.1,
    "step2012_raw_merged": 6.723,
-   "step2012_harmonized": 0.105,
-   "step2012_modis_vegetation": 0.12,
+   "step2012_harmonized": 0.102,
+   "step2012_modis_vegetation": 0.119,
    "step2012_harmonized_vegetation": 0.095,
-   "industrial_share": 0.439,
+   "industrial_share": 0.46,
    "step2018_snpp": 0.066,
-   "step2018_harmonized": 0.053,
+   "step2018_harmonized": 0.049,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2009,
-    "p": 0.5776
+    "p": 0.5294
+   }
+  },
+  {
+   "region": "Western Asia",
+   "hotspots_per_year": 282404,
+   "step2012_modis": -0.009,
+   "step2012_raw_merged": 3.8,
+   "step2012_harmonized": -0.052,
+   "step2012_modis_vegetation": -0.401,
+   "step2012_harmonized_vegetation": -0.415,
+   "industrial_share": 0.744,
+   "step2018_snpp": -0.022,
+   "step2018_harmonized": -0.036,
+   "pettitt_raw": {
+    "year": 2013,
+    "p": 0.0003
+   },
+   "pettitt_harmonized": {
+    "year": 2015,
+    "p": 0.027
    }
   },
   {
    "region": "Central Asia",
-   "hotspots_per_year": 293659,
+   "hotspots_per_year": 280749,
    "step2012_modis": -0.062,
    "step2012_raw_merged": 2.934,
-   "step2012_harmonized": -0.16,
+   "step2012_harmonized": -0.149,
    "step2012_modis_vegetation": -0.102,
-   "step2012_harmonized_vegetation": -0.125,
-   "industrial_share": 0.375,
+   "step2012_harmonized_vegetation": -0.139,
+   "industrial_share": 0.377,
    "step2018_snpp": -0.13,
-   "step2018_harmonized": -0.144,
+   "step2018_harmonized": -0.13,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0026
@@ -981,56 +1001,36 @@
    }
   },
   {
-   "region": "Western Asia",
-   "hotspots_per_year": 282367,
-   "step2012_modis": -0.009,
-   "step2012_raw_merged": 3.8,
-   "step2012_harmonized": -0.046,
-   "step2012_modis_vegetation": -0.383,
-   "step2012_harmonized_vegetation": -0.398,
-   "industrial_share": 0.708,
-   "step2018_snpp": -0.022,
-   "step2018_harmonized": -0.035,
-   "pettitt_raw": {
-    "year": 2013,
-    "p": 0.0003
-   },
-   "pettitt_harmonized": {
-    "year": 2015,
-    "p": 0.0316
-   }
-  },
-  {
    "region": "Southern Europe",
-   "hotspots_per_year": 85020,
+   "hotspots_per_year": 83399,
    "step2012_modis": 0.008,
    "step2012_raw_merged": 3.042,
-   "step2012_harmonized": 0.148,
-   "step2012_modis_vegetation": -0.002,
-   "step2012_harmonized_vegetation": 0.029,
-   "industrial_share": 0.17,
+   "step2012_harmonized": 0.142,
+   "step2012_modis_vegetation": -0.007,
+   "step2012_harmonized_vegetation": 0.03,
+   "industrial_share": 0.196,
    "step2018_snpp": -0.26,
-   "step2018_harmonized": -0.265,
+   "step2018_harmonized": -0.243,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2013,
-    "p": 0.4004
+    "p": 0.3627
    }
   },
   {
    "region": "Caribbean",
-   "hotspots_per_year": 46144,
+   "hotspots_per_year": 45884,
    "step2012_modis": -0.264,
    "step2012_raw_merged": 2.502,
-   "step2012_harmonized": -0.237,
+   "step2012_harmonized": -0.239,
    "step2012_modis_vegetation": -0.267,
-   "step2012_harmonized_vegetation": -0.252,
-   "industrial_share": 0.059,
+   "step2012_harmonized_vegetation": -0.254,
+   "industrial_share": 0.081,
    "step2018_snpp": -0.049,
-   "step2018_harmonized": -0.047,
+   "step2018_harmonized": -0.036,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
@@ -1042,35 +1042,35 @@
   },
   {
    "region": "Western Europe",
-   "hotspots_per_year": 45106,
+   "hotspots_per_year": 44086,
    "step2012_modis": 0.01,
    "step2012_raw_merged": 6.616,
-   "step2012_harmonized": 0.138,
-   "step2012_modis_vegetation": -0.047,
-   "step2012_harmonized_vegetation": -0.418,
-   "industrial_share": 0.731,
+   "step2012_harmonized": 0.314,
+   "step2012_modis_vegetation": -0.029,
+   "step2012_harmonized_vegetation": -0.006,
+   "industrial_share": 0.8,
    "step2018_snpp": 0.026,
-   "step2018_harmonized": 0.017,
+   "step2018_harmonized": 0.032,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2007,
-    "p": 0.7369
+    "p": 0.6283
    }
   },
   {
    "region": "Melanesia",
-   "hotspots_per_year": 42514,
+   "hotspots_per_year": 41530,
    "step2012_modis": 0.017,
    "step2012_raw_merged": 4.328,
-   "step2012_harmonized": 0.043,
-   "step2012_modis_vegetation": -0.005,
-   "step2012_harmonized_vegetation": 0.027,
-   "industrial_share": 0.085,
+   "step2012_harmonized": 0.041,
+   "step2012_modis_vegetation": -0.01,
+   "step2012_harmonized_vegetation": 0.02,
+   "industrial_share": 0.097,
    "step2018_snpp": -0.392,
-   "step2018_harmonized": -0.409,
+   "step2018_harmonized": -0.39,
    "pettitt_raw": {
     "year": 2012,
     "p": 0.0003
@@ -1082,48 +1082,48 @@
   },
   {
    "region": "Northern Europe",
-   "hotspots_per_year": 21050,
+   "hotspots_per_year": 20349,
    "step2012_modis": 0.826,
    "step2012_raw_merged": 12.637,
-   "step2012_harmonized": 1.831,
-   "step2012_modis_vegetation": -0.258,
-   "step2012_harmonized_vegetation": 2.413,
-   "industrial_share": 0.427,
+   "step2012_harmonized": 1.535,
+   "step2012_modis_vegetation": -0.266,
+   "step2012_harmonized_vegetation": -0.027,
+   "industrial_share": 0.601,
    "step2018_snpp": -0.044,
-   "step2018_harmonized": -0.055,
+   "step2018_harmonized": -0.038,
    "pettitt_raw": {
     "year": 2013,
     "p": 0.0003
    },
    "pettitt_harmonized": {
     "year": 2013,
-    "p": 0.2648
+    "p": 0.237
    }
   }
  ],
  "jump_gap_by_method": {
   "frp_slopes": {
-   "x_frp": -0.148,
-   "x_area": 0.231
+   "x_frp": -0.152,
+   "x_area": 0.235
   },
   "regions": {
    "South America": {
-    "modis": -0.206,
+    "modis": -0.207,
     "ratio": 0.006,
-    "frp": 0.007,
+    "frp": 0.008,
     "qm": 0.013
    },
    "Australia and New Zealand": {
     "modis": 0.091,
-    "ratio": -0.016,
-    "frp": -0.015,
-    "qm": -0.009
+    "ratio": -0.015,
+    "frp": -0.014,
+    "qm": -0.008
    },
    "Southern Africa": {
-    "modis": -0.228,
+    "modis": -0.229,
     "ratio": -0.051,
     "frp": -0.049,
-    "qm": -0.048
+    "qm": -0.049
    },
    "Eastern Africa": {
     "modis": -0.004,
@@ -1132,10 +1132,10 @@
     "qm": -0.02
    },
    "Melanesia": {
-    "modis": 0.014,
-    "ratio": 0.025,
-    "frp": 0.024,
-    "qm": 0.047
+    "modis": 0.009,
+    "ratio": 0.026,
+    "frp": 0.025,
+    "qm": 0.044
    },
    "Middle Africa": {
     "modis": -0.039,
@@ -1144,82 +1144,82 @@
     "qm": -0.021
    },
    "South-Eastern Asia": {
-    "modis": 0.102,
-    "ratio": -0.043,
-    "frp": -0.042,
-    "qm": -0.013
+    "modis": 0.1,
+    "ratio": -0.049,
+    "frp": -0.049,
+    "qm": -0.018
    },
    "Western Africa": {
     "modis": -0.081,
     "ratio": -0.031,
-    "frp": -0.03,
+    "frp": -0.031,
     "qm": -0.033
    },
    "Southern Asia": {
     "modis": -0.011,
-    "ratio": -0.014,
-    "frp": -0.014,
-    "qm": 0.011
+    "ratio": -0.012,
+    "frp": -0.012,
+    "qm": 0.013
    },
    "Central America": {
     "modis": -0.18,
     "ratio": 0.005,
-    "frp": 0.006,
-    "qm": 0.017
+    "frp": 0.007,
+    "qm": 0.018
    },
    "Northern Africa": {
     "modis": 0.142,
-    "ratio": -0.043,
-    "frp": -0.044,
-    "qm": -0.005
+    "ratio": -0.035,
+    "frp": -0.036,
+    "qm": -0.006
    },
    "Caribbean": {
     "modis": -0.292,
-    "ratio": 0.01,
-    "frp": 0.009,
+    "ratio": 0.011,
+    "frp": 0.01,
     "qm": 0.019
    },
    "Western Asia": {
-    "modis": -0.397,
-    "ratio": -0.012,
-    "frp": -0.011,
-    "qm": 0.073
+    "modis": -0.415,
+    "ratio": -0.015,
+    "frp": -0.014,
+    "qm": 0.064
    },
    "Northern America": {
-    "modis": 0.13,
-    "ratio": 0.103,
-    "frp": 0.106,
-    "qm": 0.178
+    "modis": 0.125,
+    "ratio": 0.092,
+    "frp": 0.095,
+    "qm": 0.173
    },
    "Eastern Asia": {
-    "modis": 0.167,
-    "ratio": -0.01,
-    "frp": -0.01,
-    "qm": 0.025
+    "modis": 0.155,
+    "ratio": -0.008,
+    "frp": -0.009,
+    "qm": 0.018
    },
    "Southern Europe": {
-    "modis": -0.008,
-    "ratio": 0.025,
-    "frp": 0.023,
+    "modis": -0.013,
+    "ratio": 0.026,
+    "frp": 0.024,
     "qm": 0.068
    },
    "Central Asia": {
     "modis": -0.104,
-    "ratio": -0.034,
-    "frp": -0.033,
-    "qm": 0.001
+    "ratio": -0.041,
+    "frp": -0.04,
+    "qm": -0.012
    },
    "Eastern Europe": {
-    "modis": 0.148,
-    "ratio": 0.049,
-    "frp": 0.05,
-    "qm": 0.087
+    "modis": 0.15,
+    "ratio": 0.058,
+    "frp": 0.059,
+    "qm": 0.094
    },
    "World": {
-    "modis": -0.028,
-    "ratio": -0.009,
-    "frp": -0.009,
-    "qm": 0.002
+    "modis": -0.029,
+    "ratio": -0.01,
+    "frp": -0.01,
+    "qm": 0.001
    }
   },
   "mean_abs_gap": {
@@ -1228,7 +1228,7 @@
    "qm": 0.038
   }
  },
- "built_seconds": 176,
+ "built_seconds": 257,
  "burned_area": {
   "note": "Vegetation-fire hotspots per km2 burned (MODIS MCD64CMQ), 2001-2019, by GFED basis region. step2012 compares 2012-2015 with 2008-2011. Burned area has no sensor change in 2012, so a consistent hotspot record keeps the ratio flat apart from real changes in how fires burn; raw MODIS shows that real change.",
   "years": [
@@ -1250,16 +1250,16 @@
     "region": "World",
     "burned_km2_per_year": 4133960,
     "hotspots_per_km2": {
-     "modis": 1.048,
-     "raw_merged": 2.507,
-     "harmonized": 4.819
+     "modis": 1.04,
+     "raw_merged": 2.484,
+     "harmonized": 4.747
     },
     "step2012": {
-     "modis": 0.039,
-     "raw_merged": 3.445,
-     "harmonized": 0.035
+     "modis": 0.038,
+     "raw_merged": 3.427,
+     "harmonized": 0.032
     },
-    "gap_vs_modis": -0.004,
+    "gap_vs_modis": -0.006,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -1267,146 +1267,146 @@
      },
      "harmonized": {
       "year": 2013,
-      "p": 0.1773
+      "p": 0.2505
      }
     },
     "spearman_vs_burned": {
      "raw_merged": -0.461,
-     "harmonized": 0.782
+     "harmonized": 0.8
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 4294426,
-      "modis": 1697876,
-      "raw_merged": 1697876,
-      "harmonized": 22313747
+      "modis": 1685047,
+      "raw_merged": 1685047,
+      "harmonized": 22002252
      },
      {
       "year": 2002,
       "burned_km2": 4634215,
-      "modis": 3593849,
-      "raw_merged": 3593849,
-      "harmonized": 22177563
+      "modis": 3570997,
+      "raw_merged": 3570997,
+      "harmonized": 21824586
      },
      {
       "year": 2003,
       "burned_km2": 4380736,
-      "modis": 4997304,
-      "raw_merged": 4997304,
-      "harmonized": 21693692
+      "modis": 4965851,
+      "raw_merged": 4965851,
+      "harmonized": 21377515
      },
      {
       "year": 2004,
       "burned_km2": 4608237,
-      "modis": 4914199,
-      "raw_merged": 4914199,
-      "harmonized": 21326040
+      "modis": 4880612,
+      "raw_merged": 4880612,
+      "harmonized": 20972056
      },
      {
       "year": 2005,
       "burned_km2": 4573584,
-      "modis": 4947640,
-      "raw_merged": 4947640,
-      "harmonized": 21488531
+      "modis": 4913474,
+      "raw_merged": 4913474,
+      "harmonized": 21154316
      },
      {
       "year": 2006,
       "burned_km2": 4310010,
-      "modis": 4527560,
-      "raw_merged": 4527560,
-      "harmonized": 19457988
+      "modis": 4494051,
+      "raw_merged": 4494051,
+      "harmonized": 19148638
      },
      {
       "year": 2007,
       "burned_km2": 4638993,
-      "modis": 4981065,
-      "raw_merged": 4981065,
-      "harmonized": 21632659
+      "modis": 4948389,
+      "raw_merged": 4948389,
+      "harmonized": 21351204
      },
      {
       "year": 2008,
       "burned_km2": 4237438,
-      "modis": 4681367,
-      "raw_merged": 4681367,
-      "harmonized": 20143723
+      "modis": 4649435,
+      "raw_merged": 4649435,
+      "harmonized": 19880525
      },
      {
       "year": 2009,
       "burned_km2": 3816623,
-      "modis": 4325852,
-      "raw_merged": 4325852,
-      "harmonized": 18727310
+      "modis": 4294869,
+      "raw_merged": 4294869,
+      "harmonized": 18446554
      },
      {
       "year": 2010,
       "burned_km2": 4162426,
-      "modis": 4575921,
-      "raw_merged": 4575921,
-      "harmonized": 20165129
+      "modis": 4543740,
+      "raw_merged": 4543740,
+      "harmonized": 19829365
      },
      {
       "year": 2011,
       "burned_km2": 4590832,
-      "modis": 4549710,
-      "raw_merged": 4549710,
-      "harmonized": 19696738
+      "modis": 4518785,
+      "raw_merged": 4518785,
+      "harmonized": 19429074
      },
      {
       "year": 2012,
       "burned_km2": 4545563,
-      "modis": 4798722,
-      "raw_merged": 19408625,
-      "harmonized": 20548694
+      "modis": 4765304,
+      "raw_merged": 19232793,
+      "harmonized": 20238324
      },
      {
       "year": 2013,
       "burned_km2": 3560780,
-      "modis": 4064437,
-      "raw_merged": 17763824,
-      "harmonized": 17658936
+      "modis": 4031567,
+      "raw_merged": 17571615,
+      "harmonized": 17360020
      },
      {
       "year": 2014,
       "burned_km2": 3815940,
-      "modis": 4260469,
-      "raw_merged": 18621083,
-      "harmonized": 18521561
+      "modis": 4222604,
+      "raw_merged": 18387229,
+      "harmonized": 18156002
      },
      {
       "year": 2015,
       "burned_km2": 3848170,
-      "modis": 4555087,
-      "raw_merged": 19832323,
-      "harmonized": 19720833
+      "modis": 4521334,
+      "raw_merged": 19605120,
+      "harmonized": 19367321
      },
      {
       "year": 2016,
       "burned_km2": 3655531,
-      "modis": 4242093,
-      "raw_merged": 18720015,
-      "harmonized": 18594741
+      "modis": 4208661,
+      "raw_merged": 18549126,
+      "harmonized": 18329837
      },
      {
       "year": 2017,
       "burned_km2": 3874096,
-      "modis": 4276291,
-      "raw_merged": 18399713,
-      "harmonized": 18249485
+      "modis": 4237324,
+      "raw_merged": 18226336,
+      "harmonized": 18002648
      },
      {
       "year": 2018,
       "burned_km2": 3541124,
-      "modis": 3954487,
-      "raw_merged": 17207604,
-      "harmonized": 17199301
+      "modis": 3933075,
+      "raw_merged": 17048251,
+      "harmonized": 17021501
      },
      {
       "year": 2019,
       "burned_km2": 3456521,
-      "modis": 4358468,
-      "raw_merged": 19172366,
-      "harmonized": 19172366
+      "modis": 4330394,
+      "raw_merged": 18997789,
+      "harmonized": 18997789
      }
     ]
    },
@@ -1414,163 +1414,163 @@
     "region": "Boreal North America",
     "burned_km2_per_year": 23655,
     "hotspots_per_km2": {
-     "modis": 2.626,
-     "raw_merged": 7.242,
-     "harmonized": 12.104
+     "modis": 2.597,
+     "raw_merged": 7.053,
+     "harmonized": 11.599
     },
     "step2012": {
-     "modis": -0.12,
-     "raw_merged": 3.231,
-     "harmonized": -0.041
+     "modis": -0.125,
+     "raw_merged": 3.11,
+     "harmonized": -0.052
     },
-    "gap_vs_modis": 0.079,
+    "gap_vs_modis": 0.073,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
       "p": 0.0032
      },
      "harmonized": {
-      "year": 2014,
-      "p": 0.9467
+      "year": 2017,
+      "p": 0.6024
      }
     },
     "spearman_vs_burned": {
      "raw_merged": 0.619,
-     "harmonized": 0.872
+     "harmonized": 0.881
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 3910,
-      "modis": 7680,
-      "raw_merged": 7680,
-      "harmonized": 59700
+      "modis": 7599,
+      "raw_merged": 7599,
+      "harmonized": 59414
      },
      {
       "year": 2002,
       "burned_km2": 30612,
-      "modis": 38472,
-      "raw_merged": 38472,
-      "harmonized": 253364
+      "modis": 38339,
+      "raw_merged": 38339,
+      "harmonized": 249167
      },
      {
       "year": 2003,
       "burned_km2": 20890,
-      "modis": 56870,
-      "raw_merged": 56870,
-      "harmonized": 254641
+      "modis": 56495,
+      "raw_merged": 56495,
+      "harmonized": 247810
      },
      {
       "year": 2004,
       "burned_km2": 43886,
-      "modis": 149139,
-      "raw_merged": 149139,
-      "harmonized": 618470
+      "modis": 148099,
+      "raw_merged": 148099,
+      "harmonized": 579189
      },
      {
       "year": 2005,
       "burned_km2": 29837,
-      "modis": 93898,
-      "raw_merged": 93898,
-      "harmonized": 462383
+      "modis": 93705,
+      "raw_merged": 93705,
+      "harmonized": 427685
      },
      {
       "year": 2006,
       "burned_km2": 19365,
-      "modis": 37518,
-      "raw_merged": 37518,
-      "harmonized": 158039
+      "modis": 37088,
+      "raw_merged": 37088,
+      "harmonized": 155059
      },
      {
       "year": 2007,
       "burned_km2": 15761,
-      "modis": 38754,
-      "raw_merged": 38754,
-      "harmonized": 162731
+      "modis": 38608,
+      "raw_merged": 38608,
+      "harmonized": 159649
      },
      {
       "year": 2008,
       "burned_km2": 14810,
-      "modis": 33224,
-      "raw_merged": 33224,
-      "harmonized": 149858
+      "modis": 32545,
+      "raw_merged": 32545,
+      "harmonized": 141655
      },
      {
       "year": 2009,
       "burned_km2": 13713,
-      "modis": 55032,
-      "raw_merged": 55032,
-      "harmonized": 235134
+      "modis": 54928,
+      "raw_merged": 54928,
+      "harmonized": 222990
      },
      {
       "year": 2010,
       "burned_km2": 27108,
-      "modis": 59649,
-      "raw_merged": 59649,
-      "harmonized": 268576
+      "modis": 59066,
+      "raw_merged": 59066,
+      "harmonized": 260332
      },
      {
       "year": 2011,
       "burned_km2": 16551,
-      "modis": 40356,
-      "raw_merged": 40356,
-      "harmonized": 177804
+      "modis": 39571,
+      "raw_merged": 39571,
+      "harmonized": 170672
      },
      {
       "year": 2012,
       "burned_km2": 16713,
-      "modis": 41211,
-      "raw_merged": 182232,
-      "harmonized": 181415
+      "modis": 40874,
+      "raw_merged": 179209,
+      "harmonized": 178099
      },
      {
       "year": 2013,
       "burned_km2": 41229,
-      "modis": 76083,
-      "raw_merged": 360219,
-      "harmonized": 352946
+      "modis": 74723,
+      "raw_merged": 349077,
+      "harmonized": 343764
      },
      {
       "year": 2014,
       "burned_km2": 32249,
-      "modis": 80262,
-      "raw_merged": 488590,
-      "harmonized": 489948
+      "modis": 77468,
+      "raw_merged": 452004,
+      "harmonized": 445647
      },
      {
       "year": 2015,
       "burned_km2": 42571,
-      "modis": 107194,
-      "raw_merged": 433999,
-      "harmonized": 442317
+      "modis": 106383,
+      "raw_merged": 426632,
+      "harmonized": 420130
      },
      {
       "year": 2016,
       "burned_km2": 10808,
-      "modis": 30542,
-      "raw_merged": 118789,
-      "harmonized": 114137
+      "modis": 30243,
+      "raw_merged": 115867,
+      "harmonized": 114150
      },
      {
       "year": 2017,
       "burned_km2": 30973,
-      "modis": 99662,
-      "raw_merged": 457207,
-      "harmonized": 455339
+      "modis": 98305,
+      "raw_merged": 446021,
+      "harmonized": 442578
      },
      {
       "year": 2018,
       "burned_km2": 18887,
-      "modis": 65731,
-      "raw_merged": 313069,
-      "harmonized": 313135
+      "modis": 65022,
+      "raw_merged": 308467,
+      "harmonized": 308469
      },
      {
       "year": 2019,
       "burned_km2": 19578,
-      "modis": 68803,
-      "raw_merged": 290177,
-      "harmonized": 290177
+      "modis": 68245,
+      "raw_merged": 286719,
+      "harmonized": 286719
      }
     ]
    },
@@ -1578,16 +1578,16 @@
     "region": "Temperate North America",
     "burned_km2_per_year": 27832,
     "hotspots_per_km2": {
-     "modis": 3.534,
-     "raw_merged": 7.252,
-     "harmonized": 12.278
+     "modis": 3.488,
+     "raw_merged": 7.136,
+     "harmonized": 11.908
     },
     "step2012": {
-     "modis": 0.131,
+     "modis": 0.133,
      "raw_merged": 2.739,
-     "harmonized": 0.12
+     "harmonized": 0.13
     },
-    "gap_vs_modis": -0.011,
+    "gap_vs_modis": -0.003,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -1599,142 +1599,142 @@
      }
     },
     "spearman_vs_burned": {
-     "raw_merged": 0.535,
-     "harmonized": 0.882
+     "raw_merged": 0.532,
+     "harmonized": 0.847
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 12644,
-      "modis": 40901,
-      "raw_merged": 40901,
-      "harmonized": 277278
+      "modis": 40201,
+      "raw_merged": 40201,
+      "harmonized": 267501
      },
      {
       "year": 2002,
       "burned_km2": 19083,
-      "modis": 64508,
-      "raw_merged": 64508,
-      "harmonized": 320250
+      "modis": 63812,
+      "raw_merged": 63812,
+      "harmonized": 314263
      },
      {
       "year": 2003,
       "burned_km2": 25390,
-      "modis": 100523,
-      "raw_merged": 100523,
-      "harmonized": 325162
+      "modis": 99004,
+      "raw_merged": 99004,
+      "harmonized": 314072
      },
      {
       "year": 2004,
       "burned_km2": 19074,
-      "modis": 78131,
-      "raw_merged": 78131,
-      "harmonized": 227807
+      "modis": 76957,
+      "raw_merged": 76957,
+      "harmonized": 220109
      },
      {
       "year": 2005,
       "burned_km2": 28172,
-      "modis": 100650,
-      "raw_merged": 100650,
-      "harmonized": 302566
+      "modis": 98926,
+      "raw_merged": 98926,
+      "harmonized": 290386
      },
      {
       "year": 2006,
       "burned_km2": 37151,
-      "modis": 118428,
-      "raw_merged": 118428,
-      "harmonized": 407965
+      "modis": 116940,
+      "raw_merged": 116940,
+      "harmonized": 394993
      },
      {
       "year": 2007,
       "burned_km2": 38039,
-      "modis": 129126,
-      "raw_merged": 129126,
-      "harmonized": 450583
+      "modis": 127636,
+      "raw_merged": 127636,
+      "harmonized": 436904
      },
      {
       "year": 2008,
       "burned_km2": 28308,
-      "modis": 112932,
-      "raw_merged": 112932,
-      "harmonized": 379840
+      "modis": 111233,
+      "raw_merged": 111233,
+      "harmonized": 365862
      },
      {
       "year": 2009,
       "burned_km2": 24092,
-      "modis": 84933,
-      "raw_merged": 84933,
-      "harmonized": 258548
+      "modis": 83564,
+      "raw_merged": 83564,
+      "harmonized": 250906
      },
      {
       "year": 2010,
       "burned_km2": 22508,
-      "modis": 85089,
-      "raw_merged": 85089,
-      "harmonized": 237875
+      "modis": 83816,
+      "raw_merged": 83816,
+      "harmonized": 229284
      },
      {
       "year": 2011,
       "burned_km2": 43375,
-      "modis": 117442,
-      "raw_merged": 117442,
-      "harmonized": 479951
+      "modis": 116085,
+      "raw_merged": 116085,
+      "harmonized": 463496
      },
      {
       "year": 2012,
       "burned_km2": 36431,
-      "modis": 128880,
-      "raw_merged": 431476,
-      "harmonized": 450067
+      "modis": 127309,
+      "raw_merged": 426034,
+      "harmonized": 438197
      },
      {
       "year": 2013,
       "burned_km2": 19030,
-      "modis": 85970,
-      "raw_merged": 277216,
-      "harmonized": 278176
+      "modis": 84852,
+      "raw_merged": 272829,
+      "harmonized": 270219
      },
      {
       "year": 2014,
       "burned_km2": 23244,
-      "modis": 89414,
-      "raw_merged": 278996,
-      "harmonized": 280231
+      "modis": 88218,
+      "raw_merged": 274087,
+      "harmonized": 271298
      },
      {
       "year": 2015,
       "burned_km2": 28035,
-      "modis": 104290,
-      "raw_merged": 363277,
-      "harmonized": 362735
+      "modis": 103252,
+      "raw_merged": 358948,
+      "harmonized": 355292
      },
      {
       "year": 2016,
       "burned_km2": 28823,
-      "modis": 100662,
-      "raw_merged": 320318,
-      "harmonized": 320611
+      "modis": 99271,
+      "raw_merged": 314768,
+      "harmonized": 311242
      },
      {
       "year": 2017,
       "burned_km2": 37657,
-      "modis": 138448,
-      "raw_merged": 476671,
-      "harmonized": 478792
+      "modis": 136802,
+      "raw_merged": 470263,
+      "harmonized": 465522
      },
      {
       "year": 2018,
       "burned_km2": 36481,
-      "modis": 116346,
-      "raw_merged": 409734,
-      "harmonized": 409810
+      "modis": 115255,
+      "raw_merged": 402231,
+      "harmonized": 401709
      },
      {
       "year": 2019,
       "burned_km2": 21276,
-      "modis": 71995,
-      "raw_merged": 244597,
-      "harmonized": 244597
+      "modis": 71124,
+      "raw_merged": 235999,
+      "harmonized": 235999
      }
     ]
    },
@@ -1742,14 +1742,14 @@
     "region": "Central America",
     "burned_km2_per_year": 27263,
     "hotspots_per_km2": {
-     "modis": 3.622,
-     "raw_merged": 8.9,
-     "harmonized": 17.257
+     "modis": 3.576,
+     "raw_merged": 8.783,
+     "harmonized": 16.972
     },
     "step2012": {
-     "modis": 0.163,
-     "raw_merged": 4.214,
-     "harmonized": 0.161
+     "modis": 0.162,
+     "raw_merged": 4.208,
+     "harmonized": 0.16
     },
     "gap_vs_modis": -0.002,
     "pettitt_ratio": {
@@ -1759,7 +1759,7 @@
      },
      "harmonized": {
       "year": 2012,
-      "p": 0.6812
+      "p": 0.4617
      }
     },
     "spearman_vs_burned": {
@@ -1770,135 +1770,135 @@
      {
       "year": 2001,
       "burned_km2": 16135,
-      "modis": 38197,
-      "raw_merged": 38197,
-      "harmonized": 415955
+      "modis": 37710,
+      "raw_merged": 37710,
+      "harmonized": 408991
      },
      {
       "year": 2002,
       "burned_km2": 23154,
-      "modis": 51549,
-      "raw_merged": 51549,
-      "harmonized": 479529
+      "modis": 50868,
+      "raw_merged": 50868,
+      "harmonized": 472731
      },
      {
       "year": 2003,
       "burned_km2": 49218,
-      "modis": 141338,
-      "raw_merged": 141338,
-      "harmonized": 636638
+      "modis": 139400,
+      "raw_merged": 139400,
+      "harmonized": 626205
      },
      {
       "year": 2004,
       "burned_km2": 20038,
-      "modis": 82864,
-      "raw_merged": 82864,
-      "harmonized": 359974
+      "modis": 81613,
+      "raw_merged": 81613,
+      "harmonized": 352535
      },
      {
       "year": 2005,
       "burned_km2": 46249,
-      "modis": 142839,
-      "raw_merged": 142839,
-      "harmonized": 653096
+      "modis": 141050,
+      "raw_merged": 141050,
+      "harmonized": 641914
      },
      {
       "year": 2006,
       "burned_km2": 25415,
-      "modis": 96891,
-      "raw_merged": 96891,
-      "harmonized": 437630
+      "modis": 95749,
+      "raw_merged": 95749,
+      "harmonized": 430222
      },
      {
       "year": 2007,
       "burned_km2": 28287,
-      "modis": 99063,
-      "raw_merged": 99063,
-      "harmonized": 434886
+      "modis": 97646,
+      "raw_merged": 97646,
+      "harmonized": 426690
      },
      {
       "year": 2008,
       "burned_km2": 27708,
-      "modis": 103914,
-      "raw_merged": 103914,
-      "harmonized": 468761
+      "modis": 102768,
+      "raw_merged": 102768,
+      "harmonized": 461625
      },
      {
       "year": 2009,
       "burned_km2": 28604,
-      "modis": 113661,
-      "raw_merged": 113661,
-      "harmonized": 494914
+      "modis": 112231,
+      "raw_merged": 112231,
+      "harmonized": 485991
      },
      {
       "year": 2010,
       "burned_km2": 19728,
-      "modis": 82048,
-      "raw_merged": 82048,
-      "harmonized": 358512
+      "modis": 80900,
+      "raw_merged": 80900,
+      "harmonized": 350254
      },
      {
       "year": 2011,
       "burned_km2": 43956,
-      "modis": 149384,
-      "raw_merged": 149384,
-      "harmonized": 695568
+      "modis": 147870,
+      "raw_merged": 147870,
+      "harmonized": 687923
      },
      {
       "year": 2012,
       "burned_km2": 20209,
-      "modis": 89217,
-      "raw_merged": 407742,
-      "harmonized": 415225
+      "modis": 88331,
+      "raw_merged": 403449,
+      "harmonized": 408812
      },
      {
       "year": 2013,
       "burned_km2": 29763,
-      "modis": 121963,
-      "raw_merged": 541180,
-      "harmonized": 537604
+      "modis": 120601,
+      "raw_merged": 534294,
+      "harmonized": 529692
      },
      {
       "year": 2014,
       "burned_km2": 16020,
-      "modis": 69769,
-      "raw_merged": 319406,
-      "harmonized": 318437
+      "modis": 68649,
+      "raw_merged": 314451,
+      "harmonized": 311544
      },
      {
       "year": 2015,
       "burned_km2": 18548,
-      "modis": 86928,
-      "raw_merged": 381123,
-      "harmonized": 379482
+      "modis": 85804,
+      "raw_merged": 376185,
+      "harmonized": 372560
      },
      {
       "year": 2016,
       "burned_km2": 25023,
-      "modis": 94050,
-      "raw_merged": 430294,
-      "harmonized": 428846
+      "modis": 92800,
+      "raw_merged": 425213,
+      "harmonized": 421339
      },
      {
       "year": 2017,
       "burned_km2": 27828,
-      "modis": 109748,
-      "raw_merged": 489483,
-      "harmonized": 485668
+      "modis": 108282,
+      "raw_merged": 482747,
+      "harmonized": 477973
      },
      {
       "year": 2018,
       "burned_km2": 21987,
-      "modis": 84194,
-      "raw_merged": 400587,
-      "harmonized": 399551
+      "modis": 83212,
+      "raw_merged": 394961,
+      "harmonized": 394028
      },
      {
       "year": 2019,
       "burned_km2": 30124,
-      "modis": 118398,
-      "raw_merged": 538582,
-      "harmonized": 538582
+      "modis": 116878,
+      "raw_merged": 530561,
+      "harmonized": 530561
      }
     ]
    },
@@ -1906,16 +1906,16 @@
     "region": "Northern South America",
     "burned_km2_per_year": 53306,
     "hotspots_per_km2": {
-     "modis": 1.462,
-     "raw_merged": 3.605,
-     "harmonized": 6.92
+     "modis": 1.439,
+     "raw_merged": 3.536,
+     "harmonized": 6.763
     },
     "step2012": {
-     "modis": 0.077,
-     "raw_merged": 3.736,
-     "harmonized": 0.085
+     "modis": 0.075,
+     "raw_merged": 3.712,
+     "harmonized": 0.082
     },
-    "gap_vs_modis": 0.008,
+    "gap_vs_modis": 0.007,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -1927,142 +1927,142 @@
      }
     },
     "spearman_vs_burned": {
-     "raw_merged": 0.309,
+     "raw_merged": 0.314,
      "harmonized": 0.819
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 51483,
-      "modis": 46914,
-      "raw_merged": 46914,
-      "harmonized": 543803
+      "modis": 46131,
+      "raw_merged": 46131,
+      "harmonized": 532192
      },
      {
       "year": 2002,
       "burned_km2": 42490,
-      "modis": 47285,
-      "raw_merged": 47285,
-      "harmonized": 347521
+      "modis": 46693,
+      "raw_merged": 46693,
+      "harmonized": 340998
      },
      {
       "year": 2003,
       "burned_km2": 74465,
-      "modis": 121235,
-      "raw_merged": 121235,
-      "harmonized": 545949
+      "modis": 119654,
+      "raw_merged": 119654,
+      "harmonized": 536393
      },
      {
       "year": 2004,
       "burned_km2": 72898,
-      "modis": 99822,
-      "raw_merged": 99822,
-      "harmonized": 429018
+      "modis": 98391,
+      "raw_merged": 98391,
+      "harmonized": 421405
      },
      {
       "year": 2005,
       "burned_km2": 55196,
-      "modis": 81265,
-      "raw_merged": 81265,
-      "harmonized": 362935
+      "modis": 79723,
+      "raw_merged": 79723,
+      "harmonized": 352767
      },
      {
       "year": 2006,
       "burned_km2": 47116,
-      "modis": 72504,
-      "raw_merged": 72504,
-      "harmonized": 324148
+      "modis": 71046,
+      "raw_merged": 71046,
+      "harmonized": 315038
      },
      {
       "year": 2007,
       "burned_km2": 70992,
-      "modis": 103264,
-      "raw_merged": 103264,
-      "harmonized": 446606
+      "modis": 101744,
+      "raw_merged": 101744,
+      "harmonized": 438059
      },
      {
       "year": 2008,
       "burned_km2": 56662,
-      "modis": 75798,
-      "raw_merged": 75798,
-      "harmonized": 332765
+      "modis": 74719,
+      "raw_merged": 74719,
+      "harmonized": 325830
      },
      {
       "year": 2009,
       "burned_km2": 51795,
-      "modis": 77186,
-      "raw_merged": 77186,
-      "harmonized": 341234
+      "modis": 75953,
+      "raw_merged": 75953,
+      "harmonized": 332766
      },
      {
       "year": 2010,
       "burned_km2": 47777,
-      "modis": 74429,
-      "raw_merged": 74429,
-      "harmonized": 329695
+      "modis": 73262,
+      "raw_merged": 73262,
+      "harmonized": 322185
      },
      {
       "year": 2011,
       "burned_km2": 34587,
-      "modis": 47491,
-      "raw_merged": 47491,
-      "harmonized": 204064
+      "modis": 46608,
+      "raw_merged": 46608,
+      "harmonized": 198426
      },
      {
       "year": 2012,
       "burned_km2": 37286,
-      "modis": 59684,
-      "raw_merged": 232007,
-      "harmonized": 250661
+      "modis": 58603,
+      "raw_merged": 227366,
+      "harmonized": 243425
      },
      {
       "year": 2013,
       "burned_km2": 46813,
-      "modis": 74447,
-      "raw_merged": 331019,
-      "harmonized": 328207
+      "modis": 72976,
+      "raw_merged": 323848,
+      "harmonized": 319185
      },
      {
       "year": 2014,
       "burned_km2": 59417,
-      "modis": 84062,
-      "raw_merged": 382042,
-      "harmonized": 377753
+      "modis": 82798,
+      "raw_merged": 374198,
+      "harmonized": 368575
      },
      {
       "year": 2015,
       "burned_km2": 45076,
-      "modis": 74405,
-      "raw_merged": 341775,
-      "harmonized": 338712
+      "modis": 73128,
+      "raw_merged": 334426,
+      "harmonized": 329659
      },
      {
       "year": 2016,
       "burned_km2": 53237,
-      "modis": 87812,
-      "raw_merged": 410242,
-      "harmonized": 406754
+      "modis": 86484,
+      "raw_merged": 402660,
+      "harmonized": 396960
      },
      {
       "year": 2017,
       "burned_km2": 41020,
-      "modis": 60586,
-      "raw_merged": 259096,
-      "harmonized": 257278
+      "modis": 59463,
+      "raw_merged": 254014,
+      "harmonized": 250304
      },
      {
       "year": 2018,
       "burned_km2": 62244,
-      "modis": 89666,
-      "raw_merged": 392208,
-      "harmonized": 385896
+      "modis": 88391,
+      "raw_merged": 384647,
+      "harmonized": 379254
      },
      {
       "year": 2019,
       "burned_km2": 62261,
-      "modis": 102967,
-      "raw_merged": 456044,
-      "harmonized": 456044
+      "modis": 101274,
+      "raw_merged": 446455,
+      "harmonized": 446455
      }
     ]
    },
@@ -2070,16 +2070,16 @@
     "region": "Southern South America",
     "burned_km2_per_year": 284632,
     "hotspots_per_km2": {
-     "modis": 2.078,
-     "raw_merged": 4.11,
-     "harmonized": 8.175
+     "modis": 2.066,
+     "raw_merged": 4.087,
+     "harmonized": 8.11
     },
     "step2012": {
-     "modis": -0.015,
-     "raw_merged": 2.795,
+     "modis": -0.016,
+     "raw_merged": 2.794,
      "harmonized": -0.006
     },
-    "gap_vs_modis": 0.009,
+    "gap_vs_modis": 0.01,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -2091,142 +2091,142 @@
      }
     },
     "spearman_vs_burned": {
-     "raw_merged": 0.125,
+     "raw_merged": 0.13,
      "harmonized": 0.874
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 267982,
-      "modis": 206606,
-      "raw_merged": 206606,
-      "harmonized": 2093854
+      "modis": 205130,
+      "raw_merged": 205130,
+      "harmonized": 2073001
      },
      {
       "year": 2002,
       "burned_km2": 359074,
-      "modis": 693277,
-      "raw_merged": 693277,
-      "harmonized": 2874226
+      "modis": 689137,
+      "raw_merged": 689137,
+      "harmonized": 2847122
      },
      {
       "year": 2003,
       "burned_km2": 289749,
-      "modis": 775960,
-      "raw_merged": 775960,
-      "harmonized": 2915736
+      "modis": 770829,
+      "raw_merged": 770829,
+      "harmonized": 2885059
      },
      {
       "year": 2004,
       "burned_km2": 332546,
-      "modis": 866118,
-      "raw_merged": 866118,
-      "harmonized": 3279792
+      "modis": 860697,
+      "raw_merged": 860697,
+      "harmonized": 3250951
      },
      {
       "year": 2005,
       "burned_km2": 349322,
-      "modis": 860620,
-      "raw_merged": 860620,
-      "harmonized": 3320719
+      "modis": 855945,
+      "raw_merged": 855945,
+      "harmonized": 3295103
      },
      {
       "year": 2006,
       "burned_km2": 233642,
-      "modis": 619674,
-      "raw_merged": 619674,
-      "harmonized": 2346212
+      "modis": 615915,
+      "raw_merged": 615915,
+      "harmonized": 2325210
      },
      {
       "year": 2007,
       "burned_km2": 487694,
-      "modis": 960393,
-      "raw_merged": 960393,
-      "harmonized": 3720617
+      "modis": 956267,
+      "raw_merged": 956267,
+      "harmonized": 3694644
      },
      {
       "year": 2008,
       "burned_km2": 255557,
-      "modis": 587294,
-      "raw_merged": 587294,
-      "harmonized": 2223158
+      "modis": 584129,
+      "raw_merged": 584129,
+      "harmonized": 2206937
      },
      {
       "year": 2009,
       "burned_km2": 157920,
-      "modis": 423894,
-      "raw_merged": 423894,
-      "harmonized": 1575145
+      "modis": 421512,
+      "raw_merged": 421512,
+      "harmonized": 1563717
      },
      {
       "year": 2010,
       "burned_km2": 499700,
-      "modis": 860543,
-      "raw_merged": 860543,
-      "harmonized": 3340533
+      "modis": 857075,
+      "raw_merged": 857075,
+      "harmonized": 3322298
      },
      {
       "year": 2011,
       "burned_km2": 226642,
-      "modis": 468390,
-      "raw_merged": 468390,
-      "harmonized": 1719602
+      "modis": 465704,
+      "raw_merged": 465704,
+      "harmonized": 1708467
      },
      {
       "year": 2012,
       "burned_km2": 313046,
-      "modis": 560688,
-      "raw_merged": 2153185,
-      "harmonized": 2168933
+      "modis": 558026,
+      "raw_merged": 2143641,
+      "harmonized": 2156898
      },
      {
       "year": 2013,
       "burned_km2": 167321,
-      "modis": 381558,
-      "raw_merged": 1437521,
-      "harmonized": 1413400
+      "modis": 379159,
+      "raw_merged": 1429355,
+      "harmonized": 1403264
      },
      {
       "year": 2014,
       "burned_km2": 202305,
-      "modis": 413836,
-      "raw_merged": 1596503,
-      "harmonized": 1573809
+      "modis": 410833,
+      "raw_merged": 1586123,
+      "harmonized": 1559212
      },
      {
       "year": 2015,
       "burned_km2": 258560,
-      "modis": 547229,
-      "raw_merged": 2146995,
-      "harmonized": 2116147
+      "modis": 544424,
+      "raw_merged": 2136378,
+      "harmonized": 2101758
      },
      {
       "year": 2016,
       "burned_km2": 243227,
-      "modis": 510181,
-      "raw_merged": 1904470,
-      "harmonized": 1888388
+      "modis": 506884,
+      "raw_merged": 1894163,
+      "harmonized": 1866717
      },
      {
       "year": 2017,
       "burned_km2": 319675,
-      "modis": 574509,
-      "raw_merged": 2159205,
-      "harmonized": 2127356
+      "modis": 570566,
+      "raw_merged": 2147703,
+      "harmonized": 2113807
      },
      {
       "year": 2018,
       "burned_km2": 152717,
-      "modis": 369821,
-      "raw_merged": 1379556,
-      "harmonized": 1381724
+      "modis": 368513,
+      "raw_merged": 1367409,
+      "harmonized": 1366534
      },
      {
       "year": 2019,
       "burned_km2": 291324,
-      "modis": 556484,
-      "raw_merged": 2129199,
-      "harmonized": 2129199
+      "modis": 554395,
+      "raw_merged": 2117007,
+      "harmonized": 2117007
      }
     ]
    },
@@ -2234,163 +2234,163 @@
     "region": "Europe",
     "burned_km2_per_year": 10400,
     "hotspots_per_km2": {
-     "modis": 3.548,
-     "raw_merged": 6.795,
-     "harmonized": 13.035
+     "modis": 3.475,
+     "raw_merged": 6.646,
+     "harmonized": 12.371
     },
     "step2012": {
-     "modis": 0.022,
-     "raw_merged": 2.416,
-     "harmonized": 0.054
+     "modis": 0.017,
+     "raw_merged": 2.406,
+     "harmonized": 0.052
     },
-    "gap_vs_modis": 0.032,
+    "gap_vs_modis": 0.035,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2011,
       "p": 0.0032
      },
      "harmonized": {
-      "year": 2018,
+      "year": 2011,
       "p": 1.0
      }
     },
     "spearman_vs_burned": {
-     "raw_merged": 0.009,
+     "raw_merged": 0.016,
      "harmonized": 0.925
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 18162,
-      "modis": 29092,
-      "raw_merged": 29092,
-      "harmonized": 224326
+      "modis": 28644,
+      "raw_merged": 28644,
+      "harmonized": 215395
      },
      {
       "year": 2002,
       "burned_km2": 7172,
-      "modis": 26294,
-      "raw_merged": 26294,
-      "harmonized": 132618
+      "modis": 25629,
+      "raw_merged": 25629,
+      "harmonized": 124388
      },
      {
       "year": 2003,
       "burned_km2": 13936,
-      "modis": 48616,
-      "raw_merged": 48616,
-      "harmonized": 166558
+      "modis": 47743,
+      "raw_merged": 47743,
+      "harmonized": 155193
      },
      {
       "year": 2004,
       "burned_km2": 10593,
-      "modis": 42573,
-      "raw_merged": 42573,
-      "harmonized": 141174
+      "modis": 41810,
+      "raw_merged": 41810,
+      "harmonized": 133860
      },
      {
       "year": 2005,
       "burned_km2": 10949,
-      "modis": 45136,
-      "raw_merged": 45136,
-      "harmonized": 142012
+      "modis": 44200,
+      "raw_merged": 44200,
+      "harmonized": 134597
      },
      {
       "year": 2006,
       "burned_km2": 10162,
-      "modis": 39584,
-      "raw_merged": 39584,
-      "harmonized": 127392
+      "modis": 38622,
+      "raw_merged": 38622,
+      "harmonized": 119030
      },
      {
       "year": 2007,
       "burned_km2": 14237,
-      "modis": 51931,
-      "raw_merged": 51931,
-      "harmonized": 199015
+      "modis": 50890,
+      "raw_merged": 50890,
+      "harmonized": 187324
      },
      {
       "year": 2008,
       "burned_km2": 13857,
-      "modis": 39491,
-      "raw_merged": 39491,
-      "harmonized": 142699
+      "modis": 38731,
+      "raw_merged": 38731,
+      "harmonized": 136445
      },
      {
       "year": 2009,
       "burned_km2": 6982,
-      "modis": 34256,
-      "raw_merged": 34256,
-      "harmonized": 107870
+      "modis": 33608,
+      "raw_merged": 33608,
+      "harmonized": 102047
      },
      {
       "year": 2010,
       "burned_km2": 7995,
-      "modis": 27394,
-      "raw_merged": 27394,
-      "harmonized": 89124
+      "modis": 26712,
+      "raw_merged": 26712,
+      "harmonized": 83637
      },
      {
       "year": 2011,
       "burned_km2": 11103,
-      "modis": 50230,
-      "raw_merged": 50230,
-      "harmonized": 171148
+      "modis": 49348,
+      "raw_merged": 49348,
+      "harmonized": 163040
      },
      {
       "year": 2012,
       "burned_km2": 15029,
-      "modis": 53911,
-      "raw_merged": 175339,
-      "harmonized": 187256
+      "modis": 52756,
+      "raw_merged": 171673,
+      "harmonized": 178249
      },
      {
       "year": 2013,
       "burned_km2": 6841,
-      "modis": 27720,
-      "raw_merged": 92632,
-      "harmonized": 94911
+      "modis": 27090,
+      "raw_merged": 90363,
+      "harmonized": 89550
      },
      {
       "year": 2014,
       "burned_km2": 6810,
-      "modis": 25646,
-      "raw_merged": 84665,
-      "harmonized": 86587
+      "modis": 24940,
+      "raw_merged": 82703,
+      "harmonized": 82028
      },
      {
       "year": 2015,
       "burned_km2": 6026,
-      "modis": 27141,
-      "raw_merged": 96771,
-      "harmonized": 99181
+      "modis": 26430,
+      "raw_merged": 94498,
+      "harmonized": 93740
      },
      {
       "year": 2016,
       "burned_km2": 8876,
-      "modis": 29778,
-      "raw_merged": 101493,
-      "harmonized": 104106
+      "modis": 28966,
+      "raw_merged": 99193,
+      "harmonized": 98263
      },
      {
       "year": 2017,
       "burned_km2": 15147,
-      "modis": 45511,
-      "raw_merged": 154644,
-      "harmonized": 157079
+      "modis": 44503,
+      "raw_merged": 151260,
+      "harmonized": 150158
      },
      {
       "year": 2018,
       "burned_km2": 5523,
-      "modis": 23272,
-      "raw_merged": 82026,
-      "harmonized": 82238
+      "modis": 23029,
+      "raw_merged": 79812,
+      "harmonized": 79794
      },
      {
       "year": 2019,
       "burned_km2": 8207,
-      "modis": 33458,
-      "raw_merged": 120566,
-      "harmonized": 120566
+      "modis": 33084,
+      "raw_merged": 117865,
+      "harmonized": 117865
      }
     ]
    },
@@ -2398,163 +2398,163 @@
     "region": "Middle East",
     "burned_km2_per_year": 14555,
     "hotspots_per_km2": {
-     "modis": 1.752,
-     "raw_merged": 4.664,
-     "harmonized": 8.52
+     "modis": 1.577,
+     "raw_merged": 3.996,
+     "harmonized": 7.135
     },
     "step2012": {
-     "modis": 0.122,
-     "raw_merged": 4.025,
-     "harmonized": 0.079
+     "modis": 0.11,
+     "raw_merged": 3.71,
+     "harmonized": 0.059
     },
-    "gap_vs_modis": -0.043,
+    "gap_vs_modis": -0.051,
     "pettitt_ratio": {
      "raw_merged": {
-      "year": 2012,
+      "year": 2011,
       "p": 0.0032
      },
      "harmonized": {
-      "year": 2012,
-      "p": 0.5291
+      "year": 2011,
+      "p": 0.4002
      }
     },
     "spearman_vs_burned": {
-     "raw_merged": 0.449,
-     "harmonized": 0.888
+     "raw_merged": 0.456,
+     "harmonized": 0.865
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 10855,
-      "modis": 11208,
-      "raw_merged": 11208,
-      "harmonized": 108049
+      "modis": 9804,
+      "raw_merged": 9804,
+      "harmonized": 89254
      },
      {
       "year": 2002,
       "burned_km2": 11987,
-      "modis": 17446,
-      "raw_merged": 17446,
-      "harmonized": 106775
+      "modis": 15518,
+      "raw_merged": 15518,
+      "harmonized": 87993
      },
      {
       "year": 2003,
       "burned_km2": 11849,
-      "modis": 21880,
-      "raw_merged": 21880,
-      "harmonized": 109117
+      "modis": 19174,
+      "raw_merged": 19174,
+      "harmonized": 86146
      },
      {
       "year": 2004,
       "burned_km2": 12368,
-      "modis": 21616,
-      "raw_merged": 21616,
-      "harmonized": 106657
+      "modis": 19315,
+      "raw_merged": 19315,
+      "harmonized": 87361
      },
      {
       "year": 2005,
       "burned_km2": 11471,
-      "modis": 20944,
-      "raw_merged": 20944,
-      "harmonized": 98079
+      "modis": 18607,
+      "raw_merged": 18607,
+      "harmonized": 79686
      },
      {
       "year": 2006,
       "burned_km2": 14279,
-      "modis": 23388,
-      "raw_merged": 23388,
-      "harmonized": 116419
+      "modis": 21039,
+      "raw_merged": 21039,
+      "harmonized": 97292
      },
      {
       "year": 2007,
       "burned_km2": 14559,
-      "modis": 28011,
-      "raw_merged": 28011,
-      "harmonized": 128141
+      "modis": 25153,
+      "raw_merged": 25153,
+      "harmonized": 107603
      },
      {
       "year": 2008,
       "burned_km2": 9290,
-      "modis": 17987,
-      "raw_merged": 17987,
-      "harmonized": 84529
+      "modis": 15837,
+      "raw_merged": 15837,
+      "harmonized": 68131
      },
      {
       "year": 2009,
       "burned_km2": 19093,
-      "modis": 34386,
-      "raw_merged": 34386,
-      "harmonized": 165881
+      "modis": 31902,
+      "raw_merged": 31902,
+      "harmonized": 142915
      },
      {
       "year": 2010,
       "burned_km2": 20061,
-      "modis": 34550,
-      "raw_merged": 34550,
-      "harmonized": 159161
+      "modis": 31577,
+      "raw_merged": 31577,
+      "harmonized": 137719
      },
      {
       "year": 2011,
       "burned_km2": 16285,
-      "modis": 30365,
-      "raw_merged": 30365,
-      "harmonized": 141977
+      "modis": 27988,
+      "raw_merged": 27988,
+      "harmonized": 125142
      },
      {
       "year": 2012,
       "burned_km2": 9724,
-      "modis": 25836,
-      "raw_merged": 112149,
-      "harmonized": 114294
+      "modis": 23327,
+      "raw_merged": 97672,
+      "harmonized": 98475
      },
      {
       "year": 2013,
       "burned_km2": 12757,
-      "modis": 26082,
-      "raw_merged": 118327,
-      "harmonized": 120954
+      "modis": 23308,
+      "raw_merged": 102466,
+      "harmonized": 101242
      },
      {
       "year": 2014,
       "burned_km2": 10415,
-      "modis": 22401,
-      "raw_merged": 107547,
-      "harmonized": 107679
+      "modis": 20063,
+      "raw_merged": 92491,
+      "harmonized": 91429
      },
      {
       "year": 2015,
       "burned_km2": 20778,
-      "modis": 34810,
-      "raw_merged": 150688,
-      "harmonized": 150497
+      "modis": 32039,
+      "raw_merged": 126419,
+      "harmonized": 124987
      },
      {
       "year": 2016,
       "burned_km2": 16559,
-      "modis": 33351,
-      "raw_merged": 153412,
-      "harmonized": 153221
+      "modis": 29809,
+      "raw_merged": 127807,
+      "harmonized": 126386
      },
      {
       "year": 2017,
       "burned_km2": 12167,
-      "modis": 26909,
-      "raw_merged": 125213,
-      "harmonized": 124332
+      "modis": 22994,
+      "raw_merged": 101093,
+      "harmonized": 100113
      },
      {
       "year": 2018,
       "burned_km2": 7840,
-      "modis": 17650,
-      "raw_merged": 94748,
-      "harmonized": 94516
+      "modis": 15955,
+      "raw_merged": 76336,
+      "harmonized": 76335
      },
      {
       "year": 2019,
       "burned_km2": 34214,
-      "modis": 35776,
-      "raw_merged": 166047,
-      "harmonized": 166047
+      "modis": 32599,
+      "raw_merged": 145013,
+      "harmonized": 145013
      }
     ]
    },
@@ -2562,16 +2562,16 @@
     "region": "Northern Africa",
     "burned_km2_per_year": 1253753,
     "hotspots_per_km2": {
-     "modis": 0.776,
-     "raw_merged": 1.86,
-     "harmonized": 3.793
+     "modis": 0.775,
+     "raw_merged": 1.856,
+     "harmonized": 3.772
     },
     "step2012": {
      "modis": 0.046,
-     "raw_merged": 3.386,
-     "harmonized": 0.004
+     "raw_merged": 3.383,
+     "harmonized": 0.005
     },
-    "gap_vs_modis": -0.042,
+    "gap_vs_modis": -0.041,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2011,
@@ -2583,142 +2583,142 @@
      }
     },
     "spearman_vs_burned": {
-     "raw_merged": -0.454,
+     "raw_merged": -0.449,
      "harmonized": 0.863
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 1282059,
-      "modis": 386763,
-      "raw_merged": 386763,
-      "harmonized": 5952669
+      "modis": 386329,
+      "raw_merged": 386329,
+      "harmonized": 5914527
      },
      {
       "year": 2002,
       "burned_km2": 1386807,
-      "modis": 677244,
-      "raw_merged": 677244,
-      "harmonized": 5146049
+      "modis": 676437,
+      "raw_merged": 676437,
+      "harmonized": 5111452
      },
      {
       "year": 2003,
       "burned_km2": 1466286,
-      "modis": 1050818,
-      "raw_merged": 1050818,
-      "harmonized": 5123097
+      "modis": 1049433,
+      "raw_merged": 1049433,
+      "harmonized": 5090096
      },
      {
       "year": 2004,
       "burned_km2": 1387578,
-      "modis": 1091746,
-      "raw_merged": 1091746,
-      "harmonized": 5258898
+      "modis": 1090285,
+      "raw_merged": 1090285,
+      "harmonized": 5219430
      },
      {
       "year": 2005,
       "burned_km2": 1629157,
-      "modis": 1165480,
-      "raw_merged": 1165480,
-      "harmonized": 5421883
+      "modis": 1163805,
+      "raw_merged": 1163805,
+      "harmonized": 5388323
      },
      {
       "year": 2006,
       "burned_km2": 1336158,
-      "modis": 1032078,
-      "raw_merged": 1032078,
-      "harmonized": 4768083
+      "modis": 1030790,
+      "raw_merged": 1030790,
+      "harmonized": 4737527
      },
      {
       "year": 2007,
       "burned_km2": 1455010,
-      "modis": 1173282,
-      "raw_merged": 1173282,
-      "harmonized": 5458716
+      "modis": 1171352,
+      "raw_merged": 1171352,
+      "harmonized": 5423610
      },
      {
       "year": 2008,
       "burned_km2": 1377991,
-      "modis": 1146755,
-      "raw_merged": 1146755,
-      "harmonized": 5336017
+      "modis": 1145106,
+      "raw_merged": 1145106,
+      "harmonized": 5305323
      },
      {
       "year": 2009,
       "burned_km2": 1198074,
-      "modis": 995982,
-      "raw_merged": 995982,
-      "harmonized": 4526662
+      "modis": 994696,
+      "raw_merged": 994696,
+      "harmonized": 4501639
      },
      {
       "year": 2010,
       "burned_km2": 1163559,
-      "modis": 931717,
-      "raw_merged": 931717,
-      "harmonized": 4294792
+      "modis": 930242,
+      "raw_merged": 930242,
+      "harmonized": 4272390
      },
      {
       "year": 2011,
       "burned_km2": 1279296,
-      "modis": 1072176,
-      "raw_merged": 1072176,
-      "harmonized": 4804704
+      "modis": 1070727,
+      "raw_merged": 1070727,
+      "harmonized": 4775590
      },
      {
       "year": 2012,
       "burned_km2": 1173831,
-      "modis": 989767,
-      "raw_merged": 3469388,
-      "harmonized": 4351138
+      "modis": 988499,
+      "raw_merged": 3462364,
+      "harmonized": 4327126
      },
      {
       "year": 2013,
       "burned_km2": 1166619,
-      "modis": 950431,
-      "raw_merged": 4280260,
-      "harmonized": 4245925
+      "modis": 949193,
+      "raw_merged": 4272057,
+      "harmonized": 4225083
      },
      {
       "year": 2014,
       "burned_km2": 1072301,
-      "modis": 939965,
-      "raw_merged": 4200570,
-      "harmonized": 4164074
+      "modis": 938710,
+      "raw_merged": 4192115,
+      "harmonized": 4144040
      },
      {
       "year": 2015,
       "burned_km2": 1115432,
-      "modis": 1034010,
-      "raw_merged": 4457197,
-      "harmonized": 4418060
+      "modis": 1032320,
+      "raw_merged": 4447712,
+      "harmonized": 4396932
      },
      {
       "year": 2016,
       "burned_km2": 1318001,
-      "modis": 1055780,
-      "raw_merged": 4779998,
-      "harmonized": 4740507
+      "modis": 1053994,
+      "raw_merged": 4767791,
+      "harmonized": 4717171
      },
      {
       "year": 2017,
       "burned_km2": 1071179,
-      "modis": 976493,
-      "raw_merged": 4357309,
-      "harmonized": 4318817
+      "modis": 972449,
+      "raw_merged": 4339142,
+      "harmonized": 4294351
      },
      {
       "year": 2018,
       "burned_km2": 1077412,
-      "modis": 975381,
-      "raw_merged": 4280776,
-      "harmonized": 4266194
+      "modis": 974139,
+      "raw_merged": 4266088,
+      "harmonized": 4247818
      },
      {
       "year": 2019,
       "burned_km2": 864555,
-      "modis": 834330,
-      "raw_merged": 3769286,
-      "harmonized": 3769286
+      "modis": 833249,
+      "raw_merged": 3760824,
+      "harmonized": 3760824
      }
     ]
    },
@@ -2726,14 +2726,14 @@
     "region": "Southern Africa",
     "burned_km2_per_year": 1497865,
     "hotspots_per_km2": {
-     "modis": 0.848,
-     "raw_merged": 2.112,
-     "harmonized": 3.935
+     "modis": 0.845,
+     "raw_merged": 2.106,
+     "harmonized": 3.91
     },
     "step2012": {
-     "modis": 0.057,
-     "raw_merged": 3.598,
-     "harmonized": 0.03
+     "modis": 0.058,
+     "raw_merged": 3.597,
+     "harmonized": 0.031
     },
     "gap_vs_modis": -0.027,
     "pettitt_ratio": {
@@ -2748,141 +2748,141 @@
     },
     "spearman_vs_burned": {
      "raw_merged": -0.191,
-     "harmonized": 0.453
+     "harmonized": 0.435
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 1391837,
-      "modis": 341666,
-      "raw_merged": 341666,
-      "harmonized": 6428871
+      "modis": 339918,
+      "raw_merged": 339918,
+      "harmonized": 6373715
      },
      {
       "year": 2002,
       "burned_km2": 1424762,
-      "modis": 881804,
-      "raw_merged": 881804,
-      "harmonized": 5664344
+      "modis": 878906,
+      "raw_merged": 878906,
+      "harmonized": 5626873
      },
      {
       "year": 2003,
       "burned_km2": 1583444,
-      "modis": 1319158,
-      "raw_merged": 1319158,
-      "harmonized": 5893414
+      "modis": 1315666,
+      "raw_merged": 1315666,
+      "harmonized": 5857920
      },
      {
       "year": 2004,
       "burned_km2": 1551845,
-      "modis": 1280795,
-      "raw_merged": 1280795,
-      "harmonized": 5505018
+      "modis": 1277066,
+      "raw_merged": 1277066,
+      "harmonized": 5471257
      },
      {
       "year": 2005,
       "burned_km2": 1652482,
-      "modis": 1422272,
-      "raw_merged": 1422272,
-      "harmonized": 6262526
+      "modis": 1417714,
+      "raw_merged": 1417714,
+      "harmonized": 6214238
      },
      {
       "year": 2006,
       "burned_km2": 1496374,
-      "modis": 1225442,
-      "raw_merged": 1225442,
-      "harmonized": 5362105
+      "modis": 1221473,
+      "raw_merged": 1221473,
+      "harmonized": 5330327
      },
      {
       "year": 2007,
       "burned_km2": 1543848,
-      "modis": 1319776,
-      "raw_merged": 1319776,
-      "harmonized": 5860003
+      "modis": 1316106,
+      "raw_merged": 1316106,
+      "harmonized": 5818854
      },
      {
       "year": 2008,
       "burned_km2": 1595005,
-      "modis": 1388990,
-      "raw_merged": 1388990,
-      "harmonized": 6166518
+      "modis": 1384952,
+      "raw_merged": 1384952,
+      "harmonized": 6128294
      },
      {
       "year": 2009,
       "burned_km2": 1479830,
-      "modis": 1345650,
-      "raw_merged": 1345650,
-      "harmonized": 5864953
+      "modis": 1341574,
+      "raw_merged": 1341574,
+      "harmonized": 5830654
      },
      {
       "year": 2010,
       "burned_km2": 1702489,
-      "modis": 1461725,
-      "raw_merged": 1461725,
-      "harmonized": 6583484
+      "modis": 1456973,
+      "raw_merged": 1456973,
+      "harmonized": 6506535
      },
      {
       "year": 2011,
       "burned_km2": 1686464,
-      "modis": 1411351,
-      "raw_merged": 1411351,
-      "harmonized": 6122277
+      "modis": 1406920,
+      "raw_merged": 1406920,
+      "harmonized": 6087389
      },
      {
       "year": 2012,
       "burned_km2": 1560960,
-      "modis": 1341604,
-      "raw_merged": 5793757,
-      "harmonized": 5745798
+      "modis": 1337509,
+      "raw_merged": 5768974,
+      "harmonized": 5701858
      },
      {
       "year": 2013,
       "burned_km2": 1504314,
-      "modis": 1420489,
-      "raw_merged": 6131408,
-      "harmonized": 6049741
+      "modis": 1416539,
+      "raw_merged": 6112424,
+      "harmonized": 6019408
      },
      {
       "year": 2014,
       "burned_km2": 1399020,
-      "modis": 1280030,
-      "raw_merged": 5590908,
-      "harmonized": 5512834
+      "modis": 1276379,
+      "raw_merged": 5573704,
+      "harmonized": 5481592
      },
      {
       "year": 2015,
       "burned_km2": 1448935,
-      "modis": 1382589,
-      "raw_merged": 6073501,
-      "harmonized": 5996336
+      "modis": 1379176,
+      "raw_merged": 6056264,
+      "harmonized": 5961890
      },
      {
       "year": 2016,
       "burned_km2": 1394975,
-      "modis": 1394235,
-      "raw_merged": 6057862,
-      "harmonized": 5974378
+      "modis": 1391292,
+      "raw_merged": 6042359,
+      "harmonized": 5945224
      },
      {
       "year": 2017,
       "burned_km2": 1391691,
-      "modis": 1288682,
-      "raw_merged": 5703467,
-      "harmonized": 5619206
+      "modis": 1285454,
+      "raw_merged": 5687334,
+      "harmonized": 5591340
      },
      {
       "year": 2018,
       "burned_km2": 1306049,
-      "modis": 1270972,
-      "raw_merged": 5527010,
-      "harmonized": 5529131
+      "modis": 1268074,
+      "raw_merged": 5512090,
+      "harmonized": 5511820
      },
      {
       "year": 2019,
       "burned_km2": 1345117,
-      "modis": 1348068,
-      "raw_merged": 5837111,
-      "harmonized": 5837111
+      "modis": 1344976,
+      "raw_merged": 5821229,
+      "harmonized": 5821229
      }
     ]
    },
@@ -2890,16 +2890,16 @@
     "region": "Boreal Asia",
     "burned_km2_per_year": 94591,
     "hotspots_per_km2": {
-     "modis": 2.562,
-     "raw_merged": 5.957,
-     "harmonized": 10.492
+     "modis": 2.537,
+     "raw_merged": 5.872,
+     "harmonized": 10.211
     },
     "step2012": {
      "modis": 0.096,
-     "raw_merged": 3.451,
-     "harmonized": 0.177
+     "raw_merged": 3.427,
+     "harmonized": 0.179
     },
-    "gap_vs_modis": 0.081,
+    "gap_vs_modis": 0.083,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -2912,141 +2912,141 @@
     },
     "spearman_vs_burned": {
      "raw_merged": 0.439,
-     "harmonized": 0.791
+     "harmonized": 0.816
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 59164,
-      "modis": 121411,
-      "raw_merged": 121411,
-      "harmonized": 872721
+      "modis": 120498,
+      "raw_merged": 120498,
+      "harmonized": 846041
      },
      {
       "year": 2002,
       "burned_km2": 100623,
-      "modis": 269824,
-      "raw_merged": 269824,
-      "harmonized": 1454625
+      "modis": 268295,
+      "raw_merged": 268295,
+      "harmonized": 1435125
      },
      {
       "year": 2003,
       "burned_km2": 202005,
-      "modis": 556662,
-      "raw_merged": 556662,
-      "harmonized": 2142883
+      "modis": 554121,
+      "raw_merged": 554121,
+      "harmonized": 2099529
      },
      {
       "year": 2004,
       "burned_km2": 68290,
-      "modis": 142258,
-      "raw_merged": 142258,
-      "harmonized": 515120
+      "modis": 139477,
+      "raw_merged": 139477,
+      "harmonized": 492750
      },
      {
       "year": 2005,
       "burned_km2": 64357,
-      "modis": 170098,
-      "raw_merged": 170098,
-      "harmonized": 624244
+      "modis": 167127,
+      "raw_merged": 167127,
+      "harmonized": 584448
      },
      {
       "year": 2006,
       "burned_km2": 89065,
-      "modis": 259978,
-      "raw_merged": 259978,
-      "harmonized": 927125
+      "modis": 255580,
+      "raw_merged": 255580,
+      "harmonized": 896228
      },
      {
       "year": 2007,
       "burned_km2": 57842,
-      "modis": 147200,
-      "raw_merged": 147200,
-      "harmonized": 542353
+      "modis": 144961,
+      "raw_merged": 144961,
+      "harmonized": 521736
      },
      {
       "year": 2008,
       "burned_km2": 167757,
-      "modis": 329717,
-      "raw_merged": 329717,
-      "harmonized": 1184818
+      "modis": 327272,
+      "raw_merged": 327272,
+      "harmonized": 1166367
      },
      {
       "year": 2009,
       "burned_km2": 73178,
-      "modis": 195107,
-      "raw_merged": 195107,
-      "harmonized": 664462
+      "modis": 192764,
+      "raw_merged": 192764,
+      "harmonized": 649320
      },
      {
       "year": 2010,
       "burned_km2": 73631,
-      "modis": 213994,
-      "raw_merged": 213994,
-      "harmonized": 968817
+      "modis": 211680,
+      "raw_merged": 211680,
+      "harmonized": 913342
      },
      {
       "year": 2011,
       "burned_km2": 103537,
-      "modis": 238994,
-      "raw_merged": 238994,
-      "harmonized": 891868
+      "modis": 236723,
+      "raw_merged": 236723,
+      "harmonized": 870977
      },
      {
       "year": 2012,
       "burned_km2": 126048,
-      "modis": 424576,
-      "raw_merged": 1722245,
-      "harmonized": 1727975
+      "modis": 420567,
+      "raw_merged": 1698642,
+      "harmonized": 1685717
      },
      {
       "year": 2013,
       "burned_km2": 58427,
-      "modis": 185706,
-      "raw_merged": 757733,
-      "harmonized": 779606
+      "modis": 183880,
+      "raw_merged": 743406,
+      "harmonized": 738680
      },
      {
       "year": 2014,
       "burned_km2": 155304,
-      "modis": 260828,
-      "raw_merged": 1018009,
-      "harmonized": 1010660
+      "modis": 258410,
+      "raw_merged": 1003608,
+      "harmonized": 988816
      },
      {
       "year": 2015,
       "burned_km2": 69426,
-      "modis": 177694,
-      "raw_merged": 761902,
-      "harmonized": 756579
+      "modis": 176333,
+      "raw_merged": 750709,
+      "harmonized": 742106
      },
      {
       "year": 2016,
       "burned_km2": 80740,
-      "modis": 248328,
-      "raw_merged": 1123689,
-      "harmonized": 1118568
+      "modis": 245133,
+      "raw_merged": 1102377,
+      "harmonized": 1089724
      },
      {
       "year": 2017,
       "burned_km2": 55416,
-      "modis": 162477,
-      "raw_merged": 644245,
-      "harmonized": 641554
+      "modis": 160440,
+      "raw_merged": 631513,
+      "harmonized": 626630
      },
      {
       "year": 2018,
       "burned_km2": 96434,
-      "modis": 200391,
-      "raw_merged": 772555,
-      "harmonized": 772805
+      "modis": 199224,
+      "raw_merged": 761971,
+      "harmonized": 761890
      },
      {
       "year": 2019,
       "burned_km2": 95984,
-      "modis": 299288,
-      "raw_merged": 1260233,
-      "harmonized": 1260233
+      "modis": 296325,
+      "raw_merged": 1242862,
+      "harmonized": 1242862
      }
     ]
    },
@@ -3054,16 +3054,16 @@
     "region": "Central Asia",
     "burned_km2_per_year": 191700,
     "hotspots_per_km2": {
-     "modis": 1.306,
-     "raw_merged": 2.452,
-     "harmonized": 4.683
+     "modis": 1.263,
+     "raw_merged": 2.335,
+     "harmonized": 4.365
     },
     "step2012": {
-     "modis": 0.075,
-     "raw_merged": 2.591,
-     "harmonized": 0.096
+     "modis": 0.063,
+     "raw_merged": 2.493,
+     "harmonized": 0.069
     },
-    "gap_vs_modis": 0.021,
+    "gap_vs_modis": 0.006,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2011,
@@ -3071,146 +3071,146 @@
      },
      "harmonized": {
       "year": 2008,
-      "p": 0.4002
+      "p": 0.4617
      }
     },
     "spearman_vs_burned": {
-     "raw_merged": -0.211,
-     "harmonized": 0.754
+     "raw_merged": -0.216,
+     "harmonized": 0.768
     },
     "series": [
      {
       "year": 2001,
       "burned_km2": 177109,
-      "modis": 149736,
-      "raw_merged": 149736,
-      "harmonized": 1060707
+      "modis": 146726,
+      "raw_merged": 146726,
+      "harmonized": 1012548
      },
      {
       "year": 2002,
       "burned_km2": 343888,
-      "modis": 273833,
-      "raw_merged": 273833,
-      "harmonized": 1328824
+      "modis": 269114,
+      "raw_merged": 269114,
+      "harmonized": 1237161
      },
      {
       "year": 2003,
       "burned_km2": 190521,
-      "modis": 273545,
-      "raw_merged": 273545,
-      "harmonized": 887572
+      "modis": 267227,
+      "raw_merged": 267227,
+      "harmonized": 835303
      },
      {
       "year": 2004,
       "burned_km2": 225409,
-      "modis": 291527,
-      "raw_merged": 291527,
-      "harmonized": 1011867
+      "modis": 284682,
+      "raw_merged": 284682,
+      "harmonized": 948033
      },
      {
       "year": 2005,
       "burned_km2": 267374,
-      "modis": 291637,
-      "raw_merged": 291637,
-      "harmonized": 952312
+      "modis": 283757,
+      "raw_merged": 283757,
+      "harmonized": 903176
      },
      {
       "year": 2006,
       "burned_km2": 274500,
-      "modis": 292388,
-      "raw_merged": 292388,
-      "harmonized": 992904
+      "modis": 284907,
+      "raw_merged": 284907,
+      "harmonized": 936509
      },
      {
       "year": 2007,
       "burned_km2": 217020,
-      "modis": 287499,
-      "raw_merged": 287499,
-      "harmonized": 970571
+      "modis": 278460,
+      "raw_merged": 278460,
+      "harmonized": 910547
      },
      {
       "year": 2008,
       "burned_km2": 255140,
-      "modis": 370550,
-      "raw_merged": 370550,
-      "harmonized": 1228645
+      "modis": 360464,
+      "raw_merged": 360464,
+      "harmonized": 1164373
      },
      {
       "year": 2009,
       "burned_km2": 168735,
-      "modis": 300568,
-      "raw_merged": 300568,
-      "harmonized": 968877
+      "modis": 291510,
+      "raw_merged": 291510,
+      "harmonized": 906203
      },
      {
       "year": 2010,
       "burned_km2": 216058,
-      "modis": 256685,
-      "raw_merged": 256685,
-      "harmonized": 939097
+      "modis": 247500,
+      "raw_merged": 247500,
+      "harmonized": 874410
      },
      {
       "year": 2011,
       "burned_km2": 115842,
-      "modis": 187149,
-      "raw_merged": 187149,
-      "harmonized": 625849
+      "modis": 178828,
+      "raw_merged": 178828,
+      "harmonized": 573499
      },
      {
       "year": 2012,
       "burned_km2": 159341,
-      "modis": 214632,
-      "raw_merged": 707740,
-      "harmonized": 743296
+      "modis": 204924,
+      "raw_merged": 662329,
+      "harmonized": 674281
      },
      {
       "year": 2013,
       "burned_km2": 75564,
-      "modis": 180891,
-      "raw_merged": 612639,
-      "harmonized": 627623
+      "modis": 170271,
+      "raw_merged": 563427,
+      "harmonized": 558784
      },
      {
       "year": 2014,
       "burned_km2": 199554,
-      "modis": 317559,
-      "raw_merged": 1047508,
-      "harmonized": 1074171
+      "modis": 305237,
+      "raw_merged": 993567,
+      "harmonized": 987205
      },
      {
       "year": 2015,
       "burned_km2": 188996,
-      "modis": 275576,
-      "raw_merged": 934896,
-      "harmonized": 956967
+      "modis": 265208,
+      "raw_merged": 887702,
+      "harmonized": 882023
      },
      {
       "year": 2016,
       "burned_km2": 80031,
-      "modis": 171063,
-      "raw_merged": 548173,
-      "harmonized": 562936
+      "modis": 161538,
+      "raw_merged": 512533,
+      "harmonized": 509078
      },
      {
       "year": 2017,
       "burned_km2": 241199,
-      "modis": 272196,
-      "raw_merged": 894562,
-      "harmonized": 909618
+      "modis": 260595,
+      "raw_merged": 856283,
+      "harmonized": 849811
      },
      {
       "year": 2018,
       "burned_km2": 87101,
-      "modis": 153095,
-      "raw_merged": 511541,
-      "harmonized": 515423
+      "modis": 147417,
+      "raw_merged": 475971,
+      "harmonized": 476050
      },
      {
       "year": 2019,
       "burned_km2": 158916,
-      "modis": 197380,
-      "raw_merged": 698718,
-      "harmonized": 698718
+      "modis": 191051,
+      "raw_merged": 660884,
+      "harmonized": 660884
      }
     ]
    },
@@ -3218,16 +3218,16 @@
     "region": "Southeast Asia",
     "burned_km2_per_year": 138283,
     "hotspots_per_km2": {
-     "modis": 1.862,
-     "raw_merged": 5.8,
-     "harmonized": 11.223
+     "modis": 1.85,
+     "raw_merged": 5.729,
+     "harmonized": 11.021
     },
     "step2012": {
-     "modis": 0.01,
-     "raw_merged": 4.511,
-     "harmonized": -0.011
+     "modis": 0.008,
+     "raw_merged": 4.452,
+     "harmonized": -0.018
     },
-    "gap_vs_modis": -0.021,
+    "gap_vs_modis": -0.026,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -3246,135 +3246,135 @@
      {
       "year": 2001,
       "burned_km2": 64239,
-      "modis": 64680,
-      "raw_merged": 64680,
-      "harmonized": 1408286
+      "modis": 64192,
+      "raw_merged": 64192,
+      "harmonized": 1389467
      },
      {
       "year": 2002,
       "burned_km2": 83516,
-      "modis": 77732,
-      "raw_merged": 77732,
-      "harmonized": 1237373
+      "modis": 77263,
+      "raw_merged": 77263,
+      "harmonized": 1218329
      },
      {
       "year": 2003,
       "burned_km2": 124903,
-      "modis": 244406,
-      "raw_merged": 244406,
-      "harmonized": 1306736
+      "modis": 243342,
+      "raw_merged": 243342,
+      "harmonized": 1286505
      },
      {
       "year": 2004,
       "burned_km2": 191408,
-      "modis": 331562,
-      "raw_merged": 331562,
-      "harmonized": 1826466
+      "modis": 330019,
+      "raw_merged": 330019,
+      "harmonized": 1797999
      },
      {
       "year": 2005,
       "burned_km2": 138026,
-      "modis": 284966,
-      "raw_merged": 284966,
-      "harmonized": 1595221
+      "modis": 283678,
+      "raw_merged": 283678,
+      "harmonized": 1570481
      },
      {
       "year": 2006,
       "burned_km2": 115489,
-      "modis": 244171,
-      "raw_merged": 244171,
-      "harmonized": 1262301
+      "modis": 242949,
+      "raw_merged": 242949,
+      "harmonized": 1241323
      },
      {
       "year": 2007,
       "burned_km2": 174662,
-      "modis": 336093,
-      "raw_merged": 336093,
-      "harmonized": 1840000
+      "modis": 334624,
+      "raw_merged": 334624,
+      "harmonized": 1817833
      },
      {
       "year": 2008,
       "burned_km2": 115000,
-      "modis": 241750,
-      "raw_merged": 241750,
-      "harmonized": 1352571
+      "modis": 240324,
+      "raw_merged": 240324,
+      "harmonized": 1328736
      },
      {
       "year": 2009,
       "burned_km2": 165534,
-      "modis": 298663,
-      "raw_merged": 298663,
-      "harmonized": 1729874
+      "modis": 296861,
+      "raw_merged": 296861,
+      "harmonized": 1701080
      },
      {
       "year": 2010,
       "burned_km2": 173010,
-      "modis": 335694,
-      "raw_merged": 335694,
-      "harmonized": 1895792
+      "modis": 333831,
+      "raw_merged": 333831,
+      "harmonized": 1865613
      },
      {
       "year": 2011,
       "burned_km2": 122615,
-      "modis": 229126,
-      "raw_merged": 229126,
-      "harmonized": 1313482
+      "modis": 227243,
+      "raw_merged": 227243,
+      "harmonized": 1280640
      },
      {
       "year": 2012,
       "burned_km2": 166474,
-      "modis": 313543,
-      "raw_merged": 1527837,
-      "harmonized": 1638933
+      "modis": 311448,
+      "raw_merged": 1508488,
+      "harmonized": 1604079
      },
      {
       "year": 2013,
       "burned_km2": 139777,
-      "modis": 280936,
-      "raw_merged": 1592268,
-      "harmonized": 1599510
+      "modis": 278836,
+      "raw_merged": 1556992,
+      "harmonized": 1552244
      },
      {
       "year": 2014,
       "burned_km2": 144936,
-      "modis": 295638,
-      "raw_merged": 1677658,
-      "harmonized": 1687221
+      "modis": 293013,
+      "raw_merged": 1647961,
+      "harmonized": 1643142
      },
      {
       "year": 2015,
       "burned_km2": 149788,
-      "modis": 274275,
-      "raw_merged": 1555684,
-      "harmonized": 1565522
+      "modis": 271563,
+      "raw_merged": 1531742,
+      "harmonized": 1528128
      },
      {
       "year": 2016,
       "burned_km2": 148109,
-      "modis": 294612,
-      "raw_merged": 1845798,
-      "harmonized": 1861022
+      "modis": 292121,
+      "raw_merged": 1825703,
+      "harmonized": 1824507
      },
      {
       "year": 2017,
       "burned_km2": 134748,
-      "modis": 224339,
-      "raw_merged": 1328646,
-      "harmonized": 1338053
+      "modis": 222232,
+      "raw_merged": 1314852,
+      "harmonized": 1312275
      },
      {
       "year": 2018,
       "burned_km2": 135034,
-      "modis": 235855,
-      "raw_merged": 1380938,
-      "harmonized": 1388451
+      "modis": 233863,
+      "raw_merged": 1363937,
+      "harmonized": 1364535
      },
      {
       "year": 2019,
       "burned_km2": 140104,
-      "modis": 284810,
-      "raw_merged": 1641299,
-      "harmonized": 1641299
+      "modis": 283020,
+      "raw_merged": 1628463,
+      "harmonized": 1628463
      }
     ]
    },
@@ -3382,16 +3382,16 @@
     "region": "Equatorial Asia",
     "burned_km2_per_year": 15356,
     "hotspots_per_km2": {
-     "modis": 5.418,
-     "raw_merged": 14.428,
-     "harmonized": 27.667
+     "modis": 5.308,
+     "raw_merged": 13.968,
+     "harmonized": 26.297
     },
     "step2012": {
-     "modis": -0.145,
-     "raw_merged": 3.257,
-     "harmonized": -0.071
+     "modis": -0.143,
+     "raw_merged": 3.17,
+     "harmonized": -0.081
     },
-    "gap_vs_modis": 0.074,
+    "gap_vs_modis": 0.062,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -3410,135 +3410,135 @@
      {
       "year": 2001,
       "burned_km2": 3040,
-      "modis": 18304,
-      "raw_merged": 18304,
-      "harmonized": 317529
+      "modis": 17936,
+      "raw_merged": 17936,
+      "harmonized": 304483
      },
      {
       "year": 2002,
       "burned_km2": 31397,
-      "modis": 140004,
-      "raw_merged": 140004,
-      "harmonized": 778667
+      "modis": 136964,
+      "raw_merged": 136964,
+      "harmonized": 733775
      },
      {
       "year": 2003,
       "burned_km2": 11639,
-      "modis": 74297,
-      "raw_merged": 74297,
-      "harmonized": 353653
+      "modis": 72464,
+      "raw_merged": 72464,
+      "harmonized": 335656
      },
      {
       "year": 2004,
       "burned_km2": 32884,
-      "modis": 125142,
-      "raw_merged": 125142,
-      "harmonized": 610825
+      "modis": 121982,
+      "raw_merged": 121982,
+      "harmonized": 579214
      },
      {
       "year": 2005,
       "burned_km2": 11230,
-      "modis": 79218,
-      "raw_merged": 79218,
-      "harmonized": 375904
+      "modis": 77235,
+      "raw_merged": 77235,
+      "harmonized": 358733
      },
      {
       "year": 2006,
       "burned_km2": 35517,
-      "modis": 161637,
-      "raw_merged": 161637,
-      "harmonized": 823418
+      "modis": 158840,
+      "raw_merged": 158840,
+      "harmonized": 781162
      },
      {
       "year": 2007,
       "burned_km2": 5394,
-      "modis": 52246,
-      "raw_merged": 52246,
-      "harmonized": 240911
+      "modis": 51165,
+      "raw_merged": 51165,
+      "harmonized": 230141
      },
      {
       "year": 2008,
       "burned_km2": 4237,
-      "modis": 50025,
-      "raw_merged": 50025,
-      "harmonized": 229487
+      "modis": 48923,
+      "raw_merged": 48923,
+      "harmonized": 218451
      },
      {
       "year": 2009,
       "burned_km2": 21276,
-      "modis": 115380,
-      "raw_merged": 115380,
-      "harmonized": 536586
+      "modis": 113292,
+      "raw_merged": 113292,
+      "harmonized": 512677
      },
      {
       "year": 2010,
       "burned_km2": 3882,
-      "modis": 32458,
-      "raw_merged": 32458,
-      "harmonized": 149242
+      "modis": 31638,
+      "raw_merged": 31638,
+      "harmonized": 142221
      },
      {
       "year": 2011,
       "burned_km2": 10041,
-      "modis": 70739,
-      "raw_merged": 70739,
-      "harmonized": 331860
+      "modis": 69424,
+      "raw_merged": 69424,
+      "harmonized": 315321
      },
      {
       "year": 2012,
       "burned_km2": 10810,
-      "modis": 80974,
-      "raw_merged": 360802,
-      "harmonized": 368293
+      "modis": 79646,
+      "raw_merged": 353647,
+      "harmonized": 354444
      },
      {
       "year": 2013,
       "burned_km2": 7942,
-      "modis": 62424,
-      "raw_merged": 295706,
-      "harmonized": 295836
+      "modis": 61189,
+      "raw_merged": 289433,
+      "harmonized": 286844
      },
      {
       "year": 2014,
       "burned_km2": 25963,
-      "modis": 124736,
-      "raw_merged": 622231,
-      "harmonized": 628722
+      "modis": 122212,
+      "raw_merged": 598094,
+      "harmonized": 593791
      },
      {
       "year": 2015,
       "burned_km2": 33974,
-      "modis": 190059,
-      "raw_merged": 1002643,
-      "harmonized": 1019452
+      "modis": 187071,
+      "raw_merged": 949427,
+      "harmonized": 943751
      },
      {
       "year": 2016,
       "burned_km2": 4188,
-      "modis": 33318,
-      "raw_merged": 161144,
-      "harmonized": 162135
+      "modis": 32293,
+      "raw_merged": 156809,
+      "harmonized": 155185
      },
      {
       "year": 2017,
       "burned_km2": 3452,
-      "modis": 24959,
-      "raw_merged": 123997,
-      "harmonized": 125502
+      "modis": 24110,
+      "raw_merged": 120842,
+      "harmonized": 119553
      },
      {
       "year": 2018,
       "burned_km2": 11637,
-      "modis": 46984,
-      "raw_merged": 242250,
-      "harmonized": 243003
+      "modis": 46329,
+      "raw_merged": 237212,
+      "harmonized": 237123
      },
      {
       "year": 2019,
       "burned_km2": 23266,
-      "modis": 97775,
-      "raw_merged": 481488,
-      "harmonized": 481488
+      "modis": 96100,
+      "raw_merged": 470259,
+      "harmonized": 470259
      }
     ]
    },
@@ -3546,16 +3546,16 @@
     "region": "Australia and New Zealand",
     "burned_km2_per_year": 500768,
     "hotspots_per_km2": {
-     "modis": 0.529,
-     "raw_merged": 1.386,
-     "harmonized": 2.696
+     "modis": 0.528,
+     "raw_merged": 1.382,
+     "harmonized": 2.675
     },
     "step2012": {
      "modis": 0.009,
-     "raw_merged": 3.708,
-     "harmonized": 0.006
+     "raw_merged": 3.706,
+     "harmonized": 0.001
     },
-    "gap_vs_modis": -0.003,
+    "gap_vs_modis": -0.008,
     "pettitt_ratio": {
      "raw_merged": {
       "year": 2012,
@@ -3574,135 +3574,135 @@
      {
       "year": 2001,
       "burned_km2": 935806,
-      "modis": 234718,
-      "raw_merged": 234718,
-      "harmonized": 2549999
+      "modis": 234229,
+      "raw_merged": 234229,
+      "harmonized": 2515725
      },
      {
       "year": 2002,
       "burned_km2": 769649,
-      "modis": 334577,
-      "raw_merged": 334577,
-      "harmonized": 2053399
+      "modis": 334022,
+      "raw_merged": 334022,
+      "harmonized": 2025208
      },
      {
       "year": 2003,
       "burned_km2": 316443,
-      "modis": 211996,
-      "raw_merged": 211996,
-      "harmonized": 1032535
+      "modis": 211299,
+      "raw_merged": 211299,
+      "harmonized": 1021629
      },
      {
       "year": 2004,
       "burned_km2": 639420,
-      "modis": 310906,
-      "raw_merged": 310906,
-      "harmonized": 1434953
+      "modis": 310219,
+      "raw_merged": 310219,
+      "harmonized": 1417964
      },
      {
       "year": 2005,
       "burned_km2": 279761,
-      "modis": 188617,
-      "raw_merged": 188617,
-      "harmonized": 914650
+      "modis": 188002,
+      "raw_merged": 188002,
+      "harmonized": 912779
      },
      {
       "year": 2006,
       "burned_km2": 575778,
-      "modis": 303879,
-      "raw_merged": 303879,
-      "harmonized": 1404246
+      "modis": 303113,
+      "raw_merged": 303113,
+      "harmonized": 1388718
      },
      {
       "year": 2007,
       "burned_km2": 515650,
-      "modis": 254427,
-      "raw_merged": 254427,
-      "harmonized": 1177526
+      "modis": 253777,
+      "raw_merged": 253777,
+      "harmonized": 1177610
      },
      {
       "year": 2008,
       "burned_km2": 316116,
-      "modis": 182940,
-      "raw_merged": 182940,
-      "harmonized": 864057
+      "modis": 182432,
+      "raw_merged": 182432,
+      "harmonized": 862494
      },
      {
       "year": 2009,
       "burned_km2": 407800,
-      "modis": 251154,
-      "raw_merged": 251154,
-      "harmonized": 1257169
+      "modis": 250474,
+      "raw_merged": 250474,
+      "harmonized": 1243649
      },
      {
       "year": 2010,
       "burned_km2": 184920,
-      "modis": 119946,
-      "raw_merged": 119946,
-      "harmonized": 550430
+      "modis": 119468,
+      "raw_merged": 119468,
+      "harmonized": 549145
      },
      {
       "year": 2011,
       "burned_km2": 880538,
-      "modis": 436517,
-      "raw_merged": 436517,
-      "harmonized": 2016584
+      "modis": 435746,
+      "raw_merged": 435746,
+      "harmonized": 2008492
      },
      {
       "year": 2012,
       "burned_km2": 899662,
-      "modis": 474199,
-      "raw_merged": 2132726,
-      "harmonized": 2205412
+      "modis": 473485,
+      "raw_merged": 2129305,
+      "harmonized": 2188667
      },
      {
       "year": 2013,
       "burned_km2": 284381,
-      "modis": 189737,
-      "raw_merged": 935696,
-      "harmonized": 934497
+      "modis": 188950,
+      "raw_merged": 931644,
+      "harmonized": 922061
      },
      {
       "year": 2014,
       "burned_km2": 468402,
-      "modis": 256323,
-      "raw_merged": 1206450,
-      "harmonized": 1209437
+      "modis": 255674,
+      "raw_merged": 1202123,
+      "harmonized": 1187682
      },
      {
       "year": 2015,
       "burned_km2": 422025,
-      "modis": 238887,
-      "raw_merged": 1131872,
-      "harmonized": 1118847
+      "modis": 238203,
+      "raw_merged": 1128078,
+      "harmonized": 1114365
      },
      {
       "year": 2016,
       "burned_km2": 242937,
-      "modis": 158381,
-      "raw_merged": 764333,
-      "harmonized": 759133
+      "modis": 157833,
+      "raw_merged": 761883,
+      "harmonized": 753888
      },
      {
       "year": 2017,
       "burned_km2": 491943,
-      "modis": 271772,
-      "raw_merged": 1225968,
-      "harmonized": 1210891
+      "modis": 271129,
+      "raw_merged": 1223269,
+      "harmonized": 1208235
      },
      {
       "year": 2018,
       "burned_km2": 521776,
-      "modis": 305129,
-      "raw_merged": 1420606,
-      "harmonized": 1417425
+      "modis": 304652,
+      "raw_merged": 1417119,
+      "harmonized": 1416143
      },
      {
       "year": 2019,
       "burned_km2": 361593,
-      "modis": 308936,
-      "raw_merged": 1539019,
-      "harmonized": 1539019
+      "modis": 308074,
+      "raw_merged": 1533649,
+      "harmonized": 1533649
      }
     ]
    }
