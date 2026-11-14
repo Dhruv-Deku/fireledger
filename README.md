@@ -18,6 +18,7 @@ NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 | `pipeline/burned_area.py` | independent check against MODIS burned area (MCD64CMQ, GFED regions) → `data/derived/burned_area.json` |
 | `pipeline/build_grid.py` | harmonized 0.25° monthly grid → `data/derived/grid.parquet` (fast path for big areas, map layer) |
 | `pipeline/fetch_recent.py` | the current year (no archive zip yet) from the FIRMS area API → `data/hotspots/<product>_<year>.parquet` |
+| `pipeline/fetch_extras.py` | context and validation data that needs no account (CREAMS bulletins, GFED5, weather, fire weather, population, GOES, protected areas, crop calendars) → `data/external/` |
 | `run_api.bat`, `update_data.bat` | Windows: start the API; download this year's hotspots and swap them in |
 | `api/` | FastAPI backend (`main.py`), shared weight logic (`weights.py`) |
 | `app/` | web app (Next.js) |
@@ -314,6 +315,23 @@ exact points; India, Africa or the whole world takes under 1.5 s from the grid.
 ## Data
 
 Boundaries: Natural Earth 1:10m admin-0 (India point of view) and admin-1, public domain.
+
+Extra data (`pipeline/fetch_extras.py`, each folder in `data/external/` has a `SOURCE.txt` with
+its link and licence; about 10 GB, the fire-weather part runs overnight):
+
+| Folder | What | For |
+|---|---|---|
+| `creams/` | ICAR-IARI CREAMS daily crop-residue fire bulletins, 2022–2026 (PDF) | official Punjab/Haryana counts to compare with ours |
+| `gfed5/` | GFED5 burned area, 0.25°, monthly, to 2022 (Zenodo, CC BY 4.0) | second burned-area check |
+| `weather/` | NOAA PSL monthly precipitation (GPCP, PREC/L), temperature (GHCN_CAMS), soil moisture (CPC) | "driest month in 10 years" notes |
+| `fwi/` | NASA GFWED fire weather (MERRA-2), reduced to monthly means | fire danger next to fire activity |
+| `population/` | WorldPop 2020, 1 km (CC BY 4.0) | people living near fires |
+| `goes16_fdc/` | GOES-16 full-disk fire product, hourly, Aug–Sep 2024 | the daily fire cycle between overpasses |
+| `wdpa/` | World Database on Protected Areas (non-commercial, no redistribution) | fires inside protected areas |
+| `crop_calendar/` | GGCMI Phase 3 crop calendars, 0.5° (Zenodo) | why residue burning peaks when it does |
+
+Not downloaded because they need an account: MODIS land cover MCD12C1 and cloud fraction
+MOD08_M3 (Earthdata), ERA5 and Copernicus fire danger (CDS), Sentinel-5P (Copernicus).
 
 NASA FIRMS archive (standard products): MODIS C6.1 MCD14ML, VIIRS 375 m VNP14IMG (S-NPP)
 and VJ114IMG (NOAA-20). https://firms.modaps.eosdis.nasa.gov/. FIRMS data is provided
