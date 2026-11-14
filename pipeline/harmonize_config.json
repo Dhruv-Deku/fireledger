@@ -1,5 +1,5 @@
 {
-  "note": "Shipped harmonization settings (read by calibrate.py, flags.py, validate.py). Chosen 15 Nov 2026 by the search in pipeline/experiments_2012.md: each setting kept only if it passed more checks with no regressions, strengths set by held-out error.",
+  "note": "Shipped harmonization settings (read by calibrate.py, flags.py, validate.py). Chosen 15 Nov 2026 by the search in docs/experiments_2012.md: each setting kept only if it passed more checks with no regressions, strengths set by held-out error.",
   "config": {
     "static_mask": "persistent+typed_vbuffer",
     "n0_factor": {

@@ -2,7 +2,7 @@
 
 ## 15 Nov: the 2012-jump work (reply to PROMPT_FIX_2012_JUMP.md)
 
-Full write-up, diagnosis tables and every experiment: `pipeline/experiments_2012.md`.
+Full write-up, diagnosis tables and every experiment: `docs/experiments_2012.md`.
 
 **Result on our copy of your 27 checks** (`pipeline/check_2012.py`, live API): **20 → 21 pass**, no
 regressions.

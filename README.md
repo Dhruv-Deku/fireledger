@@ -19,7 +19,7 @@ NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 | `pipeline/build_grid.py` | harmonized 0.25° monthly grid → `data/derived/grid.parquet` (fast path for big areas, map layer) |
 | `pipeline/fetch_recent.py` | the current year (no archive zip yet) from the FIRMS area API → `data/hotspots/<product>_<year>.parquet` |
 | `pipeline/harmonize_config.json` | the shipped fitting settings, read by calibrate, flags and validate |
-| `pipeline/check_2012.py`, `pipeline/jump2012.py` | the app's accuracy checks against the live API; fast what-if runs of the factor table (`pipeline/experiments_2012.md`) |
+| `pipeline/check_2012.py`, `pipeline/jump2012.py` | the app's accuracy checks against the live API; fast what-if runs of the factor table (`docs/experiments_2012.md`) |
 | `pipeline/fetch_extras.py` | context and validation data that needs no account (CREAMS bulletins, GFED5, weather, fire weather, population, GOES, protected areas, crop calendars) → `data/external/` |
 | `run_api.bat`, `update_data.bat` | Windows: start the API; download this year's hotspots and swap them in |
 | `api/` | FastAPI backend (`main.py`), shared weight logic (`weights.py`) |
@@ -131,7 +131,7 @@ How the factors are learned (`pipeline/calibrate.py`):
   mask, smoothing strengths, month pooling) that `calibrate.py`, `flags.py` and `validate.py` read.
   The S-NPP → NOAA-20 factor is pooled almost to its month × day/night value, since the two
   carry the same instrument. Each 1° cell borrows 10% from its neighbouring months. How they
-  were chosen, with the full results table: `pipeline/experiments_2012.md`.
+  were chosen, with the full results table: `docs/experiments_2012.md`.
 - **Uncertainty.** Monthly totals get **conformal** 90% bands, learned from the held-out
   errors in `pipeline/validate.py`. The band width depends on the size of the total: bigger
   totals get tighter bands. The NOAA-20 part is observed and has no band. The S-NPP part
@@ -161,7 +161,7 @@ with what S-NPP actually saw (vegetation fires, matched days). The error is
 | *tried:* + FRP-aware adjustment | 17.0% | 4.0% | 1.9% |
 | *tried:* + zero-aware quantile mapping | 16.9% | 4.0% | 1.8% (bias −0.4%) |
 
-Before the 15 Nov work (`pipeline/experiments_2012.md`) FireLedger's row was 17.6% / 4.18% / 2.0%.
+Before the 15 Nov work (`docs/experiments_2012.md`) FireLedger's row was 17.6% / 4.18% / 2.0%.
 Most of the gain is the static mask built from both sensors: vegetation factors no longer learn
 from lava and flares.
 
