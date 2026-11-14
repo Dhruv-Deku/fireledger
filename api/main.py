@@ -23,6 +23,7 @@ import duckdb
 import numpy as np
 import pandas as pd
 import pyarrow.csv as pacsv
+import pyarrow.parquet as pq
 import shapely
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,10 +59,13 @@ _con: duckdb.DuckDBPyConnection | None = None
 _lock = threading.Lock()
 LAST_DAY: date | None = None            # latest day any satellite observed
 MTD_KEY: tuple[int, int] | None = None  # (month, last day) that mtd_grid.parquet covers
+# first near-real-time day per unit's reference satellites: FIRMS reprocesses NRT data into
+# science-quality data ~3 months later, so counts from then on are preliminary
+NRT_FROM: dict[str, date] = {}
 
 
 def db() -> duckdb.DuckDBPyConnection:
-    global _con, LAST_DAY, MTD_KEY
+    global _con, LAST_DAY, MTD_KEY, NRT_FROM
     with _lock:
         if _con is None:
             con = duckdb.connect()
@@ -83,6 +87,14 @@ def db() -> duckdb.DuckDBPyConnection:
                 con.execute(f"""CREATE VIEW mtd_grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
                                 FROM read_parquet('{MTD_GRID.as_posix()}')""")
                 MTD_KEY = con.execute("SELECT any_value(m), any_value(through_day) FROM mtd_grid").fetchone()
+            recent = [f.as_posix() for f in (ROOT / "data" / "hotspots").glob("*.parquet")
+                      if b"fireledger_source" in (pq.read_schema(f).metadata or {})]
+            if recent:
+                nrt = dict(con.execute(f"""
+                    SELECT CASE WHEN sat IN ('Terra', 'Aqua') THEN 'modis' ELSE 'viirs' END, min(acq_date)
+                    FROM read_parquet({recent!r}) WHERE version LIKE '%NRT' AND sat IN ('Terra', 'Aqua', 'NOAA20')
+                    GROUP BY 1""").fetchall())
+                NRT_FROM = {k: v for k, v in nrt.items() if v is not None}
             _con = con
         return _con.cursor()
 
@@ -418,6 +430,9 @@ def monthly(q: Query) -> tuple[list[dict], str]:
     last = min(d1, LAST_DAY)
     for r in out:
         r["partial"], r["through_day"] = False, None
+        nrt = NRT_FROM.get(q.unit)
+        r["preliminary"] = bool(nrt and r["count"] is not None
+                                and date(r["year"], r["month"], _cal.monthrange(r["year"], r["month"])[1]) >= nrt)
         if ((r["year"], r["month"]) == (last.year, last.month) and r["count"] is not None
                 and last.day < _cal.monthrange(last.year, last.month)[1]):
             r["partial"], r["through_day"] = True, last.day
@@ -432,7 +447,8 @@ def health():
     lo = cur.execute("SELECT min(d) FROM avail").fetchone()[0]
     return {"ok": True, "coverage": {"start": str(lo), "end": str(LAST_DAY)},
             "mode": "full" if HAVE_POINTS else "grid-only",
-            "month_to_date": {"month": MTD_KEY[0], "through_day": MTD_KEY[1]} if MTD_KEY else None}
+            "month_to_date": {"month": MTD_KEY[0], "through_day": MTD_KEY[1]} if MTD_KEY else None,
+            "preliminary_from": {k: str(v) for k, v in NRT_FROM.items()}}
 
 
 @app.get("/api/proof")
@@ -683,6 +699,7 @@ def summary(q: Query):
         "year": ry, "month": rm,
         "label": f"{MONTHS[rm - 1]} {ry}" + (f" (1–{ref['through_day']})" if ref["partial"] else ""),
         "partial": ref["partial"], "through_day": ref["through_day"], "compared_with": compared,
+        "preliminary": ref["preliminary"],
         "count": ref["count"], "lo": ref["lo"], "hi": ref["hi"],
         "median": round(med, 1), "p25": round(p25, 1), "p75": round(p75, 1),
         "pct_diff": round(100 * (ref["count"] - med) / med, 1) if med else None,

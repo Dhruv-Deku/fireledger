@@ -51,11 +51,16 @@ Science-quality data is used where it exists, near-real-time after that, up to y
 On Windows `update_data.bat` runs all of it; elsewhere:
 
 ```bash
-python pipeline/fetch_recent.py         # ~2 GB for a full year on a fast connection; resumes if cut off
+python pipeline/fetch_recent.py         # ~2.8 GB, ~1 hour for Jan-Nov (the key's 5000 transactions / 10 min is the limit); resumes
 python pipeline/calibrate.py --avail-only   # new days only; factors stay as fitted
 python pipeline/build_grid.py --recent      # grid for the new year only -> grid_recent.parquet
 python pipeline/build_grid.py --mtd         # this month so far, days 1..D of every year (~30 s)
 ```
+
+Months from the first near-real-time day on are marked `preliminary` (FIRMS reprocesses NRT
+into science-quality data about 3 months later; `/api/health` gives `preliminary_from`).
+NOAA-21 can be downloaded with `--products viirs-jpss2 --start 2023-03-01`; it has no factors
+yet, so its hotspots count 0 and it is not part of the default run.
 
 The month the data stops in is marked `partial`. Its summary compares days 1..D with the same
 days of every other year (`compared_with: "Nov 1–13 in other years"`), not with full months.
@@ -246,14 +251,14 @@ All POST endpoints take the same body:
 
 | Endpoint | Returns |
 |---|---|
-| `POST /api/calendar` | `{unit, method, months: [{year, month, count, lo, hi, raw_modis, raw_viirs, raw_snpp, raw_noaa20, industrial, source, drift, partial, through_day}]}`. `industrial` is the part of `count` that comes from industrial or persistent hot spots. `count: null` means no satellite was observing. `raw_viirs` is the raw VIIRS record as it stands (NOAA-20, or S-NPP when NOAA-20 is missing). `source` is `VIIRS`, `S-NPP→VIIRS`, `MODIS→VIIRS`, `MODIS` or `no data`. `partial: true` marks the month the data stops in (`through_day` = its last day). |
-| `POST /api/summary` | `this_month {label, count, lo, hi, median, p25, p75, pct_diff, anomaly, percentile, rank, of_years, record, z, partial, through_day, compared_with}`, `industrial {share, warning}`, `season_timing` (see below), `busiest_months`, `busiest_years`, `critical_next` (next 3 months with typical count and level), `season` (12-month climatology), `annual`, `trend` (Sen's slope, Mann-Kendall p) |
+| `POST /api/calendar` | `{unit, method, months: [{year, month, count, lo, hi, raw_modis, raw_viirs, raw_snpp, raw_noaa20, industrial, source, drift, partial, through_day, preliminary}]}`. `industrial` is the part of `count` that comes from industrial or persistent hot spots. `count: null` means no satellite was observing. `raw_viirs` is the raw VIIRS record as it stands (NOAA-20, or S-NPP when NOAA-20 is missing). `source` is `VIIRS`, `S-NPP→VIIRS`, `MODIS→VIIRS`, `MODIS` or `no data`. `partial: true` marks the month the data stops in (`through_day` = its last day). |
+| `POST /api/summary` | `this_month {label, count, lo, hi, median, p25, p75, pct_diff, anomaly, percentile, rank, of_years, record, z, partial, through_day, compared_with, preliminary}`, `industrial {share, warning}`, `season_timing` (see below), `busiest_months`, `busiest_years`, `critical_next` (next 3 months with typical count and level), `season` (12-month climatology), `annual`, `trend` (Sen's slope, Mann-Kendall p) |
 | `POST /api/hotspots.csv` | every hotspot in the area, with `weight`, `weight_lo`, `weight_hi`, `counted`; streamed; returns 413 above 3M rows |
 | `GET /api/grid?year=2019&month=&unit=viirs&res=0.5` | map layer: `{max, cells: [[lat, lon, count]]}` (res 0.25 / 0.5 / 1 / 2°) |
 | `GET /api/proof` | the validation results above, as JSON (`ablation`, `jumps`, `band_coverage_90`, `conformal_bands`) |
 | `GET /api/regions?q=punjab&kind=state` | presets (247 countries, 4,596 states/provinces; Natural Earth, India point of view): `[{id, name, kind, country, subregion, bbox}]` |
 | `GET /api/regions/{id}` | one preset as a GeoJSON Feature |
-| `GET /api/health` | `{ok, coverage {start, end}, mode, month_to_date {month, through_day}}` |
+| `GET /api/health` | `{ok, coverage {start, end}, mode, month_to_date {month, through_day}, preliminary_from {viirs, modis}}` |
 
 `season_timing` in the summary covers the **main season**, meaning the run of months around
 the busiest month. The run stops at a trough, so separate seasons stay separate. It gives:

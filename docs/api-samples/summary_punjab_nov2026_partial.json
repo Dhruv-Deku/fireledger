@@ -1,0 +1,570 @@
+{
+ "unit": "viirs",
+ "method": "exact",
+ "this_month": {
+  "year": 2026,
+  "month": 11,
+  "label": "Nov 2026 (1–13)",
+  "partial": true,
+  "through_day": 13,
+  "compared_with": "Nov 1–13 in other years",
+  "preliminary": true,
+  "count": 2650.0,
+  "lo": 2650.0,
+  "hi": 2650.0,
+  "median": 26320.7,
+  "p25": 7168.1,
+  "p75": 35155.0,
+  "pct_diff": -89.9,
+  "anomaly": "below normal",
+  "percentile": 15.4,
+  "z": -1.35,
+  "rank": 23,
+  "of_years": 27,
+  "record": null,
+  "n_years": 26
+ },
+ "industrial": {
+  "share": 0.002,
+  "warning": null
+ },
+ "busiest_months": [
+  {
+   "month": 10,
+   "name": "Oct",
+   "mean": 29071.5,
+   "median": 30260.0,
+   "p75": 37335.8,
+   "share": 37.4,
+   "level": "peak"
+  },
+  {
+   "month": 11,
+   "name": "Nov",
+   "mean": 28193.9,
+   "median": 29125.0,
+   "p75": 42126.0,
+   "share": 36.3,
+   "level": "peak"
+  },
+  {
+   "month": 5,
+   "name": "May",
+   "mean": 16051.6,
+   "median": 15825.5,
+   "p75": 18997.0,
+   "share": 20.6,
+   "level": "peak"
+  }
+ ],
+ "busiest_years": [
+  {
+   "year": 2016,
+   "count": 107942.7
+  },
+  {
+   "year": 2001,
+   "count": 105100.4
+  },
+  {
+   "year": 2014,
+   "count": 95841.9
+  },
+  {
+   "year": 2020,
+   "count": 95831.0
+  },
+  {
+   "year": 2021,
+   "count": 94446.0
+  }
+ ],
+ "critical_next": [
+  {
+   "year": 2026,
+   "month": 12,
+   "name": "Dec",
+   "typical": 322.4,
+   "p75": 439.0,
+   "level": "low"
+  },
+  {
+   "year": 2027,
+   "month": 1,
+   "name": "Jan",
+   "typical": 175.3,
+   "p75": 293.0,
+   "level": "low"
+  },
+  {
+   "year": 2027,
+   "month": 2,
+   "name": "Feb",
+   "typical": 329.2,
+   "p75": 412.0,
+   "level": "low"
+  }
+ ],
+ "season": [
+  {
+   "month": 1,
+   "name": "Jan",
+   "mean": 211.1,
+   "median": 175.3,
+   "p75": 293.0,
+   "share": 0.3,
+   "level": "low"
+  },
+  {
+   "month": 2,
+   "name": "Feb",
+   "mean": 355.2,
+   "median": 329.2,
+   "p75": 412.0,
+   "share": 0.5,
+   "level": "low"
+  },
+  {
+   "month": 3,
+   "name": "Mar",
+   "mean": 300.0,
+   "median": 267.8,
+   "p75": 360.0,
+   "share": 0.4,
+   "level": "low"
+  },
+  {
+   "month": 4,
+   "name": "Apr",
+   "mean": 1754.7,
+   "median": 1410.0,
+   "p75": 2759.6,
+   "share": 2.3,
+   "level": "low"
+  },
+  {
+   "month": 5,
+   "name": "May",
+   "mean": 16051.6,
+   "median": 15825.5,
+   "p75": 18997.0,
+   "share": 20.6,
+   "level": "peak"
+  },
+  {
+   "month": 6,
+   "name": "Jun",
+   "mean": 467.2,
+   "median": 404.0,
+   "p75": 705.0,
+   "share": 0.6,
+   "level": "low"
+  },
+  {
+   "month": 7,
+   "name": "Jul",
+   "mean": 81.5,
+   "median": 54.3,
+   "p75": 116.0,
+   "share": 0.1,
+   "level": "low"
+  },
+  {
+   "month": 8,
+   "name": "Aug",
+   "mean": 17.2,
+   "median": 16.3,
+   "p75": 23.3,
+   "share": 0.0,
+   "level": "low"
+  },
+  {
+   "month": 9,
+   "name": "Sep",
+   "mean": 914.4,
+   "median": 347.8,
+   "p75": 741.8,
+   "share": 1.2,
+   "level": "low"
+  },
+  {
+   "month": 10,
+   "name": "Oct",
+   "mean": 29071.5,
+   "median": 30260.0,
+   "p75": 37335.8,
+   "share": 37.4,
+   "level": "peak"
+  },
+  {
+   "month": 11,
+   "name": "Nov",
+   "mean": 28193.9,
+   "median": 29125.0,
+   "p75": 42126.0,
+   "share": 36.3,
+   "level": "peak"
+  },
+  {
+   "month": 12,
+   "name": "Dec",
+   "mean": 354.9,
+   "median": 322.4,
+   "p75": 439.0,
+   "share": 0.5,
+   "level": "low"
+  }
+ ],
+ "season_timing": {
+  "months": [
+   "Oct",
+   "Nov"
+  ],
+  "peak": {
+   "month": 10,
+   "label": "Oct"
+  },
+  "start": {
+   "cal": 10.2,
+   "label": "early Oct"
+  },
+  "end": {
+   "cal": 11.8,
+   "label": "late Nov"
+  },
+  "length_months": 1.6,
+  "share_of_year": 0.736,
+  "second_season": {
+   "months": [
+    "May"
+   ],
+   "peak": {
+    "month": 5,
+    "label": "May"
+   },
+   "start": {
+    "cal": 5.1,
+    "label": "early May"
+   },
+   "end": {
+    "cal": 5.9,
+    "label": "late May"
+   },
+   "length_months": 0.8,
+   "share_of_year": 0.206,
+   "share_of_peak": 0.55
+  },
+  "core_3_months": {
+   "months": [
+    "Sep",
+    "Oct",
+    "Nov"
+   ],
+   "share": 0.748
+  },
+  "shift": {
+   "years": [
+    2001,
+    2025
+   ],
+   "start_days_per_decade": 4.0,
+   "start_p": 0.0,
+   "center_days_per_decade": 11.0,
+   "center_p": 0.0,
+   "end_days_per_decade": 3.8,
+   "end_p": 0.0,
+   "significant": true,
+   "text": "main season starts 4 days later per decade, ends 4 days later per decade"
+  },
+  "by_year": [
+   {
+    "year": 2001,
+    "start": 9.96,
+    "center": 10.47,
+    "end": 10.94,
+    "total": 75500.2
+   },
+   {
+    "year": 2002,
+    "start": 10.08,
+    "center": 10.52,
+    "end": 10.96,
+    "total": 45336.9
+   },
+   {
+    "year": 2003,
+    "start": 10.1,
+    "center": 10.56,
+    "end": 11.17,
+    "total": 47843.4
+   },
+   {
+    "year": 2004,
+    "start": 10.04,
+    "center": 10.54,
+    "end": 11.26,
+    "total": 44303.8
+   },
+   {
+    "year": 2005,
+    "start": 10.16,
+    "center": 10.82,
+    "end": 11.75,
+    "total": 75138.8
+   },
+   {
+    "year": 2006,
+    "start": 10.09,
+    "center": 10.66,
+    "end": 11.64,
+    "total": 49297.0
+   },
+   {
+    "year": 2007,
+    "start": 10.11,
+    "center": 10.71,
+    "end": 11.69,
+    "total": 70585.0
+   },
+   {
+    "year": 2008,
+    "start": 10.18,
+    "center": 10.96,
+    "end": 11.8,
+    "total": 67473.3
+   },
+   {
+    "year": 2009,
+    "start": 10.18,
+    "center": 10.94,
+    "end": 11.79,
+    "total": 65689.4
+   },
+   {
+    "year": 2010,
+    "start": 10.25,
+    "center": 11.18,
+    "end": 11.84,
+    "total": 66268.9
+   },
+   {
+    "year": 2011,
+    "start": 10.17,
+    "center": 10.86,
+    "end": 11.77,
+    "total": 69270.8
+   },
+   {
+    "year": 2012,
+    "start": 10.24,
+    "center": 11.16,
+    "end": 11.84,
+    "total": 71757.2
+   },
+   {
+    "year": 2013,
+    "start": 10.21,
+    "center": 11.1,
+    "end": 11.83,
+    "total": 64120.3
+   },
+   {
+    "year": 2014,
+    "start": 10.24,
+    "center": 11.2,
+    "end": 11.84,
+    "total": 74233.2
+   },
+   {
+    "year": 2015,
+    "start": 10.29,
+    "center": 11.25,
+    "end": 11.86,
+    "total": 63904.8
+   },
+   {
+    "year": 2016,
+    "start": 10.23,
+    "center": 11.15,
+    "end": 11.84,
+    "total": 90697.5
+   },
+   {
+    "year": 2017,
+    "start": 10.19,
+    "center": 10.98,
+    "end": 11.81,
+    "total": 60251.6
+   },
+   {
+    "year": 2018,
+    "start": 10.33,
+    "center": 11.28,
+    "end": 11.86,
+    "total": 61230.0
+   },
+   {
+    "year": 2019,
+    "start": 10.21,
+    "center": 11.08,
+    "end": 11.82,
+    "total": 44997.0
+   },
+   {
+    "year": 2020,
+    "start": 10.23,
+    "center": 11.17,
+    "end": 11.84,
+    "total": 78194.0
+   },
+   {
+    "year": 2021,
+    "start": 10.54,
+    "center": 11.39,
+    "end": 11.88,
+    "total": 77477.0
+   },
+   {
+    "year": 2022,
+    "start": 10.29,
+    "center": 11.25,
+    "end": 11.86,
+    "total": 50414.0
+   },
+   {
+    "year": 2023,
+    "start": 10.45,
+    "center": 11.37,
+    "end": 11.88,
+    "total": 33760.7
+   },
+   {
+    "year": 2024,
+    "start": 10.34,
+    "center": 11.34,
+    "end": 11.91,
+    "total": 10975.0
+   },
+   {
+    "year": 2025,
+    "start": 10.21,
+    "center": 11.24,
+    "end": 11.9,
+    "total": 4645.0
+   }
+  ]
+ },
+ "annual": [
+  {
+   "year": 2001,
+   "count": 105100.4
+  },
+  {
+   "year": 2002,
+   "count": 74527.9
+  },
+  {
+   "year": 2003,
+   "count": 69914.7
+  },
+  {
+   "year": 2004,
+   "count": 58084.9
+  },
+  {
+   "year": 2005,
+   "count": 90803.1
+  },
+  {
+   "year": 2006,
+   "count": 60703.1
+  },
+  {
+   "year": 2007,
+   "count": 87731.8
+  },
+  {
+   "year": 2008,
+   "count": 88915.3
+  },
+  {
+   "year": 2009,
+   "count": 83044.8
+  },
+  {
+   "year": 2010,
+   "count": 80623.6
+  },
+  {
+   "year": 2011,
+   "count": 85967.8
+  },
+  {
+   "year": 2012,
+   "count": 89921.4
+  },
+  {
+   "year": 2013,
+   "count": 83520.8
+  },
+  {
+   "year": 2014,
+   "count": 95841.9
+  },
+  {
+   "year": 2015,
+   "count": 79722.7
+  },
+  {
+   "year": 2016,
+   "count": 107942.7
+  },
+  {
+   "year": 2017,
+   "count": 76537.6
+  },
+  {
+   "year": 2018,
+   "count": 83323.1
+  },
+  {
+   "year": 2019,
+   "count": 68410.0
+  },
+  {
+   "year": 2020,
+   "count": 95831.0
+  },
+  {
+   "year": 2021,
+   "count": 94446.0
+  },
+  {
+   "year": 2022,
+   "count": 71699.0
+  },
+  {
+   "year": 2023,
+   "count": 54753.7
+  },
+  {
+   "year": 2024,
+   "count": 32598.4
+  },
+  {
+   "year": 2025,
+   "count": 24361.0
+  }
+ ],
+ "trend": {
+  "per_year": -891.5,
+  "pct_per_decade": -11.5,
+  "p_value": 0.218,
+  "significant": false,
+  "direction": "falling",
+  "years": [
+   2001,
+   2025
+  ]
+ }
+}

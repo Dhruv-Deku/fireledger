@@ -29,6 +29,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+import duckdb
 import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.csv as pcsv
@@ -47,11 +48,14 @@ PRODUCTS = {
     "modis": ("MODIS_SP", "MODIS_NRT"),
     "viirs-snpp": ("VIIRS_SNPP_SP", "VIIRS_SNPP_NRT"),
     "viirs-jpss1": ("VIIRS_NOAA20_SP", "VIIRS_NOAA20_NRT"),
+    # NOAA-21 (Mar 2023 on) has no factors yet, so it is opt-in: --products viirs-jpss2
+    "viirs-jpss2": ("VIIRS_NOAA21_SP", "VIIRS_NOAA21_NRT"),
 }
+CORE = ["modis", "viirs-snpp", "viirs-jpss1"]
 DAYS = 5          # FIRMS area API maximum day range per request
 REFRESH_DAYS = 3  # chunks reaching this close to the end date are fetched again
 MARKER = b"fireledger_source"
-SATS = {"Terra", "Aqua", "SNPP", "NOAA20"}
+SATS = {"Terra", "Aqua", "SNPP", "NOAA20", "NOAA21"}
 
 
 def map_key() -> str:
@@ -67,23 +71,41 @@ def map_key() -> str:
     return key
 
 
+LIMIT_WAIT = 60      # s; a MAP_KEY gets 5000 transactions per rolling 10 minutes and a world
+LIMIT_TRIES = 120    # query costs a lot of them, so a full year means waiting for the window
+
+
 def get(url: str, tries: int = 6) -> str:
-    """GET with retries for flaky connections and the API's transaction limit."""
-    for i in range(tries):
+    """GET with retries for flaky connections; waits out the API's transaction limit."""
+    fails = waits = 0
+    while True:
         try:
             with urllib.request.urlopen(url, timeout=600) as r:
                 text = r.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as e:  # the limit comes back as HTTP 400
+            text = e.read().decode("utf-8", "replace")
+            if "transaction" not in text.lower():
+                fails += 1
+                if fails >= tries:
+                    raise RuntimeError(f"HTTP {e.code} {text[:200]!r}: {url.split('/csv/')[0]}/...")
+                time.sleep(10 * 2 ** fails)
+                continue
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
-            wait = 10 * 2 ** i
-            print(f"  network error ({e}); retry in {wait}s", flush=True)
-            time.sleep(wait)
+            fails += 1
+            if fails >= tries:
+                raise RuntimeError(f"network failed {tries} times ({e}): {url.split('/csv/')[0]}/...")
+            print(f"  network error ({e}); retry in {10 * 2 ** fails}s", flush=True)
+            time.sleep(10 * 2 ** fails)
             continue
-        if "transaction" in text[:300].lower():  # "Exceeding allowed transaction limit"
-            print("  FIRMS transaction limit reached; waiting 2 min", flush=True)
-            time.sleep(120)
+        if "transaction" in text[:300].lower():  # "Exceeding allowed transaction limit."
+            waits += 1
+            if waits >= LIMIT_TRIES:
+                raise RuntimeError("FIRMS transaction limit did not clear after 2 hours")
+            if waits == 1:
+                print(f"  FIRMS transaction limit reached; waiting for the 10-minute window", flush=True)
+            time.sleep(LIMIT_WAIT)
             continue
         return text
-    raise RuntimeError(f"gave up after {tries} tries: {url.split('/csv/')[0]}/...")
 
 
 def availability(key: str) -> dict[str, tuple[date, date]]:
@@ -144,47 +166,58 @@ def fetch_chunk(key: str, src: str, d0: date, n: int, end: date) -> tuple[str, i
 
 
 def convert(product: str, year: int, chunks: list[tuple[str, date, int]]) -> int:
-    """All of this product-year's chunks -> data/hotspots/<product>_<year>.parquet."""
-    parts = []
-    for src, d0, n in chunks:
-        path = chunk_path(src, d0, n)
-        t = pcsv.read_csv(path, convert_options=pcsv.ConvertOptions(
-            column_types={k: v for k, v in READ_TYPES.items()}))
-        if t.num_rows == 0:
-            continue
-        d = t.column("acq_date")
-        keep = pc.and_(pc.greater_equal(d, pa.scalar(d0, pa.date32())),
-                       pc.less_equal(d, pa.scalar(d0 + timedelta(n - 1), pa.date32())))
-        keep = pc.and_(keep, pc.equal(pc.year(d), year))
-        for batch in t.filter(keep).combine_chunks().to_batches():
-            if batch.num_rows:
-                parts.append(normalise(batch, None))
+    """All of this product-year's chunks -> data/hotspots/<product>_<year>.parquet.
+
+    A VIIRS year is ~20M rows, more than this laptop can sort in memory, so rows are streamed
+    to an unsorted file first and DuckDB (which spills to disk) sorts them by place."""
     out = OUT / f"{product}_{year}.parquet"
     if out.exists() and MARKER not in (pq.read_schema(out).metadata or {}):
         raise RuntimeError(f"{out.name} came from an archive zip; not overwriting it")
-    if not parts:
+    raw = out.with_suffix(".unsorted.tmp")
+    rows, sats = 0, set()
+    with pq.ParquetWriter(raw, SCHEMA, compression="zstd") as writer:
+        for src, d0, n in chunks:
+            t = pcsv.read_csv(chunk_path(src, d0, n),
+                              convert_options=pcsv.ConvertOptions(column_types=dict(READ_TYPES)))
+            if t.num_rows == 0:
+                continue
+            d = t.column("acq_date")
+            keep = pc.and_(pc.greater_equal(d, pa.scalar(d0, pa.date32())),
+                           pc.less_equal(d, pa.scalar(d0 + timedelta(n - 1), pa.date32())))
+            keep = pc.and_(keep, pc.equal(pc.year(d), year))
+            for batch in t.filter(keep).combine_chunks().to_batches():
+                if batch.num_rows:
+                    part = normalise(batch, None)
+                    sats |= set(pc.unique(part.column("sat")).to_pylist())
+                    writer.write_table(part)
+                    rows += part.num_rows
+    if sats - SATS:
+        raw.unlink()
+        raise RuntimeError(f"unexpected satellite codes {sats - SATS} in {product} {year}")
+    if not rows:
+        raw.unlink()
         return 0
-    t = pa.concat_tables(parts)
-    bad = set(pc.unique(t.column("sat")).to_pylist()) - SATS
-    if bad:
-        raise RuntimeError(f"unexpected satellite codes {bad} in {product} {year}")
     # sort by 5 deg latitude band then longitude so each row group covers a small box
-    band = pc.floor(pc.divide(pc.add(t.column("lat"), 90.0), 5.0))
-    t = t.append_column("_band", band).sort_by([("_band", "ascending"), ("lon", "ascending")]).drop(["_band"])
-    t = t.replace_schema_metadata({MARKER: b"firms_api"})
     tmp = out.with_suffix(".parquet.tmp")
-    pq.write_table(t, tmp, compression="zstd",
-                   compression_level=3, row_group_size=100_000,
-                   use_dictionary=["sat", "dn", "conf", "version", "country"])
+    con = duckdb.connect()
+    con.execute("SET memory_limit = '2GB'")
+    con.execute(f"SET temp_directory = '{(ROOT / 'data' / 'tmp').as_posix()}'")
+    con.execute(f"""
+        COPY (SELECT * FROM read_parquet('{raw.as_posix()}') ORDER BY floor((lat + 90) / 5), lon)
+        TO '{tmp.as_posix()}' (FORMAT parquet, COMPRESSION zstd, ROW_GROUP_SIZE 100000,
+                               KV_METADATA {{{MARKER.decode()}: 'firms_api'}})
+    """)
+    con.close()
+    raw.unlink()
     os.replace(tmp, out)
-    return t.num_rows
+    return rows
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--start", type=date.fromisoformat, help="first day (default: Jan 1 after the last archive year)")
     ap.add_argument("--end", type=date.fromisoformat, help="last day (default: yesterday, UTC)")
-    ap.add_argument("--products", nargs="*", default=list(PRODUCTS))
+    ap.add_argument("--products", nargs="*", default=CORE, choices=list(PRODUCTS))
     ap.add_argument("--download-only", action="store_true")
     ap.add_argument("--convert-only", action="store_true")
     ap.add_argument("--workers", type=int, default=3)

@@ -1,0 +1,16 @@
+{
+ "ok": true,
+ "coverage": {
+  "start": "2000-11-01",
+  "end": "2026-11-13"
+ },
+ "mode": "full",
+ "month_to_date": {
+  "month": 11,
+  "through_day": 13
+ },
+ "preliminary_from": {
+  "viirs": "2026-08-01",
+  "modis": "2026-09-01"
+ }
+}
