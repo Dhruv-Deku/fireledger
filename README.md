@@ -16,6 +16,8 @@ NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 | `pipeline/build_regions.py` | country + state presets from Natural Earth → `data/derived/regions.parquet` |
 | `pipeline/validate.py` | proof pack (ablation, jump tests, band coverage) and conformal bands → `data/derived/{proof,bands}.json` |
 | `pipeline/build_grid.py` | harmonized 0.25° monthly grid → `data/derived/grid.parquet` (fast path for big areas, map layer) |
+| `pipeline/fetch_recent.py` | the current year (no archive zip yet) from the FIRMS area API → `data/hotspots/<product>_<year>.parquet` |
+| `run_api.bat`, `update_data.bat` | Windows: start the API; download this year's hotspots and swap them in |
 | `api/` | FastAPI backend (`main.py`), shared weight logic (`weights.py`) |
 | `app/` | web app (Next.js) |
 | `docs/api-samples/` | real responses from the API (Punjab, Córdoba) to build against |
@@ -41,6 +43,24 @@ python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
 
 Interactive API docs: http://localhost:8000/docs
+
+**Keeping it current.** FIRMS publishes a year's archive zip only after the year ends, so the
+current year comes from the FIRMS area API (free key from
+https://firms.modaps.eosdis.nasa.gov/api/map_key/, stored as `FIRMS_MAP_KEY=` in `.env`).
+Science-quality data is used where it exists, near-real-time after that, up to yesterday (UTC).
+On Windows `update_data.bat` runs all of it; elsewhere:
+
+```bash
+python pipeline/fetch_recent.py         # ~2 GB for a full year on a fast connection; resumes if cut off
+python pipeline/calibrate.py --avail-only   # new days only; factors stay as fitted
+python pipeline/build_grid.py --recent      # grid for the new year only -> grid_recent.parquet
+python pipeline/build_grid.py --mtd         # this month so far, days 1..D of every year (~30 s)
+```
+
+The month the data stops in is marked `partial`. Its summary compares days 1..D with the same
+days of every other year (`compared_with: "Nov 1–13 in other years"`), not with full months.
+When the year's archive zip appears, `ingest.py --force` replaces the downloaded file and a
+full `build_grid.py` folds it into `grid.parquet`.
 
 **Grid-only mode:** copy just `data/derived/` (~255 MB) to another machine and the API
 runs from the grid alone (calendar, summary and map layer; no hotspot CSV).
@@ -205,7 +225,7 @@ All POST endpoints take the same body:
   "region": "IND-3249",
   "geometry": { "type": "Polygon", "coordinates": [[[73.9,30.0],[76.9,30.0],[76.9,32.5],[73.9,32.5],[73.9,30.0]]] },
   "start": "2000-11",
-  "end": "2025-12",
+  "end": "2026-11",
   "unit": "viirs",
   "daynight": "both",
   "hide_industrial": false,
@@ -217,7 +237,7 @@ All POST endpoints take the same body:
 - `geometry`: a Polygon or MultiPolygon, or a Feature or FeatureCollection. Holes work.
 - `region`: a preset id from `/api/regions` (e.g. `IND`, `ARG`, `IND-3249` = Punjab). It is
   used when `geometry` is empty.
-- `start` and `end`: `YYYY-MM` or `YYYY-MM-DD`.
+- `start` and `end`: `YYYY-MM` or `YYYY-MM-DD`. `end` defaults to the latest day with data.
 - `unit`: `viirs` or `modis`.
 - `daynight`: `D`, `N` or `both`.
 - `ref_month`: used by the summary only. It defaults to the last month in the range.
@@ -226,14 +246,14 @@ All POST endpoints take the same body:
 
 | Endpoint | Returns |
 |---|---|
-| `POST /api/calendar` | `{unit, method, months: [{year, month, count, lo, hi, raw_modis, raw_viirs, raw_snpp, raw_noaa20, industrial, source, drift}]}`. `industrial` is the part of `count` that comes from industrial or persistent hot spots. `count: null` means no satellite was observing. `raw_viirs` is the raw VIIRS record as it stands (NOAA-20, or S-NPP when NOAA-20 is missing). `source` is `VIIRS`, `S-NPP→VIIRS`, `MODIS→VIIRS`, `MODIS` or `no data`. |
-| `POST /api/summary` | `this_month {count, lo, hi, median, p25, p75, pct_diff, anomaly, percentile, rank, of_years, record, z}`, `industrial {share, warning}`, `season_timing` (see below), `busiest_months`, `busiest_years`, `critical_next` (next 3 months with typical count and level), `season` (12-month climatology), `annual`, `trend` (Sen's slope, Mann-Kendall p) |
+| `POST /api/calendar` | `{unit, method, months: [{year, month, count, lo, hi, raw_modis, raw_viirs, raw_snpp, raw_noaa20, industrial, source, drift, partial, through_day}]}`. `industrial` is the part of `count` that comes from industrial or persistent hot spots. `count: null` means no satellite was observing. `raw_viirs` is the raw VIIRS record as it stands (NOAA-20, or S-NPP when NOAA-20 is missing). `source` is `VIIRS`, `S-NPP→VIIRS`, `MODIS→VIIRS`, `MODIS` or `no data`. `partial: true` marks the month the data stops in (`through_day` = its last day). |
+| `POST /api/summary` | `this_month {label, count, lo, hi, median, p25, p75, pct_diff, anomaly, percentile, rank, of_years, record, z, partial, through_day, compared_with}`, `industrial {share, warning}`, `season_timing` (see below), `busiest_months`, `busiest_years`, `critical_next` (next 3 months with typical count and level), `season` (12-month climatology), `annual`, `trend` (Sen's slope, Mann-Kendall p) |
 | `POST /api/hotspots.csv` | every hotspot in the area, with `weight`, `weight_lo`, `weight_hi`, `counted`; streamed; returns 413 above 3M rows |
 | `GET /api/grid?year=2019&month=&unit=viirs&res=0.5` | map layer: `{max, cells: [[lat, lon, count]]}` (res 0.25 / 0.5 / 1 / 2°) |
 | `GET /api/proof` | the validation results above, as JSON (`ablation`, `jumps`, `band_coverage_90`, `conformal_bands`) |
 | `GET /api/regions?q=punjab&kind=state` | presets (247 countries, 4,596 states/provinces; Natural Earth, India point of view): `[{id, name, kind, country, subregion, bbox}]` |
 | `GET /api/regions/{id}` | one preset as a GeoJSON Feature |
-| `GET /api/health` | `{ok, coverage {start, end}, mode}` |
+| `GET /api/health` | `{ok, coverage {start, end}, mode, month_to_date {month, through_day}}` |
 
 `season_timing` in the summary covers the **main season**, meaning the run of months around
 the busiest month. The run stops at a trough, so separate seasons stay separate. It gives:

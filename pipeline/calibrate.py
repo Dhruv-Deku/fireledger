@@ -34,14 +34,19 @@ from __future__ import annotations
 
 import sys
 import time
+from datetime import date
 from pathlib import Path
 
 import duckdb
 import numpy as np
 import pandas as pd
 
+import pyarrow.parquet as pq
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from api.weights import PERS_JOIN, STATIC_SQL, create_pers  # noqa: E402
+from fetch_recent import MARKER  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 HOT = (ROOT / "data" / "hotspots" / "*.parquet").as_posix()
@@ -77,11 +82,9 @@ def connect() -> duckdb.DuckDBPyConnection:
     return con
 
 
-def build_avail(con) -> pd.DataFrame:
-    daily = con.execute(f"""
-        SELECT acq_date AS d, sat, count(*) AS n
-        FROM read_parquet('{HOT}') GROUP BY ALL
-    """).df()
+def build_avail(con, files: str | list[str] = HOT) -> pd.DataFrame:
+    src = repr(files) if isinstance(files, list) else f"'{files}'"
+    daily = con.execute(f"SELECT acq_date AS d, sat, count(*) AS n FROM read_parquet({src}) GROUP BY ALL").df()
     wide = daily.pivot(index="d", columns="sat", values="n").reindex(columns=SATS).fillna(0)
     wide = wide.reindex(pd.date_range(wide.index.min(), wide.index.max(), freq="D"), fill_value=0)
     avail = pd.DataFrame({"d": wide.index.date})
@@ -90,6 +93,25 @@ def build_avail(con) -> pd.DataFrame:
         avail[f"n_{s.lower()}"] = wide[s].to_numpy().astype("int64")
         avail[f"has_{s.lower()}"] = (wide[s] >= PRESENT_FRAC * med).fillna(False).to_numpy()
     return avail
+
+
+def update_avail(con) -> None:
+    """Redo availability for the years pipeline/fetch_recent.py downloads, keeping the archive
+    days exactly as the calibration was fitted with them. The year before is read too, so the
+    rolling median has context at the start of the new data."""
+    year_of = lambda f: int(f.stem.rsplit("_", 1)[1])  # noqa: E731
+    files = list((ROOT / "data" / "hotspots").glob("*.parquet"))
+    recent = [f for f in files if MARKER in (pq.read_schema(f).metadata or {})]
+    if not recent:
+        print("avail: no files from fetch_recent.py, nothing to add", flush=True)
+        return
+    first = date(min(map(year_of, recent)), 1, 1)
+    new = build_avail(con, [f.as_posix() for f in files if year_of(f) >= first.year - 1])
+    new = new[new.d >= first]
+    old = pd.read_parquet(DER / "avail.parquet")
+    pd.concat([old[old.d < first], new], ignore_index=True).to_parquet(DER / "avail.parquet", index=False)
+    up = {s: int(new[f"has_{s.lower()}"].sum()) for s in SATS}
+    print(f"avail: {len(new)} recent days {min(new.d)} .. {max(new.d)}, observing days {up}", flush=True)
 
 
 def build_cellcounts(con) -> None:
@@ -217,6 +239,9 @@ def main() -> None:
     DER.mkdir(parents=True, exist_ok=True)
     (ROOT / "data" / "tmp").mkdir(parents=True, exist_ok=True)
     con = connect()
+    if "--avail-only" in sys.argv:  # new days from fetch_recent.py; factors stay as fitted
+        update_avail(con)
+        return
 
     avail = build_avail(con)
     avail.to_parquet(DER / "avail.parquet", index=False)

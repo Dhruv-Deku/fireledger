@@ -76,7 +76,7 @@ def modis_conf_class(pct: pa.Array) -> pa.Array:
     return pc.if_else(pc.less(pct, 30), "l", pc.if_else(pc.less(pct, 80), "n", "h"))
 
 
-def normalise(batch: pa.RecordBatch, country: str) -> pa.Table:
+def normalise(batch: pa.RecordBatch, country: str | None) -> pa.Table:
     cols = {name: batch.column(name) for name in batch.schema.names}
     n = batch.num_rows
     is_modis = "brightness" in cols
@@ -89,7 +89,8 @@ def normalise(batch: pa.RecordBatch, country: str) -> pa.Table:
         conf = modis_conf_class(conf_pct)
     else:
         conf_pct = pa.nulls(n, pa.int8())
-        conf = cols["confidence"]
+        # archive files say l/n/h, the near-real-time feed low/nominal/high
+        conf = pc.utf8_lower(pc.utf8_slice_codeunits(cols["confidence"], 0, 1))
 
     return pa.table({
         "lat": cols["latitude"],

@@ -38,6 +38,8 @@ ROOT = Path(__file__).resolve().parents[1]
 HOT = (ROOT / "data" / "hotspots" / "*.parquet").as_posix()
 DER = ROOT / "data" / "derived"
 GRID = DER / "grid.parquet"
+GRID_RECENT = DER / "grid_recent.parquet"  # years added by pipeline/fetch_recent.py
+MTD_GRID = DER / "mtd_grid.parquet"        # the month in progress: days 1..D of every year
 REGIONS = DER / "regions.parquet"
 BANDS_PATH = DER / "bands.json"
 # conformal 90% bands learned from held-out years (pipeline/validate.py)
@@ -54,10 +56,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 _con: duckdb.DuckDBPyConnection | None = None
 _lock = threading.Lock()
+LAST_DAY: date | None = None            # latest day any satellite observed
+MTD_KEY: tuple[int, int] | None = None  # (month, last day) that mtd_grid.parquet covers
 
 
 def db() -> duckdb.DuckDBPyConnection:
-    global _con
+    global _con, LAST_DAY, MTD_KEY
     with _lock:
         if _con is None:
             con = duckdb.connect()
@@ -65,13 +69,20 @@ def db() -> duckdb.DuckDBPyConnection:
             if HAVE_POINTS:
                 con.execute(f"CREATE VIEW hot AS SELECT * FROM read_parquet('{HOT}')")
             con.execute(f"CREATE TABLE avail AS SELECT * FROM read_parquet('{(DER / 'avail.parquet').as_posix()}')")
+            LAST_DAY = con.execute("SELECT max(d) FROM avail "
+                                   "WHERE has_terra OR has_aqua OR has_snpp OR has_noaa20").fetchone()[0]
             con.execute(f"CREATE TABLE calib AS SELECT * FROM read_parquet('{(DER / 'calib.parquet').as_posix()}')")
             create_pers(con, DER)
             if REGIONS.exists():
                 con.execute(f"CREATE TABLE regions AS SELECT * FROM read_parquet('{REGIONS.as_posix()}')")
             if GRID.exists():
+                files = [f.as_posix() for f in (GRID, GRID_RECENT) if f.exists()]
                 con.execute(f"""CREATE VIEW grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
-                                FROM read_parquet('{GRID.as_posix()}')""")
+                                FROM read_parquet({files!r})""")
+            if MTD_GRID.exists():
+                con.execute(f"""CREATE VIEW mtd_grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
+                                FROM read_parquet('{MTD_GRID.as_posix()}')""")
+                MTD_KEY = con.execute("SELECT any_value(m), any_value(through_day) FROM mtd_grid").fetchone()
             _con = con
         return _con.cursor()
 
@@ -82,13 +93,20 @@ class Query(BaseModel):
     geometry: dict | None = Field(None, description="GeoJSON Polygon/MultiPolygon, Feature or FeatureCollection")
     region: str | None = Field(None, description="preset id from /api/regions (e.g. IND, ARG); used when geometry is empty")
     start: str = Field("2000-11", description="YYYY-MM or YYYY-MM-DD")
-    end: str = Field("2025-12", description="YYYY-MM or YYYY-MM-DD")
+    end: str | None = Field(None, description="YYYY-MM or YYYY-MM-DD; default = the latest day with data")
     unit: Literal["viirs", "modis"] = "viirs"
     daynight: Literal["D", "N", "both"] = "both"
     hide_industrial: bool = False
     ref_month: str | None = Field(None, description="summary only: YYYY-MM to compare with normal; default = last month in range")
     precision: Literal["auto", "exact", "grid"] = Field(
         "auto", description="exact = every hotspot point; grid = 0.25 deg cells (fast for continents); auto picks by area")
+
+
+def resolve_end(q: Query) -> None:
+    """No end date given: up to the latest day any satellite observed."""
+    if q.end is None:
+        db()
+        q.end = LAST_DAY.isoformat()
 
 
 def parse_day(s: str, end: bool) -> date:
@@ -194,11 +212,14 @@ def is_rect(geom) -> bool:
     return geom.equals(box(*geom.bounds))
 
 
-def rows_sql(q: Query, geom, cur, extra_cols: str = "") -> tuple[str, list]:
+def rows_sql(q: Query, geom, cur, extra_cols: str = "",
+             extra_where: list[str] | None = None, extra_params: list | None = None) -> tuple[str, list]:
     """SQL selecting every hotspot in the AOI with its weight w and band spread s."""
     where, params = filters(q, geom, True)
     where.append("h.acq_date BETWEEN ? AND ?")
     params += [parse_day(q.start, False), parse_day(q.end, True)]
+    where += extra_where or []
+    params += extra_params or []
     mask_join = ""
     if not is_rect(geom):
         name = f"aoi_{uuid.uuid4().hex}"
@@ -242,7 +263,7 @@ def monthly_points(q: Query, geom, cur):
     """, params).df()
 
 
-def monthly_grid(q: Query, geom, cur):
+def monthly_grid(q: Query, geom, cur, table: str = "grid"):
     """Same columns as monthly_points, from the 0.25 deg grid (cell centre inside the AOI)."""
     minx, miny, maxx, maxy = geom.bounds
     where, params = filters(q, geom, False)
@@ -260,7 +281,7 @@ def monthly_grid(q: Query, geom, cur):
                sum(raw_snpp) AS raw_snpp, sum(raw_noaa20) AS raw_noaa20,
                sum({from_modis}) AS w_modis, sum({from_snpp}) AS w_snpp,
                sum({v}) FILTER (WHERE h.static) AS w_industrial
-        FROM grid h WHERE {' AND '.join(where)} GROUP BY ALL
+        FROM {table} h WHERE {' AND '.join(where)} GROUP BY ALL
     """, params).df()
 
 
@@ -310,7 +331,24 @@ def viirs_band(count: float, from_modis: float, from_snpp: float,
     return max(lo, 0.0), hi
 
 
+def month_to_date(q: Query, geom, method: str, month: int, day: int) -> dict[int, float] | None:
+    """Harmonized count for days 1..day of `month` in every year of the range, so a month in
+    progress is compared with the same days of other years. None if the grid path has no
+    mtd_grid for exactly this month and day (pipeline/build_grid.py --mtd)."""
+    cur = db()
+    if method == "grid":
+        if MTD_KEY is None or tuple(MTD_KEY) != (month, day):
+            return None
+        df = monthly_grid(q, geom, cur, table="mtd_grid")
+    else:
+        inner, params = rows_sql(q, geom, cur, extra_where=["month(h.acq_date) = ?", "day(h.acq_date) <= ?"],
+                                 extra_params=[month, day])
+        df = cur.execute(f"SELECT year(acq_date) AS year, sum(w) AS count FROM ({inner}) GROUP BY 1", params).df()
+    return {int(y): float(c) for y, c in zip(df["year"], df["count"])}
+
+
 def monthly(q: Query) -> tuple[list[dict], str]:
+    resolve_end(q)
     cur = db()
     geom = aoi(q)
     method = "grid" if use_grid(q, geom) else "exact"
@@ -375,6 +413,14 @@ def monthly(q: Query) -> tuple[list[dict], str]:
                 "source": source,
             })
         y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+
+    # the month the data stops in, if it stops before the month ends
+    last = min(d1, LAST_DAY)
+    for r in out:
+        r["partial"], r["through_day"] = False, None
+        if ((r["year"], r["month"]) == (last.year, last.month) and r["count"] is not None
+                and last.day < _cal.monthrange(last.year, last.month)[1]):
+            r["partial"], r["through_day"] = True, last.day
     return out, method
 
 
@@ -383,9 +429,10 @@ def monthly(q: Query) -> tuple[list[dict], str]:
 @app.get("/api/health")
 def health():
     cur = db()
-    lo, hi = cur.execute("SELECT min(d), max(d) FROM avail").fetchone()
-    return {"ok": True, "coverage": {"start": str(lo), "end": str(hi)},
-            "mode": "full" if HAVE_POINTS else "grid-only"}
+    lo = cur.execute("SELECT min(d) FROM avail").fetchone()[0]
+    return {"ok": True, "coverage": {"start": str(lo), "end": str(LAST_DAY)},
+            "mode": "full" if HAVE_POINTS else "grid-only",
+            "month_to_date": {"month": MTD_KEY[0], "through_day": MTD_KEY[1]} if MTD_KEY else None}
 
 
 @app.get("/api/proof")
@@ -610,7 +657,15 @@ def summary(q: Query):
     if ref is None:
         raise HTTPException(422, f"ref_month {ry}-{rm:02d} is outside the covered range")
 
-    same = np.array([r["count"] for r in months if r["month"] == rm and r["year"] != ry])
+    others = {r["year"]: r["count"] for r in months if r["month"] == rm and r["year"] != ry}
+    period, compared = MONTHS[rm - 1], f"all of {MONTHS[rm - 1]} in other years"
+    if ref["partial"]:
+        mtd = month_to_date(q, aoi(q), method, rm, ref["through_day"])
+        if mtd is not None:
+            others = {y: mtd.get(y, 0.0) for y in others}
+            period = f"{MONTHS[rm - 1]} 1–{ref['through_day']}"
+            compared = f"{period} in other years"
+    same = np.array(list(others.values()), dtype=float)
     med = float(np.median(same)) if len(same) else 0.0
     p25, p75 = (float(np.percentile(same, 25)), float(np.percentile(same, 75))) if len(same) else (0.0, 0.0)
     mad = 1.4826 * float(np.median(np.abs(same - med))) if len(same) else 0.0
@@ -621,11 +676,13 @@ def summary(q: Query):
     n_all = len(same) + 1
     record = None
     if len(same) >= 5 and rank == 1:
-        record = f"most fire for {MONTHS[rm - 1]} in {n_all} years"
+        record = f"most fire for {period} in {n_all} years"
     elif len(same) >= 5 and rank == n_all:
-        record = f"least fire for {MONTHS[rm - 1]} in {n_all} years"
+        record = f"least fire for {period} in {n_all} years"
     this_month = {
-        "year": ry, "month": rm, "label": f"{MONTHS[rm - 1]} {ry}",
+        "year": ry, "month": rm,
+        "label": f"{MONTHS[rm - 1]} {ry}" + (f" (1–{ref['through_day']})" if ref["partial"] else ""),
+        "partial": ref["partial"], "through_day": ref["through_day"], "compared_with": compared,
         "count": ref["count"], "lo": ref["lo"], "hi": ref["hi"],
         "median": round(med, 1), "p25": round(p25, 1), "p75": round(p75, 1),
         "pct_diff": round(100 * (ref["count"] - med) / med, 1) if med else None,
@@ -696,6 +753,7 @@ CSV_COLS = """,
 def hotspots_csv(q: Query):
     if not HAVE_POINTS:
         raise HTTPException(503, "this server runs in grid-only mode; hotspot CSV needs the full data")
+    resolve_end(q)
     cur = db()
     geom = aoi(q)
     if GRID.exists() and geom.area > 25:
