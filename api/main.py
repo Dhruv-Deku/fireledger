@@ -10,6 +10,7 @@ for where the weights come from.
 from __future__ import annotations
 
 import calendar as _cal
+import functools
 import io
 import json
 import math
@@ -25,9 +26,10 @@ import pandas as pd
 import pyarrow.csv as pacsv
 import pyarrow.parquet as pq
 import shapely
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from scipy import stats
 from shapely.geometry import box, shape
@@ -51,9 +53,32 @@ CSV_MAX_ROWS = 3_000_000
 INDUSTRIAL_WARN = 0.10   # warn when this share of an area's harmonized count is industrial / persistent
 DRIFT_FROM = 2021       # MODIS overpass drift makes modis-unit months from here on not like-for-like
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+# quality flags per month (the app's badges): M counted from MODIS, C cross-calibrated VIIRS,
+# D MODIS orbit drift, B blind spot (MODIS saw under 1 in BLIND_SPOT of the fires VIIRS would)
+BLIND_SPOT = 8.0
+BUSY_SHARE = 0.25   # a month is "busy" if its median is at least this share of the peak month's
+LOOKAHEAD = 6       # critical_next looks this many months ahead
+# area presets for GET /api/presets: (id, name, Natural Earth admin-1 ids to merge)
+PRESETS = [
+    ("punjab", "Punjab, India", ["IND-3249"]),
+    ("haryana", "Haryana, India", ["IND-2430"]),
+    ("patagonia", "Northern Patagonia, Argentina", ["ARG-1276", "ARG-1297"]),
+    ("cordoba", "Córdoba, Argentina", ["ARG-1299"]),
+    ("mato-grosso", "Mato Grosso, Brazil", ["BRA-602"]),
+    ("california", "California, USA", ["USA-3521"]),
+    ("northern-territory", "Northern Territory, Australia", ["AUS-2650"]),
+    ("yakutia", "Sakha (Yakutia), Russia", ["RUS-2612"]),
+    ("central-kalimantan", "Central Kalimantan, Indonesia", ["IDN-1931"]),
+]
 
 app = FastAPI(title="FireLedger API", version="0.1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+@app.exception_handler(RequestValidationError)
+async def bad_body(request: Request, exc: RequestValidationError):
+    """A body that doesn't fit Query is a client error: 400, as the app expects."""
+    return JSONResponse(status_code=400, content={"detail": exc.errors()})
 
 _con: duckdb.DuckDBPyConnection | None = None
 _lock = threading.Lock()
@@ -107,6 +132,8 @@ class Query(BaseModel):
     start: str = Field("2000-11", description="YYYY-MM or YYYY-MM-DD")
     end: str | None = Field(None, description="YYYY-MM or YYYY-MM-DD; default = the latest day with data")
     unit: Literal["viirs", "modis"] = "viirs"
+    harmonized: bool = Field(True, description="false = the raw record as it stands (MODIS before VIIRS "
+                                               "existed, VIIRS after), i.e. the 'before' view with the 2012 jump")
     daynight: Literal["D", "N", "both"] = "both"
     hide_industrial: bool = False
     ref_month: str | None = Field(None, description="summary only: YYYY-MM to compare with normal; default = last month in range")
@@ -138,7 +165,7 @@ def parse_geometry(g: dict):
     else:
         geom = shape(g)
     if geom.is_empty or geom.geom_type not in ("Polygon", "MultiPolygon"):
-        raise HTTPException(422, "geometry must be a non-empty Polygon or MultiPolygon")
+        raise HTTPException(400, "geometry must be a non-empty Polygon or MultiPolygon")
     return shapely.make_valid(geom)
 
 
@@ -153,7 +180,7 @@ def aoi(q: Query):
         if row is None:
             raise HTTPException(404, f"unknown region {q.region!r}")
         return parse_geometry(json.loads(row[0]))
-    raise HTTPException(422, "send either geometry or region")
+    raise HTTPException(400, "send either geometry or region")
 
 
 # ---------------------------------------------------------------- core query
@@ -343,10 +370,11 @@ def viirs_band(count: float, from_modis: float, from_snpp: float,
     return max(lo, 0.0), hi
 
 
-def month_to_date(q: Query, geom, method: str, month: int, day: int) -> dict[int, float] | None:
-    """Harmonized count for days 1..day of `month` in every year of the range, so a month in
-    progress is compared with the same days of other years. None if the grid path has no
-    mtd_grid for exactly this month and day (pipeline/build_grid.py --mtd)."""
+def month_to_date(q: Query, geom, method: str, month: int, day: int) -> dict[int, dict] | None:
+    """Counts for days 1..day of `month` in every year of the range (harmonized `count`, plus
+    `raw_modis` and `raw_viirs`), so a month in progress is compared with the same days of other
+    years. None if the grid path has no mtd_grid for exactly this month and day
+    (pipeline/build_grid.py --mtd)."""
     cur = db()
     if method == "grid":
         if MTD_KEY is None or tuple(MTD_KEY) != (month, day):
@@ -355,11 +383,27 @@ def month_to_date(q: Query, geom, method: str, month: int, day: int) -> dict[int
     else:
         inner, params = rows_sql(q, geom, cur, extra_where=["month(h.acq_date) = ?", "day(h.acq_date) <= ?"],
                                  extra_params=[month, day])
-        df = cur.execute(f"SELECT year(acq_date) AS year, sum(w) AS count FROM ({inner}) GROUP BY 1", params).df()
-    return {int(y): float(c) for y, c in zip(df["year"], df["count"])}
+        df = cur.execute(f"""
+            SELECT year(acq_date) AS year, sum(w) AS count,
+                   count(*) FILTER (WHERE sat IN ('Terra', 'Aqua')) AS raw_modis, count(*) FILTER (WHERE rv) AS raw_viirs
+            FROM ({inner}) GROUP BY 1""", params).df()
+    return {int(r.year): {"count": float(r.count), "raw_modis": float(r.raw_modis), "raw_viirs": float(r.raw_viirs)}
+            for r in df.itertuples()}
 
 
-def monthly(q: Query) -> tuple[list[dict], str]:
+def month_flags(q: Query, y: int, count: float, raw_modis: int, from_modis: bool) -> str:
+    """Quality badges: M counted from MODIS, C cross-calibrated VIIRS, D MODIS orbit drift,
+    B blind spot (VIIRS would see BLIND_SPOT x more fires than MODIS did)."""
+    f = "M" if from_modis else ("C" if q.harmonized else "")
+    if from_modis and y >= DRIFT_FROM:
+        f += "D"
+    if from_modis and q.unit == "viirs" and q.harmonized and raw_modis > 0 and count / raw_modis >= BLIND_SPOT:
+        f += "B"
+    return f
+
+
+def monthly(q: Query) -> tuple[list[dict], str, dict]:
+    """Calendar months, the method used, and which months VIIRS was observing (for the raw view)."""
     resolve_end(q)
     cur = db()
     geom = aoi(q)
@@ -377,15 +421,17 @@ def monthly(q: Query) -> tuple[list[dict], str]:
         FROM avail WHERE d BETWEEN ? AND ? GROUP BY ALL
     """, [d0, d1]).df().set_index(["year", "month"])
 
-    out = []
+    out, viirs_cov = [], {}
     y, m = d0.year, d0.month
-    while (y, m) <= (d1.year, d1.month):
+    stop = min(d1, LAST_DAY)  # no months after the data ends
+    while (y, m) <= (stop.year, stop.month):
         has_cov = (y, m) in cov.index and (cov.loc[(y, m), "modis"] if q.unit == "modis"
                                             else bool(cov.loc[(y, m), ["modis", "snpp", "noaa20"]].any()))
+        viirs_cov[(y, m)] = (y, m) in cov.index and bool(cov.loc[(y, m), ["snpp", "noaa20"]].any())
         r = df.loc[(y, m)] if (y, m) in df.index else None
         count = float(r["count"]) if r is not None else 0.0
         if not has_cov:
-            out.append({"year": y, "month": m, "count": None, "lo": None, "hi": None,
+            out.append({"year": y, "month": m, "count": None, "lo": None, "hi": None, "flags": "",
                         "raw_modis": None, "raw_viirs": None, "raw_snpp": None, "raw_noaa20": None, "industrial": None,
                         "source": "no data",
                         "drift": False})
@@ -411,14 +457,22 @@ def monthly(q: Query) -> tuple[list[dict], str]:
                     lo, hi = min(lo, float(r["lo"])), max(hi, float(r["hi"]))
             else:
                 lo, hi = float(r["lo"]), float(r["hi"])
+            raw_modis = int(r["raw_modis"]) if r is not None else 0
+            raw_viirs = int(r["raw_viirs"]) if r is not None else 0
+            from_modis = q.unit == "modis" or source == "MODIS→VIIRS"
+            if not q.harmonized:  # the record as it stands: MODIS until VIIRS exists, then VIIRS
+                from_modis = q.unit == "modis" or not viirs_cov[(y, m)]
+                count = lo = hi = float(raw_modis if from_modis else raw_viirs)
+                source = "MODIS (raw)" if from_modis else "VIIRS (raw)"
             out.append({
                 "year": y, "month": m,
                 "drift": q.unit == "modis" and y >= DRIFT_FROM,
                 "count": round(count, 1),
                 "lo": round(lo, 1),
                 "hi": round(hi, 1),
-                "raw_modis": int(r["raw_modis"]) if r is not None else 0,
-                "raw_viirs": int(r["raw_viirs"]) if r is not None else 0,
+                "flags": month_flags(q, y, count, raw_modis, from_modis),
+                "raw_modis": raw_modis,
+                "raw_viirs": raw_viirs,
                 "raw_snpp": int(r["raw_snpp"]) if r is not None else 0,
                 "raw_noaa20": int(r["raw_noaa20"]) if r is not None else 0,
                 "industrial": round(float(np.nan_to_num(r["w_industrial"])), 1) if r is not None else 0.0,
@@ -436,7 +490,7 @@ def monthly(q: Query) -> tuple[list[dict], str]:
         if ((r["year"], r["month"]) == (last.year, last.month) and r["count"] is not None
                 and last.day < _cal.monthrange(last.year, last.month)[1]):
             r["partial"], r["through_day"] = True, last.day
-    return out, method
+    return out, method, viirs_cov
 
 
 # ---------------------------------------------------------------- endpoints
@@ -462,6 +516,31 @@ def proof():
     if ba.exists():
         out["burned_area"] = json.loads(ba.read_text(encoding="utf-8"))
     return out
+
+
+@functools.lru_cache(maxsize=1)
+def preset_list() -> list[dict]:
+    out = []
+    for pid, name, ids in PRESETS:
+        rows = db().execute(f"SELECT geojson FROM regions WHERE id IN ({', '.join('?' * len(ids))})", ids).fetchall()
+        if not rows:
+            continue
+        g = unary_union([parse_geometry(json.loads(r[0])) for r in rows]).buffer(0)
+        if g.geom_type == "MultiPolygon":  # the app takes one Polygon: keep the main landmass
+            g = max(g.geoms, key=lambda p: p.area)
+        g = g.simplify(0.01, preserve_topology=True)
+        rings = [g.exterior, *g.interiors]
+        out.append({"id": pid, "name": name, "geometry": {
+            "type": "Polygon", "coordinates": [[[round(x, 4), round(y, 4)] for x, y in r.coords] for r in rings]}})
+    return out
+
+
+@app.get("/api/presets")
+def presets():
+    """Ready-made areas for the app: [{id, name, geometry (GeoJSON Polygon)}]."""
+    if not REGIONS.exists():
+        raise HTTPException(503, "region presets not built: run pipeline/build_regions.py")
+    return preset_list()
 
 
 @app.get("/api/regions")
@@ -506,7 +585,7 @@ def grid_layer(year: int, month: int | None = None, unit: Literal["viirs", "modi
     if not GRID.exists():
         raise HTTPException(503, "grid not built yet: run pipeline/build_grid.py")
     if res not in (0.25, 0.5, 1.0, 2.0):
-        raise HTTPException(422, "res must be 0.25, 0.5, 1 or 2 (degrees)")
+        raise HTTPException(400, "res must be 0.25, 0.5, 1 or 2 (degrees)")
     f = int(res * 4)
     where, params = ["y = ?"], [year]
     if month:
@@ -529,7 +608,7 @@ def grid_layer(year: int, month: int | None = None, unit: Literal["viirs", "modi
 
 @app.post("/api/calendar")
 def calendar(q: Query):
-    months, method = monthly(q)
+    months, method, _ = monthly(q)
     return {"unit": q.unit, "method": method, "months": months}
 
 
@@ -664,7 +743,7 @@ def season_timing(months: list[dict], full: list[int]) -> dict | None:
 
 @app.post("/api/summary")
 def summary(q: Query):
-    months, method = monthly(q)
+    months, method, viirs_cov = monthly(q)
     months = [r for r in months if r["count"] is not None]
     if not months:
         raise HTTPException(404, "no satellite coverage in this date range")
@@ -675,16 +754,25 @@ def summary(q: Query):
         ry, rm = months[-1]["year"], months[-1]["month"]
     ref = next((r for r in months if (r["year"], r["month"]) == (ry, rm)), None)
     if ref is None:
-        raise HTTPException(422, f"ref_month {ry}-{rm:02d} is outside the covered range")
+        raise HTTPException(400, f"ref_month {ry}-{rm:02d} is outside the covered range")
 
     others = {r["year"]: r["count"] for r in months if r["month"] == rm and r["year"] != ry}
+    full_month = dict(others)
     period, compared = MONTHS[rm - 1], f"all of {MONTHS[rm - 1]} in other years"
+    same_days = False
     if ref["partial"]:
         mtd = month_to_date(q, aoi(q), method, rm, ref["through_day"])
         if mtd is not None:
-            others = {y: mtd.get(y, 0.0) for y in others}
+            def pick(y: int) -> float:
+                v = mtd.get(y, {})
+                if q.harmonized:
+                    return v.get("count", 0.0)
+                raw_viirs = q.unit == "viirs" and viirs_cov.get((y, rm), False)
+                return v.get("raw_viirs" if raw_viirs else "raw_modis", 0.0)
+            others = {y: pick(y) for y in others}
             period = f"{MONTHS[rm - 1]} 1–{ref['through_day']}"
             compared = f"{period} in other years"
+            same_days = True
     same = np.array(list(others.values()), dtype=float)
     med = float(np.median(same)) if len(same) else 0.0
     p25, p75 = (float(np.percentile(same, 25)), float(np.percentile(same, 75))) if len(same) else (0.0, 0.0)
@@ -704,11 +792,16 @@ def summary(q: Query):
         "label": f"{MONTHS[rm - 1]} {ry}" + (f" (1–{ref['through_day']})" if ref["partial"] else ""),
         "partial": ref["partial"], "through_day": ref["through_day"], "compared_with": compared,
         "preliminary": ref["preliminary"],
-        "count": ref["count"], "lo": ref["lo"], "hi": ref["hi"],
+        "count": ref["count"], "lo": ref["lo"], "hi": ref["hi"], "flags": ref["flags"],
+        "days_covered": ref["through_day"] if ref["partial"] else _cal.monthrange(ry, rm)[1],
         "median": round(med, 1), "p25": round(p25, 1), "p75": round(p75, 1),
-        "pct_diff": round(100 * (ref["count"] - med) / med, 1) if med else None,
-        "anomaly": anomaly_label(pct), "percentile": round(pct, 1), "z": round(z, 2),
-        "rank": rank, "of_years": n_all, "record": record, "n_years": int(len(same)),
+        "pct_diff": round(100 * (ref["count"] - med) / med, 1) if med else 0.0,
+        # robust z: (count - median) / (1.4826 x MAD) over the same month (same days) of other years
+        "anomaly": round(z, 2), "anomaly_label": anomaly_label(pct), "z": round(z, 2),
+        "percentile": round(pct, 1), "rank": rank, "of_years": n_all, "record": record, "n_years": int(len(same)),
+        "full_month_median": round(float(np.median(list(full_month.values()))), 1) if full_month else None,
+        "same_days_past": ([{"year": y, "count": round(c, 1)} for y, c in sorted(others.items())]
+                           if same_days else None),
     }
 
     # fire-season climatology from full years only
@@ -726,26 +819,46 @@ def summary(q: Query):
         c["share"] = round(100 * c["mean"] / total, 1)
         ratio = c["mean"] / (total / 12)
         c["level"] = "peak" if ratio >= 1.5 else "elevated" if ratio >= 1.0 else "low"
-    busiest_months = sorted(clim, key=lambda c: -c["mean"])[:3]
+
+    # busiest months, season and what's coming: median of every complete month in the range
+    # (not the current one), as the app's contract defines them
+    done = [r for r in months[:-1] if not r["partial"]]
+    med_by_month = {mo: float(np.median(v)) for mo in range(1, 13)
+                    if (v := [r["count"] for r in done if r["month"] == mo])}
+    busiest_months = [{"month": mo, "name": MONTHS[mo - 1], "median": round(med_by_month[mo], 1)}
+                      for mo in sorted(med_by_month, key=med_by_month.get, reverse=True)[:3]]
+    season, critical_next = None, []
+    if med_by_month:
+        peak = max(med_by_month, key=med_by_month.get)
+        busy = {mo for mo, v in med_by_month.items() if v >= BUSY_SHARE * med_by_month[peak]}
+        start = end = peak
+        while (start - 2) % 12 + 1 in busy and (start - 2) % 12 + 1 != peak:
+            start = (start - 2) % 12 + 1
+        while end % 12 + 1 in busy and end % 12 + 1 != peak:
+            end = end % 12 + 1
+        season = {"start_month": start, "peak_month": peak, "end_month": end,
+                  "text": f"{MONTHS[start - 1]}–{MONTHS[end - 1]}, peak {MONTHS[peak - 1]}" if start != end
+                  else f"{MONTHS[peak - 1]}"}
+        for i in range(1, LOOKAHEAD + 1):
+            mo = (rm - 1 + i) % 12 + 1
+            if mo in busy:
+                critical_next.append({"year": ry + (rm - 1 + i) // 12, "month": mo, "name": MONTHS[mo - 1],
+                                      "median": round(med_by_month[mo], 1),
+                                      "note": "peak month" if mo == peak else "historically busy"})
 
     annual = [{"year": y, "count": round(sum(r["count"] for r in months if r["year"] == y), 1)} for y in full]
-    busiest_years = sorted(annual, key=lambda a: -a["count"])[:5]
-
-    critical_next = []
-    for i in range(1, 4):
-        mm = (rm - 1 + i) % 12 + 1
-        c = clim[mm - 1]
-        critical_next.append({"year": ry + (rm - 1 + i) // 12, "month": mm, "name": c["name"],
-                              "typical": c["median"], "p75": c["p75"], "level": c["level"]})
+    busiest_years = [{"year": a["year"], "total": a["count"]}
+                     for a in sorted(annual, key=lambda a: -a["count"])[:3]]
 
     trend = None
-    if len(annual) >= 8:
+    if len(annual) >= 3:
         yrs = np.array([a["year"] for a in annual], float)
         cnt = np.array([a["count"] for a in annual], float)
         slope = stats.theilslopes(cnt, yrs)[0]
         tau, p = stats.kendalltau(yrs, cnt)
         mean = cnt.mean() or 1.0
-        trend = {"per_year": round(float(slope), 1), "pct_per_decade": round(float(1000 * slope / mean), 1),
+        trend = {"sen_slope_per_year": round(float(slope), 1), "per_year": round(float(slope), 1),
+                 "pct_per_decade": round(float(1000 * slope / mean), 1),
                  "p_value": round(float(p), 3), "significant": bool(p < 0.05),
                  "direction": "rising" if slope > 0 else "falling" if slope < 0 else "flat",
                  "years": [int(yrs[0]), int(yrs[-1])]}
@@ -758,10 +871,10 @@ def summary(q: Query):
                                  "(gas flares, plants, volcanoes). MODIS missed most small ones, so their numbers "
                                  "before 2012 can't be fully reconstructed: tick 'hide industrial' for a like-for-like record.")
 
-    return {"unit": q.unit, "method": method, "this_month": this_month, "industrial": industrial,
-            "busiest_months": busiest_months,
-            "busiest_years": busiest_years, "critical_next": critical_next,
-            "season": clim, "season_timing": season_timing(months, full), "annual": annual, "trend": trend}
+    return {"unit": q.unit, "harmonized": q.harmonized, "method": method, "this_month": this_month,
+            "industrial": industrial, "busiest_months": busiest_months, "busiest_years": busiest_years,
+            "season": season, "critical_next": critical_next, "trend": trend,
+            "season_timing": season_timing(months, full), "climatology": clim, "annual": annual}
 
 
 CSV_COLS = """,
@@ -770,8 +883,26 @@ CSV_COLS = """,
     h.conf_pct AS modis_confidence_pct, h.type, p.iy IS NOT NULL AS persistent, h.version, h.country"""
 
 
+CSV_CONTRACT = """
+    SELECT acq_date, lpad(CAST(acq_time AS VARCHAR), 4, '0') AS acq_time, latitude, longitude,
+           CASE sat WHEN 'NOAA20' THEN 'N20' WHEN 'SNPP' THEN 'N' WHEN 'NOAA21' THEN 'N21' ELSE sat END AS satellite,
+           CASE WHEN sat IN ('Terra', 'Aqua') THEN 'MODIS' ELSE 'VIIRS' END AS instrument,
+           frp, CASE WHEN sat IN ('Terra', 'Aqua') THEN CAST(modis_confidence_pct AS VARCHAR) ELSE confidence END
+               AS confidence,
+           daynight, type, round(w, 4) AS weight"""
+CSV_FULL = f"""
+    SELECT latitude, longitude, acq_date, acq_time, sat AS satellite, daynight, frp,
+           bright_fire, bright_bg, scan, track, confidence, modis_confidence_pct, type, persistent, version, country,
+           round(w, 4) AS weight,
+           round(w * exp(-{Z90} * s), 4) AS weight_lo,
+           round(w * exp({Z90} * s), 4) AS weight_hi,
+           w > 0 AS counted"""
+
+
 @app.post("/api/hotspots.csv")
-def hotspots_csv(q: Query):
+def hotspots_csv(q: Query, full: bool = False):
+    """Every hotspot in the area. Columns: the app's 11 (acq_date ... weight), or with ?full=true
+    also brightness, pixel size, persistent flag, version, country and the weight's 90% band."""
     if not HAVE_POINTS:
         raise HTTPException(503, "this server runs in grid-only mode; hotspot CSV needs the full data")
     resolve_end(q)
@@ -784,12 +915,7 @@ def hotspots_csv(q: Query):
                                      "Draw a smaller area or pick a shorter date range.")
     inner, params = rows_sql(q, geom, cur, CSV_COLS)
     reader = cur.execute(f"""
-        SELECT latitude, longitude, acq_date, acq_time, sat AS satellite, daynight, frp,
-               bright_fire, bright_bg, scan, track, confidence, modis_confidence_pct, type, persistent, version, country,
-               round(w, 4) AS weight,
-               round(w * exp(-{Z90} * s), 4) AS weight_lo,
-               round(w * exp({Z90} * s), 4) AS weight_hi,
-               w > 0 AS counted
+        {CSV_FULL if full else CSV_CONTRACT}
         FROM ({inner}) ORDER BY acq_date, acq_time
     """, params).fetch_record_batch(100_000)
 
@@ -797,7 +923,8 @@ def hotspots_csv(q: Query):
         header = True
         for batch in reader:
             buf = io.BytesIO()
-            pacsv.write_csv(batch, buf, pacsv.WriteOptions(include_header=header))
+            pacsv.write_csv(batch, buf, pacsv.WriteOptions(include_header=header, quoting_style="none",
+                                                           quoting_header="none"))
             header = False
             yield buf.getvalue()
 

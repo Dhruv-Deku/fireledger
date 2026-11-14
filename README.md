@@ -256,6 +256,7 @@ All POST endpoints take the same body:
   "unit": "viirs",
   "daynight": "both",
   "hide_industrial": false,
+  "harmonized": true,
   "ref_month": "2025-11",
   "precision": "auto"
 }
@@ -267,15 +268,21 @@ All POST endpoints take the same body:
 - `start` and `end`: `YYYY-MM` or `YYYY-MM-DD`. `end` defaults to the latest day with data.
 - `unit`: `viirs` or `modis`.
 - `daynight`: `D`, `N` or `both`.
+- `harmonized`: `false` returns the record as it stands (raw MODIS before VIIRS, raw VIIRS after),
+  the "before" view with the 2012 jump.
 - `ref_month`: used by the summary only. It defaults to the last month in the range.
+
+The app's contract (`mock.json` + its HANDOFF) and how the API meets it are in
+[`docs/API_FOR_APP.md`](docs/API_FOR_APP.md). A bad body returns 400.
 - `precision`: `auto` uses exact points for areas under 50 deg² (about 7° × 7°) and the grid above that.
   You can also force `exact` or `grid`.
 
 | Endpoint | Returns |
 |---|---|
-| `POST /api/calendar` | `{unit, method, months: [{year, month, count, lo, hi, raw_modis, raw_viirs, raw_snpp, raw_noaa20, industrial, source, drift, partial, through_day, preliminary}]}`. `industrial` is the part of `count` that comes from industrial or persistent hot spots. `count: null` means no satellite was observing. `raw_viirs` is the raw VIIRS record as it stands (NOAA-20, or S-NPP when NOAA-20 is missing). `source` is `VIIRS`, `S-NPP→VIIRS`, `MODIS→VIIRS`, `MODIS` or `no data`. `partial: true` marks the month the data stops in (`through_day` = its last day). |
-| `POST /api/summary` | `this_month {label, count, lo, hi, median, p25, p75, pct_diff, anomaly, percentile, rank, of_years, record, z, partial, through_day, compared_with, preliminary}`, `industrial {share, warning}`, `season_timing` (see below), `busiest_months`, `busiest_years`, `critical_next` (next 3 months with typical count and level), `season` (12-month climatology), `annual`, `trend` (Sen's slope, Mann-Kendall p) |
-| `POST /api/hotspots.csv` | every hotspot in the area, with `weight`, `weight_lo`, `weight_hi`, `counted`; streamed; returns 413 above 3M rows |
+| `POST /api/calendar` | `{unit, method, months: [{year, month, count, lo, hi, flags, raw_modis, raw_viirs, raw_snpp, raw_noaa20, industrial, source, drift, partial, through_day, preliminary}]}`, ending at the latest day with data. `flags`: `M` counted from MODIS, `C` cross-calibrated VIIRS, `D` MODIS orbit drift, `B` blind spot (VIIRS would see ≥ 8× what MODIS did). `industrial` is the part of `count` that comes from industrial or persistent hot spots. `count: null` means no satellite was observing. `raw_viirs` is the raw VIIRS record as it stands (NOAA-20, or S-NPP when NOAA-20 is missing). `source` is `VIIRS`, `S-NPP→VIIRS`, `MODIS→VIIRS`, `MODIS` or `no data`. `partial: true` marks the month the data stops in (`through_day` = its last day). |
+| `POST /api/summary` | `this_month {year, month, count, median, p25, p75, pct_diff, anomaly (robust z), anomaly_label, days_covered, compared_with, same_days_past, full_month_median, flags, label, lo, hi, percentile, rank, of_years, record, preliminary}`, `busiest_months [{month, median}]` (top 3 by median, complete months), `busiest_years [{year, total}]` (top 3 full years), `season {start_month, peak_month, end_month}`, `critical_next [{month, median, note}]` (busy months in the next 6), `trend {sen_slope_per_year, p_value, ...}`, `industrial {share, warning}`, `season_timing` (see below), `climatology` (12 months), `annual` |
+| `POST /api/hotspots.csv` | every hotspot in the area: `acq_date,acq_time,latitude,longitude,satellite,instrument,frp,confidence,daynight,type,weight`; `?full=true` adds brightness, pixel size, persistent flag, version, country, `weight_lo`, `weight_hi`, `counted`; streamed; 413 above 3M rows |
+| `GET /api/presets` | demo areas for the app: `[{id, name, geometry}]` (one Polygon each: Punjab, Haryana, Northern Patagonia, Córdoba, Mato Grosso, California, Northern Territory, Yakutia, Central Kalimantan) |
 | `GET /api/grid?year=2019&month=&unit=viirs&res=0.5` | map layer: `{max, cells: [[lat, lon, count]]}` (res 0.25 / 0.5 / 1 / 2°) |
 | `GET /api/proof` | the validation results above, as JSON (`ablation`, `jumps`, `band_coverage_90`, `conformal_bands`) |
 | `GET /api/regions?q=punjab&kind=state` | presets (247 countries, 4,596 states/provinces; Natural Earth, India point of view): `[{id, name, kind, country, subregion, bbox}]` |
@@ -297,7 +304,7 @@ the busiest month. The run stops at a trough, so separate seasons stay separate.
   test season moved 12.7 days per decade, and the method recovered 13.
 - `by_year`: the timing for each year.
 
-`anomaly` labels come from where this month ranks among the same calendar month in the
+`anomaly_label` comes from where this month ranks among the same calendar month in the
 other years: ≤10th percentile is "well below normal", ≤25th is "below", ≥75th is "above",
 ≥90th is "well above".
 
