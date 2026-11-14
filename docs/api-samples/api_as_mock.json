@@ -5656,87 +5656,87 @@
    "hi": 1382.0,
    "flags": "C",
    "days_covered": 13,
-   "median": 17974.9,
+   "median": 18201.5,
    "p25": 10350.0,
-   "p75": 25254.3,
-   "pct_diff": -92.3,
-   "anomaly": -1.47,
+   "p75": 25575.6,
+   "pct_diff": -92.4,
+   "anomaly": -1.48,
    "anomaly_label": "well below normal",
-   "z": -1.47,
+   "z": -1.48,
    "percentile": 4.0,
    "rank": 25,
    "of_years": 26,
    "record": null,
    "n_years": 25,
-   "full_month_median": 18320.5,
+   "full_month_median": 18551.2,
    "same_days_past": [
     {
      "year": 2001,
-     "count": 1429.8
+     "count": 1446.3
     },
     {
      "year": 2002,
-     "count": 2189.2
+     "count": 2218.7
     },
     {
      "year": 2003,
-     "count": 3960.5
+     "count": 4013.3
     },
     {
      "year": 2004,
-     "count": 4020.6
+     "count": 4073.2
     },
     {
      "year": 2005,
-     "count": 22953.2
+     "count": 23245.9
     },
     {
      "year": 2006,
-     "count": 11035.9
+     "count": 11175.0
     },
     {
      "year": 2007,
-     "count": 17974.9
+     "count": 18201.5
     },
     {
      "year": 2008,
-     "count": 25254.3
+     "count": 25575.6
     },
     {
      "year": 2009,
-     "count": 19228.8
+     "count": 19469.0
     },
     {
      "year": 2010,
-     "count": 27955.4
+     "count": 28309.0
     },
     {
      "year": 2011,
-     "count": 17437.0
+     "count": 17654.6
     },
     {
      "year": 2012,
-     "count": 27741.6
+     "count": 27722.6
     },
     {
      "year": 2013,
-     "count": 21296.5
+     "count": 21282.2
     },
     {
      "year": 2014,
-     "count": 27652.6
+     "count": 27632.9
     },
     {
      "year": 2015,
-     "count": 22322.6
+     "count": 22307.1
     },
     {
      "year": 2016,
-     "count": 32556.0
+     "count": 32532.4
     },
     {
      "year": 2017,
-     "count": 12449.0
+     "count": 12440.4
     },
     {
      "year": 2018,
@@ -5780,31 +5780,31 @@
    {
     "month": 11,
     "name": "Nov",
-    "median": 18320.5
+    "median": 18551.2
    },
    {
     "month": 10,
     "name": "Oct",
-    "median": 14060.6
+    "median": 14067.0
    },
    {
     "month": 5,
     "name": "May",
-    "median": 6693.2
+    "median": 6706.9
    }
   ],
   "busiest_years": [
    {
     "year": 2001,
-    "total": 68745.8
+    "total": 65983.4
    },
    {
     "year": 2005,
-    "total": 62311.0
+    "total": 60673.8
    },
    {
     "year": 2016,
-    "total": 60257.6
+    "total": 60257.8
    }
   ],
   "season": {
@@ -5818,15 +5818,15 @@
     "year": 2027,
     "month": 5,
     "name": "May",
-    "median": 6693.2,
+    "median": 6706.9,
     "note": "historically busy"
    }
   ],
   "trend": {
-   "sen_slope_per_year": -1363.9,
-   "per_year": -1363.9,
-   "pct_per_decade": -30.7,
-   "p_value": 0.002,
+   "sen_slope_per_year": -1263.7,
+   "per_year": -1263.7,
+   "pct_per_decade": -28.8,
+   "p_value": 0.005,
    "significant": true,
    "direction": "falling",
    "years": [
@@ -5852,7 +5852,7 @@
     "label": "late Nov"
    },
    "length_months": 1.6,
-   "share_of_year": 0.797,
+   "share_of_year": 0.799,
    "second_season": {
     "months": [
      "May"
@@ -5870,7 +5870,7 @@
      "label": "late May"
     },
     "length_months": 0.8,
-    "share_of_year": 0.156,
+    "share_of_year": 0.158,
     "share_of_peak": 0.38
    },
    "core_3_months": {
@@ -5879,18 +5879,18 @@
      "Oct",
      "Nov"
     ],
-    "share": 0.805
+    "share": 0.807
    },
    "shift": {
     "years": [
      2001,
      2025
     ],
-    "start_days_per_decade": 4.7,
+    "start_days_per_decade": 4.6,
     "start_p": 0.0,
-    "center_days_per_decade": 10.9,
+    "center_days_per_decade": 10.5,
     "center_p": 0.0,
-    "end_days_per_decade": 3.0,
+    "end_days_per_decade": 2.9,
     "end_p": 0.0,
     "significant": true,
     "text": "main season starts 5 days later per decade, ends 3 days later per decade"
@@ -5898,122 +5898,122 @@
    "by_year": [
     {
      "year": 2001,
-     "start": 9.9,
-     "center": 10.46,
-     "end": 10.92,
-     "total": 54939.2
+     "start": 10.02,
+     "center": 10.47,
+     "end": 10.93,
+     "total": 52241.9
     },
     {
      "year": 2002,
      "start": 10.1,
      "center": 10.54,
-     "end": 10.97,
-     "total": 33468.1
+     "end": 10.98,
+     "total": 32074.2
     },
     {
      "year": 2003,
      "start": 10.11,
-     "center": 10.56,
-     "end": 11.14,
-     "total": 35365.3
+     "center": 10.57,
+     "end": 11.18,
+     "total": 34066.8
     },
     {
      "year": 2004,
-     "start": 10.1,
+     "start": 10.09,
      "center": 10.57,
-     "end": 11.26,
-     "total": 31676.5
+     "end": 11.3,
+     "total": 30773.3
     },
     {
      "year": 2005,
      "start": 10.18,
-     "center": 10.91,
-     "end": 11.78,
-     "total": 55022.4
+     "center": 10.93,
+     "end": 11.79,
+     "total": 54081.6
     },
     {
      "year": 2006,
-     "start": 10.14,
-     "center": 10.74,
-     "end": 11.7,
-     "total": 35500.8
+     "start": 10.13,
+     "center": 10.75,
+     "end": 11.71,
+     "total": 34810.2
     },
     {
      "year": 2007,
      "start": 10.15,
-     "center": 10.79,
-     "end": 11.74,
-     "total": 49891.4
+     "center": 10.81,
+     "end": 11.75,
+     "total": 48888.5
     },
     {
      "year": 2008,
-     "start": 10.23,
-     "center": 11.12,
+     "start": 10.24,
+     "center": 11.14,
      "end": 11.83,
-     "total": 46052.3
+     "total": 45608.6
     },
     {
      "year": 2009,
      "start": 10.23,
-     "center": 11.12,
+     "center": 11.13,
      "end": 11.83,
-     "total": 40860.1
+     "total": 40588.8
     },
     {
      "year": 2010,
-     "start": 10.31,
-     "center": 11.26,
+     "start": 10.32,
+     "center": 11.27,
      "end": 11.86,
-     "total": 43357.6
+     "total": 43190.8
     },
     {
      "year": 2011,
-     "start": 10.17,
-     "center": 10.87,
-     "end": 11.77,
-     "total": 43239.5
+     "start": 10.18,
+     "center": 10.89,
+     "end": 11.78,
+     "total": 42507.4
     },
     {
      "year": 2012,
      "start": 10.31,
      "center": 11.26,
      "end": 11.86,
-     "total": 43892.7
+     "total": 43893.4
     },
     {
      "year": 2013,
      "start": 10.27,
      "center": 11.21,
      "end": 11.85,
-     "total": 38025.0
+     "total": 38035.4
     },
     {
      "year": 2014,
      "start": 10.28,
      "center": 11.24,
      "end": 11.85,
-     "total": 44752.4
+     "total": 44752.6
     },
     {
      "year": 2015,
      "start": 10.33,
      "center": 11.29,
      "end": 11.86,
-     "total": 36661.5
+     "total": 36658.2
     },
     {
      "year": 2016,
      "start": 10.28,
      "center": 11.23,
      "end": 11.85,
-     "total": 52526.7
+     "total": 52528.2
     },
     {
      "year": 2017,
      "start": 10.22,
      "center": 11.09,
      "end": 11.83,
-     "total": 30944.7
+     "total": 30955.2
     },
     {
      "year": 2018,
@@ -6055,7 +6055,7 @@
      "start": 10.67,
      "center": 11.42,
      "end": 11.89,
-     "total": 17561.7
+     "total": 17561.6
     },
     {
      "year": 2024,
@@ -6077,8 +6077,8 @@
    {
     "month": 1,
     "name": "Jan",
-    "mean": 92.5,
-    "median": 77.1,
+    "mean": 90.8,
+    "median": 75.3,
     "p75": 107.0,
     "share": 0.2,
     "level": "low"
@@ -6086,7 +6086,7 @@
    {
     "month": 2,
     "name": "Feb",
-    "mean": 137.0,
+    "mean": 137.9,
     "median": 122.2,
     "p75": 168.2,
     "share": 0.3,
@@ -6095,53 +6095,53 @@
    {
     "month": 3,
     "name": "Mar",
-    "mean": 127.8,
+    "mean": 128.2,
     "median": 117.0,
-    "p75": 152.3,
+    "p75": 152.2,
     "share": 0.3,
     "level": "low"
    },
    {
     "month": 4,
     "name": "Apr",
-    "mean": 882.0,
-    "median": 497.3,
-    "p75": 1498.4,
-    "share": 2.0,
+    "mean": 692.4,
+    "median": 367.0,
+    "p75": 1107.8,
+    "share": 1.6,
     "level": "low"
    },
    {
     "month": 5,
     "name": "May",
-    "mean": 6944.9,
-    "median": 6797.2,
+    "mean": 6955.4,
+    "median": 6798.0,
     "p75": 8287.0,
-    "share": 15.6,
+    "share": 15.8,
     "level": "peak"
    },
    {
     "month": 6,
     "name": "Jun",
-    "mean": 278.7,
-    "median": 235.6,
+    "mean": 285.9,
+    "median": 245.3,
     "p75": 455.0,
-    "share": 0.6,
+    "share": 0.7,
     "level": "low"
    },
    {
     "month": 7,
     "name": "Jul",
-    "mean": 51.5,
-    "median": 21.2,
-    "p75": 56.0,
+    "mean": 50.6,
+    "median": 18.3,
+    "p75": 47.1,
     "share": 0.1,
     "level": "low"
    },
    {
     "month": 8,
     "name": "Aug",
-    "mean": 5.1,
-    "median": 4.4,
+    "mean": 4.5,
+    "median": 2.8,
     "p75": 5.0,
     "share": 0.0,
     "level": "low"
@@ -6149,36 +6149,36 @@
    {
     "month": 9,
     "name": "Sep",
-    "mean": 339.5,
-    "median": 59.0,
-    "p75": 155.2,
-    "share": 0.8,
+    "mean": 318.6,
+    "median": 65.8,
+    "p75": 244.2,
+    "share": 0.7,
     "level": "low"
    },
    {
     "month": 10,
     "name": "Oct",
-    "mean": 17139.0,
-    "median": 14130.6,
-    "p75": 24842.4,
-    "share": 38.5,
+    "mean": 16669.7,
+    "median": 14152.2,
+    "p75": 23865.6,
+    "share": 38.0,
     "level": "peak"
    },
    {
     "month": 11,
     "name": "Nov",
-    "mean": 18330.2,
-    "median": 18320.5,
-    "p75": 26163.2,
-    "share": 41.2,
+    "mean": 18408.2,
+    "median": 18551.2,
+    "p75": 26495.6,
+    "share": 41.9,
     "level": "peak"
    },
    {
     "month": 12,
     "name": "Dec",
-    "mean": 152.9,
-    "median": 151.2,
-    "p75": 177.0,
+    "mean": 144.2,
+    "median": 148.7,
+    "p75": 174.0,
     "share": 0.3,
     "level": "low"
    }
@@ -6186,75 +6186,75 @@
   "annual": [
    {
     "year": 2001,
-    "count": 68745.8
+    "count": 65983.4
    },
    {
     "year": 2002,
-    "count": 46926.5
+    "count": 45011.7
    },
    {
     "year": 2003,
-    "count": 45520.8
+    "count": 43887.1
    },
    {
     "year": 2004,
-    "count": 38090.0
+    "count": 36140.3
    },
    {
     "year": 2005,
-    "count": 62311.0
+    "count": 60673.8
    },
    {
     "year": 2006,
-    "count": 40499.0
+    "count": 39165.6
    },
    {
     "year": 2007,
-    "count": 57135.8
+    "count": 56012.7
    },
    {
     "year": 2008,
-    "count": 54590.5
+    "count": 54054.6
    },
    {
     "year": 2009,
-    "count": 47846.5
+    "count": 47058.9
    },
    {
     "year": 2010,
-    "count": 49262.7
+    "count": 48775.7
    },
    {
     "year": 2011,
-    "count": 49654.9
+    "count": 48936.4
    },
    {
     "year": 2012,
-    "count": 51838.3
+    "count": 51836.5
    },
    {
     "year": 2013,
-    "count": 46149.0
+    "count": 46160.1
    },
    {
     "year": 2014,
-    "count": 54568.3
+    "count": 54569.1
    },
    {
     "year": 2015,
-    "count": 44207.3
+    "count": 44204.2
    },
    {
     "year": 2016,
-    "count": 60257.6
+    "count": 60257.8
    },
    {
     "year": 2017,
-    "count": 37696.2
+    "count": 37706.5
    },
    {
     "year": 2018,
-    "count": 40093.4
+    "count": 40093.2
    },
    {
     "year": 2019,
@@ -6274,7 +6274,7 @@
    },
    {
     "year": 2023,
-    "count": 27073.7
+    "count": 27073.6
    },
    {
     "year": 2024,
@@ -6284,7 +6284,17 @@
     "year": 2025,
     "count": 10648.0
    }
-  ]
+  ],
+  "reliability": {
+   "region": "Southern Asia",
+   "leftover_2012": -0.005,
+   "verdict": "good",
+   "modis_fires": [
+    38935,
+    38738
+   ],
+   "note": "Across the 2012 switch to VIIRS, this record changes -1% more than MODIS's own count (inside the normal noise of that comparison)."
+  }
  },
  "hotspots_csv_sample": "acq_date,acq_time,latitude,longitude,satellite,instrument,frp,confidence,daynight,type,weight\n2026-11-01,0711,30.46363,75.19946,N,VIIRS,10.73,n,D,,0\n2026-11-01,0711,30.43177,76.36497,N,VIIRS,3.78,n,D,,0\n2026-11-01,0711,30.34946,76.28468,N,VIIRS,9.61,n,D,,0\n2026-11-01,0711,30.44776,76.16018,N,VIIRS,4.6,n,D,,0\n2026-11-01,0711,30.45336,76.1601,N,VIIRS,11.41,n,D,,0\n",
  "presets": [

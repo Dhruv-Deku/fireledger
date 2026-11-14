@@ -34,6 +34,20 @@ regressions.
 **Typical change in numbers:** for the Punjab request example, most months move by about 1–2%.
 Volcanic regions move a lot, because their eruptions now count as industrial: Iceland 2014, Réunion.
 
+**New optional fields** (safe to ignore):
+- `summary.reliability`: `{region, leftover_2012, verdict, modis_fires, note}`, or `null` when the
+  request doesn't cover 2008–2015, or when `harmonized` is false / `unit` is `modis`.
+  - `leftover_2012` is the same metric as your preset check, worked out for the user's own area.
+  - `verdict` is `good` (≤ 8%, inside the noise of MODIS's own change), `fair` (≤ 15%), `caution`, or
+    `too few fires`.
+  - `region` is the world region of the area.
+  - Suggested use: a small "2012 switch" badge on the calendar, with `note` as its tooltip.
+- `/api/proof` → `creams`: our counts vs **India's official crop-residue fire bulletins** (ICAR-IARI
+  CREAMS) for Punjab and Haryana, 2022–2026.
+  - Punjab paddy season: CREAMS 36,488 (2023) → 5,114 (2025); FireLedger 33,382 → 4,446.
+  - The burning days line up: daily rank correlation 0.89.
+  - Good for the Method & Trust page.
+
 **About the 6 checks that still fail** (numbers in the write-up):
 - At state scale, MODIS's own change is a rough yardstick. Across 323 5° blocks between 2012–15
   and 2016–19, when VIIRS's real change is known, MODIS's change landed within 5 points of it in

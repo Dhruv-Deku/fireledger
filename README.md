@@ -264,6 +264,24 @@ downs don't follow burned area. The harmonized record follows burned area throug
 (The 2012 step and the gap to MODIS are the jump test seen through burned area; the
 year-to-year agreement is the new, independent part.)
 
+## Official counts check (`pipeline/creams.py`, in `GET /api/proof` as `creams`)
+
+India's ICAR-IARI CREAMS lab publishes a daily bulletin of crop-residue fire counts per state
+during the wheat (April–May) and paddy (Sept–Nov) seasons. They use their own protocol: cropland
+only, their own satellite mix. So the absolute numbers differ from raw FIRMS, but the seasons
+should match.
+
+| Punjab, paddy season (15 Sep → 30 Nov) | CREAMS (official) | FireLedger |
+|---|---|---|
+| 2023 | 36,488 | 33,382 |
+| 2025 | 5,114 | 4,446 |
+| 2026, to 13 Nov | 5,785 | 4,170 (S-NPP ended 2 Nov) |
+| Day-by-day rank agreement (Spearman) | | 0.89 |
+
+Both show the 2023 → 2025 collapse in stubble burning: −86% official, −87% FireLedger. Haryana and
+the 2022 wheat season agree at 0.79–0.86 day to day. The bulletins themselves are fetched by
+`pipeline/fetch_extras.py --only creams`.
+
 ## API
 
 All POST endpoints take the same body:

@@ -515,6 +515,9 @@ def proof():
     ba = DER / "burned_area.json"  # independent check against burned area (pipeline/burned_area.py)
     if ba.exists():
         out["burned_area"] = json.loads(ba.read_text(encoding="utf-8"))
+    cr = DER / "creams_check.json"  # India's official residue-burning counts (pipeline/creams.py)
+    if cr.exists():
+        out["creams"] = json.loads(cr.read_text(encoding="utf-8"))
     return out
 
 
@@ -874,7 +877,61 @@ def summary(q: Query):
     return {"unit": q.unit, "harmonized": q.harmonized, "method": method, "this_month": this_month,
             "industrial": industrial, "busiest_months": busiest_months, "busiest_years": busiest_years,
             "season": season, "critical_next": critical_next, "trend": trend,
-            "season_timing": season_timing(months, full), "climatology": clim, "annual": annual}
+            "season_timing": season_timing(months, full), "climatology": clim, "annual": annual,
+            "reliability": reliability(q, months)}
+
+
+SWITCH_OK, SWITCH_FAIR = 0.08, 0.15  # leftover thresholds for the reliability verdict
+SWITCH_MIN = 200                     # MODIS fires needed in each 4-year window
+
+
+@functools.lru_cache(maxsize=1)
+def _countries():
+    reg = pd.read_parquet(REGIONS, columns=["kind", "subregion", "geojson"])
+    reg = reg[reg.kind == "country"].reset_index(drop=True)
+    geoms = [shape(json.loads(g)) for g in reg.geojson]
+    return shapely.STRtree(geoms), reg.subregion.to_numpy(), geoms
+
+
+def subregion_of(geom) -> str | None:
+    if not REGIONS.exists():
+        return None
+    tree, sub, _ = _countries()
+    pt = geom.representative_point()
+    hit = tree.query(pt, predicate="within")
+    if len(hit) == 0:
+        hit = tree.query_nearest(pt, max_distance=1.0)
+    return str(sub[hit[0]]) if len(hit) else None
+
+
+def reliability(q: Query, months: list[dict]) -> dict | None:
+    """How well this area's record holds across the 2012 MODIS -> VIIRS switch: the harmonized change from
+    2008-11 to 2012-15 against raw MODIS's own change (MODIS flew straight through it). In the overlap years
+    MODIS's own change is itself within 8 points of VIIRS's real change in 3 of 4 areas of this size, so
+    leftovers up to that are normal (docs/experiments_2012.md)."""
+    if not q.harmonized or q.unit != "viirs":
+        return None
+    have = {(r["year"], r["month"]): r for r in months}
+    pre = [have.get((y, m)) for y in range(2008, 2012) for m in range(1, 13)]
+    post = [have.get((y, m)) for y in range(2012, 2016) for m in range(1, 13)]
+    if None in pre or None in post:
+        return None  # the request doesn't cover 2008-2015
+    tot = lambda rows, k: sum(r[k] or 0 for r in rows)  # noqa: E731
+    m_pre, m_post, h_pre, h_post = tot(pre, "raw_modis"), tot(post, "raw_modis"), tot(pre, "count"), tot(post, "count")
+    geom = aoi(q)
+    region = subregion_of(geom)
+    out = {"region": region, "leftover_2012": None, "verdict": "too few fires", "modis_fires": [int(m_pre), int(m_post)]}
+    if min(m_pre, m_post) < SWITCH_MIN or h_pre <= 0:
+        out["note"] = f"Fewer than {SWITCH_MIN} MODIS fires in 2008-11 or 2012-15, so the 2012 switch can't be checked here."
+        return out
+    left = (h_post / h_pre) / (m_post / m_pre) - 1
+    out["leftover_2012"] = round(left, 3)
+    out["verdict"] = "good" if abs(left) <= SWITCH_OK else "fair" if abs(left) <= SWITCH_FAIR else "caution"
+    out["note"] = (f"Across the 2012 switch to VIIRS, this record changes {100 * left:+.0f}% more than MODIS's own count "
+                   + ("(inside the normal noise of that comparison)." if out["verdict"] == "good" else
+                      "(a little more than the usual noise)." if out["verdict"] == "fair" else
+                      "(read changes across 2012 here with care; industrial sites or a shift in fire timing are the usual reasons)."))
+    return out
 
 
 CSV_COLS = """,
