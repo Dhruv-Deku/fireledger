@@ -1,5 +1,94 @@
 # API ↔ app: reply to HANDOFF.md
 
+## 15 Nov, part 2: the known limits as data (reply to PROMPT_FOR_DATA_LIMITS.md)
+
+New **optional** fields. No field was renamed, removed or changed in meaning. Every check result is
+identical to before: 22/27 on our copy, the same leftovers, regions, held-out error and CSV sums.
+Examples below are the live Punjab preset, full range.
+
+| Field | Where | What | Example (Punjab) |
+|---|---|---|---|
+| `modis_only` | every month, and `this_month` | MODIS detections (any type, same area and filters) with **no VIIRS detection within their own pixel**, max(1 km, `scan`), on the same UTC day. Raw count. `null` before 2012, and for areas answered from the grid (bigger than 50 deg², e.g. Yakutia, Mato Grosso, N. Territory, whole countries); single detections are needed. | Nov 2016: **4,053** of 9,057 MODIS detections |
+| `reliability.leftover_2012_range` | summary | 90% range of `leftover_2012`, resampling whole years before (2008–11) and after (2012–15), 1,000 draws, fixed seed | `[-0.060, +0.081]` around +0.009 |
+| `reliability.noise_2012` | summary | The same check inside the overlap years: \|log((MODIS change)/(S-NPP change))\| from 2012–15 to 2016–19, vegetation fires, days all three satellites observed. How noisy MODIS's own change is here. `null` if the request doesn't cover 2012–2019. | `0.017` |
+| `trend_viirs` | summary | Same shape as `trend`, full years from 2012 only (no MODIS conversion). `null` if fewer than 6 full years, or `harmonized` is false. | 2012–2025, falling 45% per decade, p = 0.014 |
+| `busiest_years_no_blind` | summary | Like `busiest_years`, skipping years with a `B` month | 2016 (107,150), 2020 (95,831), 2014 (95,527). 2001 and 2002 are gone. |
+| `industrial` | every month, and `this_month` | Already there; now confirmed numeric on every month with data (0 when there's none), including the month in progress | Nov 2016: 85.6 |
+
+**Acceptance checks:**
+- `modis_only` against your script:
+  - Punjab 2016-11: 4,053 vs 4,044 (+0.2%)
+  - Haryana 2021-10: 334 vs 334
+  - California 2020-08: 137 vs 137
+  - Patagonia 2015-01: 44 vs 44
+- `noise_2012`:
+  - Mato Grosso 0.028, Yakutia 0.068, Kalimantan 0.084: all within 0.005 of the earlier table.
+  - **Córdoba is 0.152, not 0.145.** The table was measured before the both-sensor static mask;
+    with the shipped mask, 2.9% instead of 1.0% of Córdoba's detections are industrial. The new
+    number is the right one for the shipped data.
+- `leftover_2012_range` contains `leftover_2012` for all 9 presets.
+
+### Finding 1: the MODIS-only detections are real fires, not false alarms
+
+| | MODIS only | Confirmed by VIIRS |
+|---|---|---|
+| **Punjab Nov 2016** (4,053 vs 5,004 detections) | | |
+| Median MODIS confidence | 65 | 65 |
+| Low confidence (<30) | 3.7% | 5.3% |
+| Median FRP | 11.2 MW | 16.3 MW |
+| Daytime | 100% | 100% |
+| **Haryana Oct 2021** (334 vs 459 detections) | | |
+| Median MODIS confidence | 63 | 65 |
+| Low confidence (<30) | 1.5% | 1.5% |
+| Median FRP | 8.9 MW | 10.6 MW |
+| Seen by Terra's morning pass | 30% | 13% |
+
+Same confidence, no more low-confidence detections, weaker fires: small, short crop burns that flare
+between the satellites' passes. They are not noise.
+
+### Finding 2: Punjab's burning moved out of VIIRS's view as MODIS's orbit drifted
+
+Punjab, October–November daytime:
+
+| Year | Aqua passes at (IST) | Aqua fires | Aqua fires with no VIIRS fire in the pixel that day | VIIRS fires (NOAA-20, ~13:45) |
+|---|---|---|---|---|
+| 2016 | 13:47 | 16,196 | 46% | 87,024 (S-NPP) |
+| 2021 | 13:48 | 16,624 | 21% | 76,850 |
+| 2024 | 14:37 | 3,900 | 71% | 10,235 |
+| 2025 | 15:15 | 3,051 | 86% | 4,157 |
+| 2026 | **16:00** | **5,365** | **95%** | **3,933** |
+
+In 2026, MODIS passing at 4 pm sees **more** fires than VIIRS at 1:45 pm, although VIIRS normally sees
+several times more. So much of today's burning happens after VIIRS's pass. The VIIRS-based record, and
+India's official CREAMS counts, which also use VIIRS, partly show fires *moving* in time, not just
+*fewer* fires.
+
+**Suggested app text for Punjab and Haryana from 2024:** "Part of the drop is burning shifting to the
+late afternoon, after VIIRS passes; MODIS, now passing at 4 pm, still sees it (`modis_only`)."
+
+### Part B (model fixes): none shipped; what we measured
+
+| # | Status | Numbers |
+|---|---|---|
+| B1 continent fallback | not shipped | A 20° middle level was tested in the 2012 search: held-out 4.25% (worse than 4.18%), Northern Europe still far off. Northern Europe's remaining +24 is real fires in a region with few fires (Sweden 2014, Ireland 2010–11) plus Icelandic lava edges; no fallback ratio fixes a change in *where* fires burned. |
+| B2 industrial ratio near 1:1 | not adopted | The data says the opposite. In California VIIRS sees ~6,000 industrial detections a year and MODIS ~40, so a 1:1 ratio would undercount industrial heat ~100× before 2012. Industrial sites already have their own fit (2012–15, mass balance): region held-out error 23.4% → 21.0%, bias −17% → +2.7%. "Hide industrial" removing 25% of the count from 10% of rows is that ratio working, not a bug. |
+| B3 smoothing toward the 8 neighbours | not tried today | Future work. The cell-level error 17.14% is ~40% counting noise (Poisson floor 7.3%). |
+| B4 band coverage for state-sized areas | not measured today | Future work. Regions are 89.1% (target 85–95%). |
+| B5 burned area for the weak regions | **measured** | See below |
+
+**B5:** hotspots per km² burned (MODIS MCD64 burned area, an independent measurement), change from
+2008–11 to 2012–15, in the GFED regions behind the three weak world regions:
+
+| GFED region | MODIS | Raw merged | Harmonized | Gap | Change point in harmonized ratio | Yearly match with burned area, raw → harmonized |
+|---|---|---|---|---|---|---|
+| Boreal North America | −12.5% | +311% | −5.2% | +7.3 | none (p = 0.60) | 0.62 → 0.88 |
+| Temperate North America | +13.3% | +274% | +13.0% | −0.3 | none (p = 0.46) | 0.53 → 0.85 |
+| Europe | +1.7% | +241% | +5.2% | +3.5 | none (p = 1.0) | 0.02 → 0.93 |
+| Boreal Asia | +9.6% | +343% | +17.9% | +8.3 | none (p = 0.77) | 0.44 → 0.82 |
+
+The leftover sits in the boreal forests: +7 to +8 points, with no break at 2012 and a strong yearly
+match with burned area. It's a steady offset, not a jump.
+
 ## 15 Nov: the 2012-jump work (reply to PROMPT_FIX_2012_JUMP.md)
 
 Full write-up, diagnosis tables and every experiment: `docs/experiments_2012.md`.

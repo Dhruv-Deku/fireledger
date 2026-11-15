@@ -507,6 +507,31 @@ def monthly(q: Query) -> tuple[list[dict], str, dict]:
     return [dict(r) for r in months], method, cov  # callers may edit rows; the cached copy stays clean
 
 
+VIIRS_ERA = 2012  # S-NPP data starts 20 Jan 2012
+
+
+def modis_only_points(q: Query, geom, cur) -> pd.DataFrame:
+    """MODIS detections (any type, same area and filters as the calendar) with no VIIRS detection within
+    their own pixel, max(1 km, scan), on the same UTC day: fires only MODIS saw. Raw counts per month
+    from 2012 on. Neighbours are searched in 0.05 deg cells, +-2 cells, then by great-circle distance."""
+    inner, params = rows_sql(q, geom, cur, ", h.lat AS lat, h.lon AS lon, h.scan AS scan",
+                             extra_where=[f"h.acq_date >= DATE '{VIIRS_ERA}-01-01'"])
+    return cur.execute(f"""
+        WITH r AS ({inner}),
+        m AS (SELECT row_number() OVER () AS id, acq_date AS d, lat, lon, scan FROM r WHERE sat IN ('Terra', 'Aqua')),
+        v AS (SELECT acq_date AS d, lat, lon, CAST(floor(lat * 20) AS INT) AS cy, CAST(floor(lon * 20) AS INT) AS cx
+              FROM r WHERE sat NOT IN ('Terra', 'Aqua')),
+        mk AS (SELECT id, d, lat, lon, scan, CAST(floor(lat * 20) AS INT) + dy AS cy, CAST(floor(lon * 20) AS INT) + dx AS cx
+               FROM m, range(-2, 3) t1(dy), range(-2, 3) t2(dx)),
+        hit AS (SELECT DISTINCT mk.id FROM mk JOIN v ON v.d = mk.d AND v.cy = mk.cy AND v.cx = mk.cx
+                WHERE 2 * 6371.0 * asin(sqrt(pow(sin(radians(v.lat - mk.lat) / 2), 2)
+                      + cos(radians(mk.lat)) * cos(radians(v.lat)) * pow(sin(radians(v.lon - mk.lon) / 2), 2)))
+                      <= greatest(1.0, coalesce(mk.scan, 1.0)))
+        SELECT year(m.d) AS year, month(m.d) AS month, count(*) AS modis_only
+        FROM m LEFT JOIN hit ON hit.id = m.id WHERE hit.id IS NULL GROUP BY ALL
+    """, params).df()
+
+
 def _monthly(q: Query) -> tuple[list[dict], str, dict]:
     """Calendar months, the method used, and which months VIIRS was observing (for the raw view)."""
     resolve_end(q)
@@ -515,6 +540,10 @@ def _monthly(q: Query) -> tuple[list[dict], str, dict]:
     method = "grid" if use_grid(q, geom) else "exact"
     df = (monthly_grid if method == "grid" else monthly_points)(q, geom, cur)
     df = df.astype({"year": int, "month": int}).set_index(["year", "month"])
+    mo = None  # fires only MODIS saw: needs single detections, so only for areas answered from points
+    if method == "exact":
+        mo = (modis_only_points(q, geom, cur).astype({"year": int, "month": int})
+              .set_index(["year", "month"]).modis_only)
     band = (band_scale(geom), band_stratum(geom)) if BANDS else None
 
     # months the satellites were actually observing (so "0 fires" differs from "no data")
@@ -538,7 +567,7 @@ def _monthly(q: Query) -> tuple[list[dict], str, dict]:
         if not has_cov:
             out.append({"year": y, "month": m, "count": None, "lo": None, "hi": None, "flags": "",
                         "raw_modis": None, "raw_viirs": None, "raw_snpp": None, "raw_noaa20": None, "industrial": None,
-                        "source": "no data",
+                        "modis_only": None, "source": "no data",
                         "drift": False})
         else:
             if q.unit == "modis":
@@ -581,6 +610,7 @@ def _monthly(q: Query) -> tuple[list[dict], str, dict]:
                 "raw_snpp": int(r["raw_snpp"]) if r is not None else 0,
                 "raw_noaa20": int(r["raw_noaa20"]) if r is not None else 0,
                 "industrial": round(float(np.nan_to_num(r["w_industrial"])), 1) if r is not None else 0.0,
+                "modis_only": (int(mo.get((y, m), 0)) if mo is not None and y >= VIIRS_ERA else None),
                 "source": source,
             })
         y, m = (y + 1, 1) if m == 12 else (y, m + 1)
@@ -914,6 +944,7 @@ def _summary(q: Query):
         "partial": ref["partial"], "through_day": ref["through_day"], "compared_with": compared,
         "preliminary": ref["preliminary"],
         "count": ref["count"], "lo": ref["lo"], "hi": ref["hi"], "flags": ref["flags"],
+        "modis_only": ref.get("modis_only"), "industrial": ref.get("industrial"),
         "days_covered": ref["through_day"] if ref["partial"] else _cal.monthrange(ry, rm)[1],
         "median": round(med, 1), "p25": round(p25, 1), "p75": round(p75, 1),
         "pct_diff": round(100 * (ref["count"] - med) / med, 1) if med else 0.0,
@@ -971,18 +1002,15 @@ def _summary(q: Query):
     busiest_years = [{"year": a["year"], "total": a["count"]}
                      for a in sorted(annual, key=lambda a: -a["count"])[:3]]
 
-    trend = None
-    if len(annual) >= 3:
-        yrs = np.array([a["year"] for a in annual], float)
-        cnt = np.array([a["count"] for a in annual], float)
-        slope = stats.theilslopes(cnt, yrs)[0]
-        tau, p = stats.kendalltau(yrs, cnt)
-        mean = cnt.mean() or 1.0
-        trend = {"sen_slope_per_year": round(float(slope), 1), "per_year": round(float(slope), 1),
-                 "pct_per_decade": round(float(1000 * slope / mean), 1),
-                 "p_value": round(float(p), 3), "significant": bool(p < 0.05),
-                 "direction": "rising" if slope > 0 else "falling" if slope < 0 else "flat",
-                 "years": [int(yrs[0]), int(yrs[-1])]}
+    # busiest full years without a blind-spot (B) month, whose totals lean hardest on the conversion
+    blind = {r["year"] for r in months if "B" in (r["flags"] or "")}
+    busiest_years_no_blind = [{"year": a["year"], "total": a["count"]}
+                              for a in sorted((a for a in annual if a["year"] not in blind),
+                                              key=lambda a: -a["count"])[:3]]
+
+    trend = trend_of(annual, 3)
+    # the same trend on full years from 2012 on only: VIIRS-observed, no MODIS conversion involved
+    trend_viirs = trend_of([a for a in annual if a["year"] >= VIIRS_ERA], 6) if q.harmonized else None
 
     total_all = sum(r["count"] for r in months) or 1.0
     share = sum(r["industrial"] or 0.0 for r in months) / total_all
@@ -995,9 +1023,26 @@ def _summary(q: Query):
 
     return {"unit": q.unit, "harmonized": q.harmonized, "method": method, "this_month": this_month,
             "industrial": industrial, "busiest_months": busiest_months, "busiest_years": busiest_years,
-            "season": season, "critical_next": critical_next, "trend": trend,
+            "busiest_years_no_blind": busiest_years_no_blind,
+            "season": season, "critical_next": critical_next, "trend": trend, "trend_viirs": trend_viirs,
             "season_timing": season_timing(months, full), "climatology": clim, "annual": annual,
             "reliability": reliability(q, months)}
+
+
+def trend_of(annual: list[dict], min_years: int) -> dict | None:
+    """Sen's slope of yearly totals with a two-sided Mann-Kendall p-value; None if too few years."""
+    if len(annual) < min_years:
+        return None
+    yrs = np.array([a["year"] for a in annual], float)
+    cnt = np.array([a["count"] for a in annual], float)
+    slope = stats.theilslopes(cnt, yrs)[0]
+    tau, p = stats.kendalltau(yrs, cnt)
+    mean = cnt.mean() or 1.0
+    return {"sen_slope_per_year": round(float(slope), 1), "per_year": round(float(slope), 1),
+            "pct_per_decade": round(float(1000 * slope / mean), 1),
+            "p_value": round(float(p), 3), "significant": bool(p < 0.05),
+            "direction": "rising" if slope > 0 else "falling" if slope < 0 else "flat",
+            "years": [int(yrs[0]), int(yrs[-1])]}
 
 
 SWITCH_OK, SWITCH_FAIR = 0.08, 0.15  # leftover thresholds for the reliability verdict
@@ -1039,18 +1084,64 @@ def reliability(q: Query, months: list[dict]) -> dict | None:
     m_pre, m_post, h_pre, h_post = tot(pre, "raw_modis"), tot(post, "raw_modis"), tot(pre, "count"), tot(post, "count")
     geom = aoi(q)
     region = subregion_of(geom)
-    out = {"region": region, "leftover_2012": None, "verdict": "too few fires", "modis_fires": [int(m_pre), int(m_post)]}
+    out = {"region": region, "leftover_2012": None, "verdict": "too few fires", "modis_fires": [int(m_pre), int(m_post)],
+           "leftover_2012_range": None, "noise_2012": None}
     if min(m_pre, m_post) < SWITCH_MIN or h_pre <= 0:
         out["note"] = f"Fewer than {SWITCH_MIN} MODIS fires in 2008-11 or 2012-15, so the 2012 switch can't be checked here."
         return out
     left = (h_post / h_pre) / (m_post / m_pre) - 1
     out["leftover_2012"] = round(left, 3)
+    # 90% range: resample whole years before (2008-11) and after (2012-15), 1,000 draws, fixed seed
+    def yr(y, k):
+        return sum(r[k] or 0 for r in months if r["year"] == y)
+    H = np.array([[yr(y, "count") for y in range(2008, 2012)], [yr(y, "count") for y in range(2012, 2016)]])
+    M = np.array([[yr(y, "raw_modis") for y in range(2008, 2012)], [yr(y, "raw_modis") for y in range(2012, 2016)]])
+    rng = np.random.default_rng(2012)
+    i, j = rng.integers(0, 4, (1000, 4)), rng.integers(0, 4, (1000, 4))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        draws = (H[1][j].sum(1) / H[0][i].sum(1)) / (M[1][j].sum(1) / M[0][i].sum(1)) - 1
+    draws = draws[np.isfinite(draws)]
+    if len(draws):
+        lo, hi = np.percentile(draws, [5, 95])
+        out["leftover_2012_range"] = [round(float(min(lo, left)), 3), round(float(max(hi, left)), 3)]
+    out["noise_2012"] = switch_noise(q, geom)
     out["verdict"] = "good" if abs(left) <= SWITCH_OK else "fair" if abs(left) <= SWITCH_FAIR else "caution"
     out["note"] = (f"Across the 2012 switch to VIIRS, this record changes {100 * left:+.0f}% more than MODIS's own count "
                    + ("(inside the normal noise of that comparison)." if out["verdict"] == "good" else
                       "(a little more than the usual noise)." if out["verdict"] == "fair" else
                       "(read changes across 2012 here with care; industrial sites or a shift in fire timing are the usual reasons)."))
     return out
+
+
+NOISE_POINTS_MAX_AREA = 1500.0  # deg^2; bigger areas use the grid (all days) for noise_2012
+
+
+def switch_noise(q: Query, geom) -> float | None:
+    """The 2012 check run inside the overlap years, where VIIRS's real change is known: |log((MODIS change)
+    / (S-NPP change))| from 2012-15 to 2016-19, vegetation fires on days Terra, Aqua and S-NPP all
+    observed. How noisy MODIS's own change is as a yardstick in this area."""
+    if parse_day(q.start, False) > date(2012, 1, 1) or parse_day(q.end, True) < date(2019, 12, 31):
+        return None
+    cur = db()
+    if HAVE_POINTS and geom.area <= NOISE_POINTS_MAX_AREA:
+        inner, params = rows_sql(q, geom, cur, ", a.has_terra AS ht, a.has_aqua AS ha, a.has_snpp AS hs",
+                                 extra_where=["h.acq_date BETWEEN DATE '2012-01-01' AND DATE '2019-12-31'"])
+        df = cur.execute(f"""SELECT year(acq_date) AS y, count(*) FILTER (WHERE sat IN ('Terra', 'Aqua')) AS m,
+                                    count(*) FILTER (WHERE sat = 'SNPP') AS v
+                             FROM ({inner}) WHERE NOT st AND ht AND ha AND hs GROUP BY ALL""", params).df()
+    elif GRID.exists():
+        q2 = q.model_copy(update={"start": "2012-01-01", "end": "2019-12-31"})
+        where, params = filters(q2, geom, False)
+        df = cur.execute(f"""SELECT h.y AS y, sum(raw_modis) AS m, sum(raw_snpp) AS v FROM grid h
+                             WHERE {' AND '.join(where)} AND NOT h.static AND h.y BETWEEN 2012 AND 2019 GROUP BY ALL""",
+                         params).df()
+    else:
+        return None
+    t = df.set_index("y").reindex(range(2012, 2020), fill_value=0)
+    a, b = t.loc[2012:2015].sum(), t.loc[2016:2019].sum()
+    if min(a.m, a.v, b.m, b.v) <= 0:
+        return None
+    return round(float(abs(math.log((b.m / a.m) / (b.v / a.v)))), 3)
 
 
 CSV_COLS = """,

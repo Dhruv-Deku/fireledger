@@ -6,13 +6,15 @@ is frozen at git tag `api-freeze-2026-11-15`.
 | Still failing | Leftover | Same check run inside the overlap years* |
 |---|---|---|
 | World-region check | N. Europe +23.9, N. America +8.9, E. Europe +6.3 | |
-| Córdoba | +8.0% | MODIS misses VIIRS's real change by 14.5 points |
-| Mato Grosso | −5.7% | 2.6 points |
-| Yakutia | +8.0% | 6.7 points |
+| Córdoba | +8.0% | MODIS misses VIIRS's real change by 15.2 points |
+| Mato Grosso | −5.7% | 2.8 points |
+| Yakutia | +8.0% | 6.8 points |
 | Central Kalimantan | +12.4% | 8.4 points |
 
 \*Between 2012–15 and 2016–19 both satellites flew, so VIIRS's real change is known. This column is
 how far MODIS's own change lands from it in that area. It's the noise in the check's own yardstick.
+The API now returns it as `summary.reliability.noise_2012`, with the shipped static mask; values
+updated 15 Nov midday.
 
 ## Why we stopped here
 
@@ -34,8 +36,8 @@ Details: `docs/experiments_2012.md`.
    - Kalimantan still fails.
 2. **Each area against its own noise.** Pass when |leftover| ≤ max(5%, that area's in-overlap miss
    from the table).
-   - Córdoba passes (14.5).
-   - Yakutia (6.7), Kalimantan (8.4) and Mato Grosso (5) don't.
+   - Córdoba passes (15.2).
+   - Yakutia (6.8), Kalimantan (8.4) and Mato Grosso (5) don't.
 3. **Report it instead of gating it.** `summary.reliability` already does this for any area the user
    draws:
    - `leftover_2012` is the same metric as your check;
