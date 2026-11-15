@@ -1,0 +1,310 @@
+@import "tailwindcss";
+@source "../components";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-archivo);
+  --font-mono: var(--font-archivo);
+  --color-fl-bg: var(--fl-bg);
+  --color-fl-surface: var(--fl-surface);
+  --color-fl-panel: var(--fl-panel);
+  --color-fl-border: var(--fl-border);
+  --color-fl-text: var(--fl-text);
+  --color-fl-muted: var(--fl-muted);
+  --color-fl-faint: var(--fl-faint);
+  --color-fl-accent: var(--fl-accent);
+  --color-fl-accent-text: var(--fl-accent-text);
+  --color-fl-on-accent: var(--fl-on-accent);
+  --color-fl-cool: var(--fl-cool);
+  --color-fl-track: var(--fl-track);
+  --color-fl-zero: var(--fl-zero);
+  --color-fl-nodata: var(--fl-nodata);
+  --color-fl-anom-1: var(--fl-anom-1);
+  --color-fl-anom-2: var(--fl-anom-2);
+  --color-fl-anom-3: var(--fl-anom-3);
+  --color-fl-anom-4: var(--fl-anom-4);
+  --color-fl-anom-5: var(--fl-anom-5);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * night pass: the blue-black of earth at night, paper-white text and one
+ * sodium-lamp amber (black marble city lights) for buttons and selection.
+ * fire data never uses these, it stays on the inferno ramp.
+ * data-theme is set before paint by the script in layout.tsx; dark is default.
+ * plain hex/rgba on purpose, the charts read them with getComputedStyle.
+ */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fl-bg: #070b14;
+  --fl-surface: #0c1220;
+  --fl-panel: rgba(12, 18, 32, 0.86);
+  --fl-border: rgba(236, 231, 220, 0.1);
+  --fl-text: #ece7dc;
+  --fl-muted: #9aa3b5;
+  --fl-faint: #687287;
+  --fl-accent: #ffb547;
+  --fl-accent-text: #ffb547;
+  --fl-on-accent: #1b1206;
+  --fl-cool: #7fb2ff;
+  --fl-track: rgba(236, 231, 220, 0.08);
+  --fl-zero: #141c2c;
+  --fl-nodata: #0a101b;
+  --fl-anom-1: #2563eb;
+  --fl-anom-2: #60a5fa;
+  --fl-anom-3: #2a3346;
+  --fl-anom-4: #f98e09;
+  --fl-anom-5: #ff4d00;
+  --fl-subtle: rgba(236, 231, 220, 0.05);
+  --fl-input: rgba(236, 231, 220, 0.14);
+  --fl-hatch: rgba(236, 231, 220, 0.12);
+  --fl-scroll: rgba(236, 231, 220, 0.16);
+  --fl-destructive: #f87171;
+  --fl-ctrl-bg: rgba(12, 18, 32, 0.88);
+  --fl-ctrl-icon-filter: invert(0.92);
+}
+
+/* day pass: same structure in daylight, amber gets darker so it reads as text */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fl-bg: #edf1f6;
+  --fl-surface: #ffffff;
+  --fl-panel: rgba(255, 255, 255, 0.9);
+  --fl-border: rgba(14, 22, 38, 0.13);
+  --fl-text: #0e1626;
+  --fl-muted: #4a5568;
+  --fl-faint: #6b7486;
+  --fl-accent: #f0a020;
+  --fl-accent-text: #8f5600;
+  --fl-on-accent: #1b1206;
+  --fl-cool: #1d4ed8;
+  --fl-track: rgba(14, 22, 38, 0.09);
+  --fl-zero: #e1e7ef;
+  --fl-nodata: #eef2f7;
+  --fl-anom-1: #1d4ed8;
+  --fl-anom-2: #60a5fa;
+  --fl-anom-3: #cfd6e0;
+  --fl-anom-4: #f98e09;
+  --fl-anom-5: #e04400;
+  --fl-subtle: rgba(14, 22, 38, 0.05);
+  --fl-input: rgba(14, 22, 38, 0.18);
+  --fl-hatch: rgba(14, 22, 38, 0.18);
+  --fl-scroll: rgba(14, 22, 38, 0.25);
+  --fl-destructive: #b91c1c;
+  --fl-ctrl-bg: rgba(255, 255, 255, 0.92);
+  --fl-ctrl-icon-filter: none;
+}
+
+/* shadcn variables follow the fl tokens, so they switch with the theme. */
+:root {
+  --background: var(--fl-bg);
+  --foreground: var(--fl-text);
+  --card: var(--fl-panel);
+  --card-foreground: var(--fl-text);
+  --popover: var(--fl-surface);
+  --popover-foreground: var(--fl-text);
+  --primary: var(--fl-accent);
+  --primary-foreground: var(--fl-on-accent);
+  --secondary: var(--fl-subtle);
+  --secondary-foreground: var(--fl-text);
+  --muted: var(--fl-subtle);
+  --muted-foreground: var(--fl-muted);
+  --accent: var(--fl-subtle);
+  --accent-foreground: var(--fl-text);
+  --destructive: var(--fl-destructive);
+  --border: var(--fl-border);
+  --input: var(--fl-input);
+  --ring: var(--fl-accent);
+  --chart-1: var(--fl-anom-1);
+  --chart-2: var(--fl-anom-2);
+  --chart-3: var(--fl-anom-3);
+  --chart-4: var(--fl-anom-4);
+  --chart-5: var(--fl-anom-5);
+  --radius: 0.625rem;
+  --sidebar: var(--fl-surface);
+  --sidebar-foreground: var(--fl-text);
+  --sidebar-primary: var(--fl-accent);
+  --sidebar-primary-foreground: var(--fl-on-accent);
+  --sidebar-accent: var(--fl-subtle);
+  --sidebar-accent-foreground: var(--fl-text);
+  --sidebar-border: var(--fl-border);
+  --sidebar-ring: var(--fl-accent);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Space behind the globe (the map canvas is transparent outside the sphere).
+   Dark: a sparse starfield on tinted near-black. Light: a pale daytime sky. */
+:root,
+:root[data-theme="dark"] {
+  --fl-space: #04070f;
+  --fl-stars:
+    radial-gradient(1px 1px at 23px 41px, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 151px 87px, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 207px 229px, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 88px 260px, rgba(214, 226, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 311px 33px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 47px 377px, rgba(255, 240, 220, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 390px 301px, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1px 1px at 263px 141px, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1px 1px at 509px 412px, rgba(214, 226, 255, 0.65), transparent),
+    radial-gradient(1px 1px at 431px 77px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 129px 497px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 541px 205px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(ellipse 60% 55% at 50% 52%, rgba(40, 70, 130, 0.18), transparent 70%);
+  --fl-stars-size:
+    293px 293px, 293px 293px, 293px 293px, 293px 293px,
+    409px 409px, 409px 409px, 409px 409px, 409px 409px,
+    547px 547px, 547px 547px, 547px 547px, 547px 547px,
+    100% 100%;
+}
+:root[data-theme="light"] {
+  --fl-space: #e6ecf3;
+  --fl-stars: radial-gradient(ellipse 65% 60% at 50% 52%, #f8fafc, transparent 72%);
+  --fl-stars-size: 100% 100%;
+}
+
+@utility space-backdrop {
+  background-color: var(--fl-space);
+  background-image: var(--fl-stars);
+  background-size: var(--fl-stars-size);
+}
+
+/* Glass panel recipe from the Design Reference Pack */
+@utility glass {
+  background: var(--fl-panel);
+  border: 1px solid var(--fl-border);
+  border-radius: 16px;
+  @apply backdrop-blur-[16px];
+}
+
+/* numbers line up in columns, same family as the text */
+.num {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* the expanded cut of archivo, used for headings and the wordmark */
+@utility wide {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-stretch: 125%;
+  font-variation-settings: "wdth" 125;
+}
+
+/* MapLibre controls follow the theme */
+.maplibregl-ctrl-group {
+  background: var(--fl-ctrl-bg) !important;
+  border: 1px solid var(--fl-border);
+}
+.maplibregl-ctrl-group button + button {
+  border-top-color: var(--fl-border) !important;
+}
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: var(--fl-ctrl-icon-filter);
+}
+.maplibregl-ctrl-attrib {
+  background: var(--fl-ctrl-bg) !important;
+  color: var(--fl-muted) !important;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--fl-muted) !important;
+}
+
+/* Fire-cell popup follows the theme */
+.fl-popup .maplibregl-popup-content {
+  background: var(--fl-surface);
+  color: var(--fl-text);
+  border: 1px solid var(--fl-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: none;
+}
+.fl-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--fl-surface); }
+.fl-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--fl-surface); }
+.fl-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: var(--fl-surface); }
+.fl-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--fl-surface); }
+
+/* Same diagonal hatch as "no data" cells in the calendar (legend swatch) */
+@utility hatch {
+  background-color: var(--fl-nodata);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--fl-hatch) 0 1px,
+    transparent 1px 5px
+  );
+}
+
+/* Thin scrollbars inside glass panels (name kept; colour follows the theme) */
+@utility scrollbar-dark {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fl-scroll) transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fl-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
