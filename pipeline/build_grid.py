@@ -26,6 +26,7 @@ import time
 from pathlib import Path
 
 import duckdb
+import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -34,6 +35,14 @@ from api.weights import JOINS, RAW_VIIRS_SQL, STATIC_SQL, Z90, create_pers, weig
 HOTDIR = ROOT / "data" / "hotspots"
 HOT = (HOTDIR / "*.parquet").as_posix()
 DER = ROOT / "data" / "derived"
+
+
+MARKER = b"fireledger_source"  # set by pipeline/fetch_recent.py on the files it writes
+
+
+def from_api(f: Path) -> bool:
+    """True for a current-year file from the FIRMS area API (not a finalized archive zip)."""
+    return MARKER in (pq.read_schema(f).metadata or {})
 
 
 def year_of(f: Path) -> int:
@@ -91,16 +100,27 @@ def main() -> None:
     create_pers(con, DER)
     grid = DER / "grid.parquet"
 
+    files = sorted(HOTDIR.glob("*.parquet"))
+    archive = [f.as_posix() for f in files if not from_api(f)]
+    recent = [f.as_posix() for f in files if from_api(f)]
+    out_recent = DER / "grid_recent.parquet"
+
+    def build_recent() -> None:
+        # this year's files change with every update_data.bat run, so they get their own grid
+        if not recent:
+            out_recent.unlink(missing_ok=True)
+            print("no current-year files from the FIRMS API; grid.parquet covers everything", flush=True)
+            return
+        n = build(con, recent, out_recent)
+        yrs = sorted({year_of(Path(f)) for f in recent})
+        print(f"grid_recent: {n:,} rows for {yrs} -> {out_recent}  [{time.time() - t0:.0f}s]", flush=True)
+
     if args.recent:
         last = con.execute(f"SELECT max(y) FROM read_parquet('{grid.as_posix()}')").fetchone()[0]
-        files = [f.as_posix() for f in HOTDIR.glob("*.parquet") if year_of(f) > last]
-        out = DER / "grid_recent.parquet"
-        if not files:
-            out.unlink(missing_ok=True)
-            print(f"no hotspot files after {last}; grid.parquet covers everything", flush=True)
-            return
-        n = build(con, files, out)
-        print(f"grid_recent: {n:,} rows for years after {last} -> {out}  [{time.time() - t0:.0f}s]", flush=True)
+        if recent and last >= min(year_of(Path(f)) for f in recent):
+            sys.exit(f"grid.parquet already holds {last}, a year the FIRMS API files cover: run build_grid.py "
+                     "once without --recent (it keeps archive years and current-year files apart)")
+        build_recent()
     elif args.mtd:
         # latest day any satellite observed; the month it falls in is the month in progress
         d = con.execute("SELECT max(d) FROM avail WHERE has_terra OR has_aqua OR has_snpp OR has_noaa20").fetchone()[0]
@@ -110,9 +130,9 @@ def main() -> None:
         print(f"mtd_grid: {n:,} rows, month {d.month} days 1..{d.day} of every year -> {out}  [{time.time() - t0:.0f}s]",
               flush=True)
     else:
-        n = build(con, HOT, grid)
-        (DER / "grid_recent.parquet").unlink(missing_ok=True)  # grid.parquet now holds those years
-        print(f"grid: {n:,} rows -> {grid}  [{time.time() - t0:.0f}s]", flush=True)
+        n = build(con, archive, grid)  # finalized archive years only
+        print(f"grid: {n:,} rows from {len(archive)} archive files -> {grid}  [{time.time() - t0:.0f}s]", flush=True)
+        build_recent()
 
 
 if __name__ == "__main__":
