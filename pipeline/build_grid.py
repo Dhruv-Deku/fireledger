@@ -90,6 +90,7 @@ def main() -> None:
     mode.add_argument("--recent", action="store_true", help="only years newer than grid.parquet")
     mode.add_argument("--mtd", action="store_true", help="days 1..D of the latest month, every year")
     mode.add_argument("--layer", action="store_true", help="only the month-sorted copy for the map layer")
+    mode.add_argument("--daily", action="store_true", help="the last DAILY_DAYS days with data, every year, per day")
     args = ap.parse_args()
 
     t0 = time.time()
@@ -125,6 +126,8 @@ def main() -> None:
             sys.exit(f"grid.parquet already holds {last}, a year the FIRMS API files cover: run build_grid.py "
                      "once without --recent (it keeps archive years and current-year files apart)")
         build_recent()
+    elif args.daily:
+        build_daily(con)
     elif args.mtd:
         # latest day any satellite observed; the month it falls in is the month in progress
         d = con.execute("SELECT max(d) FROM avail WHERE has_terra OR has_aqua OR has_snpp OR has_noaa20").fetchone()[0]
@@ -138,6 +141,41 @@ def main() -> None:
         print(f"grid: {n:,} rows from {len(archive)} archive files -> {grid}  [{time.time() - t0:.0f}s]", flush=True)
         build_recent()
         build_layer(con, grid)
+
+
+DAILY_DAYS = 30  # the daily view: the last 30 days with data, and the same calendar days of every year
+
+
+def build_daily(con) -> None:
+    """Day-by-day counts for the last DAILY_DAYS days with data, and for the same calendar days in every
+    other year, per 0.25 deg cell: what /api/daily answers big areas from (small ones use the hotspots)."""
+    from datetime import timedelta
+    d1 = con.execute("SELECT max(d) FROM avail WHERE has_terra OR has_aqua OR has_snpp OR has_noaa20").fetchone()[0]
+    days = [d1 - timedelta(days=i) for i in range(DAILY_DAYS)]
+    pairs = ", ".join(f"({d.month}, {d.day})" for d in days)
+    wv, _ = weight_sql("viirs")
+    wm, _ = weight_sql("modis")
+    out = DER / "daily_grid.parquet"
+    tmp = out.with_suffix(".parquet.tmp")
+    con.execute(f"""
+        COPY (
+            WITH r AS (
+                SELECT CAST(floor(h.lat * 4) AS SMALLINT) AS gy, CAST(floor(h.lon * 4) AS SMALLINT) AS gx,
+                       year(h.acq_date)::SMALLINT AS y, month(h.acq_date)::TINYINT AS m, day(h.acq_date)::TINYINT AS d,
+                       h.dn, {STATIC_SQL} AS static, h.sat, {RAW_VIIRS_SQL} AS rv, {wv} AS wv, {wm} AS wm
+                FROM read_parquet({files_sql(HOT)}) h {JOINS}
+                WHERE (month(h.acq_date), day(h.acq_date)) IN ({pairs})
+            )
+            SELECT gy, gx, y, m, d, dn, static, sum(wv)::FLOAT AS v, sum(wm)::FLOAT AS md,
+                   (count(*) FILTER (WHERE sat IN ('Terra', 'Aqua')))::INT AS raw_modis,
+                   (count(*) FILTER (WHERE rv))::INT AS raw_viirs,
+                   {d1.year * 10000 + d1.month * 100 + d1.day}::INT AS window_end
+            FROM r GROUP BY ALL ORDER BY gy, gx, y, m, d
+        ) TO '{tmp.as_posix()}' (FORMAT parquet, COMPRESSION zstd, ROW_GROUP_SIZE 200000)
+    """)
+    os.replace(tmp, out)
+    n = con.execute(f"SELECT count(*) FROM read_parquet('{out.as_posix()}')").fetchone()[0]
+    print(f"daily_grid: {n:,} rows, {days[-1]} .. {d1} and the same days of every year -> {out}", flush=True)
 
 
 def build_layer(con, grid: Path) -> None:

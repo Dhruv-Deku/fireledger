@@ -21,8 +21,9 @@ python pipeline\calibrate.py --avail-only || goto fail
 echo [4/5] Grid for the new days...
 python pipeline\build_grid.py --recent || goto fail
 
-echo [5/5] This month vs the same days of past years...
+echo [5/5] This month vs the same days of past years, and the last 30 days day by day...
 python pipeline\build_grid.py --mtd || goto fail
+python pipeline\build_grid.py --daily || goto fail
 
 echo.
 echo Done. Starting the API again.

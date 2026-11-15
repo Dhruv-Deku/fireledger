@@ -18,7 +18,7 @@ import math
 import os
 import threading
 import uuid
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -46,6 +46,7 @@ DER = ROOT / "data" / "derived"
 GRID = DER / "grid.parquet"
 GRID_RECENT = DER / "grid_recent.parquet"  # years added by pipeline/fetch_recent.py
 GRID_LAYER = DER / "grid_layer.parquet"    # grid.parquet sorted by month, for the map layer
+DAILY_GRID = DER / "daily_grid.parquet"    # last 30 days with data + the same days of every year, per day
 MTD_GRID = DER / "mtd_grid.parquet"        # the month in progress: days 1..D of every year
 REGIONS = DER / "regions.parquet"
 BANDS_PATH = DER / "bands.json"
@@ -91,17 +92,18 @@ _lock = threading.Lock()
 # or a map frame someone opened before comes back at once; numbers are exactly what was computed
 _cache: OrderedDict = OrderedDict()
 _cache_lock = threading.Lock()
-CACHE_MAX = {"calendar": 600, "summary": 600, "grid": 120, "monthly": 60}
+CACHE_MAX = {"calendar": 600, "summary": 600, "grid": 120, "monthly": 60, "daily": 300}
 SNAPSHOT = ROOT / "data" / "snapshot"  # pipeline/snapshot.py: the full API's preset answers
 LAST_DAY: date | None = None            # latest day any satellite observed
 MTD_KEY: tuple[int, int] | None = None  # (month, last day) that mtd_grid.parquet covers
+DAILY_END: date | None = None            # last day of daily_grid.parquet's window
 # first near-real-time day per unit's reference satellites: FIRMS reprocesses NRT data into
 # science-quality data ~3 months later, so counts from then on are preliminary
 NRT_FROM: dict[str, date] = {}
 
 
 def db() -> duckdb.DuckDBPyConnection:
-    global _con, LAST_DAY, MTD_KEY, NRT_FROM
+    global _con, LAST_DAY, MTD_KEY, NRT_FROM, DAILY_END
     with _lock:
         if _con is None:
             con = duckdb.connect()
@@ -124,6 +126,11 @@ def db() -> duckdb.DuckDBPyConnection:
                 if GRID_RECENT.exists():
                     parts.append(f"SELECT gy, gx, y, m, dn, static, v, md FROM read_parquet('{GRID_RECENT.as_posix()}')")
                 con.execute(f"CREATE VIEW layer AS {' UNION ALL '.join(parts)}")
+            if DAILY_GRID.exists():
+                con.execute(f"""CREATE VIEW daily_grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
+                                FROM read_parquet('{DAILY_GRID.as_posix()}')""")
+                end = con.execute("SELECT max(window_end) FROM daily_grid").fetchone()[0]
+                DAILY_END = date(end // 10000, end // 100 % 100, end % 100) if end else None
             if MTD_GRID.exists():
                 con.execute(f"""CREATE VIEW mtd_grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
                                 FROM read_parquet('{MTD_GRID.as_posix()}')""")
@@ -193,7 +200,7 @@ def load_snapshot() -> int:
             q = Query(geometry=geo[pid], start=m["request"]["start"], unit=unit, daynight=dn,
                       harmonized=h == "harmonized", hide_industrial=ind == "noind")
             key = query_key(q)
-            for kind in ("calendar", "summary"):
+            for kind in ("calendar", "summary", "daily"):
                 f = SNAPSHOT / kind / pid / f"{v}.json"
                 if key and f.exists():
                     with _cache_lock:
@@ -921,6 +928,93 @@ def season_timing(months: list[dict], full: list[int]) -> dict | None:
                    "core_3_months": {"months": [MONTHS[(i3 + k) % 12] for k in range(3)],
                                      "share": round(float(tri[i3] / total), 3)},
                    "shift": shift, "by_year": rows}
+
+
+DAILY_DAYS = 30
+
+
+@app.post("/api/daily")
+def daily(q: Query):
+    """The last 30 days with data, day by day, each against the same calendar day in every earlier year:
+    the early-warning view. Same body as /api/calendar; `start` limits which past years count; the
+    window always ends on the latest day with data."""
+    return cached("daily", query_key(q), lambda: _daily(q))
+
+
+def _daily(q: Query):
+    cur = db()
+    geom = aoi(q)
+    d1 = LAST_DAY
+    window = [d1 - timedelta(days=i) for i in range(DAILY_DAYS - 1, -1, -1)]
+    pairs = ", ".join(f"({d.month}, {d.day})" for d in window)
+    first_year = parse_day(q.start, False).year
+    method = "grid" if use_grid(q, geom) else "exact"
+    if method == "exact":
+        qd = q.model_copy(update={"end": d1.isoformat()})
+        inner, params = rows_sql(qd, geom, cur, extra_where=[f"(month(h.acq_date), day(h.acq_date)) IN ({pairs})"])
+        df = cur.execute(f"""
+            SELECT year(acq_date) AS y, month(acq_date) AS m, day(acq_date) AS d, sum(w) AS v,
+                   count(*) FILTER (WHERE sat IN ('Terra', 'Aqua')) AS raw_modis, count(*) FILTER (WHERE rv) AS raw_viirs
+            FROM ({inner}) GROUP BY ALL""", params).df()
+    else:
+        if DAILY_END != d1:
+            raise HTTPException(503, "the daily grid isn't built for the latest day: run pipeline/build_grid.py --daily")
+        where, params = filters(q, geom, False)
+        col = "v" if q.unit == "viirs" else "md"
+        df = cur.execute(f"""
+            SELECT h.y, h.m, h.d, sum({col}) AS v, sum(raw_modis) AS raw_modis, sum(raw_viirs) AS raw_viirs
+            FROM daily_grid h WHERE {' AND '.join(where)} AND h.y >= ? GROUP BY ALL""", params + [first_year]).df()
+    vals = {(int(r.y), int(r.m), int(r.d)): r for r in df.itertuples()}
+    seen = {(d.year, d.month, d.day) for (d,) in cur.execute(f"""
+        SELECT d FROM avail WHERE (month(d), day(d)) IN ({pairs}) AND year(d) >= ?
+          AND (has_terra OR has_aqua OR has_snpp OR has_noaa20)""", [first_year]).fetchall()}
+
+    def value(y, m, d):
+        if (y, m, d) not in seen:
+            return None  # no satellite observing that day
+        r = vals.get((y, m, d))
+        if r is None:
+            return 0.0
+        if q.harmonized:
+            return float(r.v or 0.0)
+        return float(r.raw_viirs if (q.unit == "viirs" and y >= VIIRS_ERA) else r.raw_modis)
+
+    nrt = NRT_FROM.get(q.unit)
+    days = []
+    for day in window:
+        past = [v for y in range(first_year, day.year) if (v := value(y, day.month, day.day)) is not None]
+        now = value(day.year, day.month, day.day)
+        r = vals.get((day.year, day.month, day.day))
+        med = float(np.median(past)) if past else None
+        days.append({
+            "date": day.isoformat(), "count": None if now is None else round(now, 1),
+            "raw_modis": int(r.raw_modis) if r is not None else 0, "raw_viirs": int(r.raw_viirs) if r is not None else 0,
+            "median": None if med is None else round(med, 1),
+            "p25": round(float(np.percentile(past, 25)), 1) if past else None,
+            "p75": round(float(np.percentile(past, 75)), 1) if past else None,
+            "n_years": len(past),
+            "pct_diff": round(100 * (now - med) / med, 1) if (now is not None and med) else None,
+            "preliminary": bool(nrt and day >= nrt),
+        })
+
+    def span(n):
+        """The last n days summed, against the same n days summed in each earlier year."""
+        sel = window[-n:]
+        now = sum(value(d.year, d.month, d.day) or 0.0 for d in sel)
+        past = []
+        for back in range(1, d1.year - first_year + 1):
+            vs = [value(d.year - back, d.month, d.day) for d in sel]
+            if all(v is not None for v in vs):
+                past.append(sum(vs))
+        med = float(np.median(past)) if past else None
+        return {"days": n, "from": sel[0].isoformat(), "to": sel[-1].isoformat(), "count": round(now, 1),
+                "median": None if med is None else round(med, 1),
+                "pct_diff": round(100 * (now - med) / med, 1) if med else None,
+                "rank": int(sum(p > now for p in past)) + 1 if past else None, "of_years": len(past) + 1}
+
+    return {"unit": q.unit, "harmonized": q.harmonized, "method": method,
+            "window": {"start": window[0].isoformat(), "end": d1.isoformat(), "days": DAILY_DAYS},
+            "days": days, "last_7_days": span(7), "last_30_days": span(DAILY_DAYS)}
 
 
 @app.post("/api/summary")

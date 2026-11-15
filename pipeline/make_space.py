@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "hf_space"
 DER = ROOT / "data" / "derived"
-DATA = ["grid.parquet", "grid_recent.parquet", "grid_layer.parquet", "mtd_grid.parquet", "avail.parquet",
+DATA = ["grid.parquet", "grid_recent.parquet", "grid_layer.parquet", "mtd_grid.parquet", "daily_grid.parquet", "avail.parquet",
         "calib.parquet", "regions.parquet", "persistent.parquet", "typed_static.parquet", "proof.json",
         "bands.json", "burned_area.json", "creams_check.json", "nrt_from.json"]
 
@@ -32,7 +32,7 @@ def build() -> None:
             shutil.copy2(DER / f, OUT / "data" / "derived" / f)
     snap = ROOT / "data" / "snapshot"  # presets' exact answers from the full API (pipeline/snapshot.py)
     if (snap / "manifest.json").exists():
-        for part in ["calendar", "summary"]:
+        for part in ["calendar", "summary", "daily"]:
             shutil.copytree(snap / part, OUT / "data" / "snapshot" / part)
         shutil.copy2(snap / "manifest.json", OUT / "data" / "snapshot" / "manifest.json")
     size = sum(p.stat().st_size for p in OUT.rglob("*") if p.is_file())

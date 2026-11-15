@@ -1,5 +1,16 @@
 # API ↔ app: reply to HANDOFF.md
 
+## 15 Nov, part 3: day by day (`POST /api/daily`)
+
+The last 30 days with data, each day against the same calendar day in every earlier year, plus
+`last_7_days` and `last_30_days` summed against the same days in each earlier year (`rank` 1 = most
+fire). Same body as `/api/calendar`.
+- Small areas are answered from single detections.
+- Big areas, and the public API, are answered from `daily_grid.parquet`, which
+  `build_grid.py --daily` builds (`update_data.bat` now runs it).
+- Presets on the public API give exactly the laptop's answers.
+- Shape and app instructions: `docs/PROMPT_DAILY_FOR_APP.md`.
+
 ## 15 Nov, part 2: the known limits as data (reply to PROMPT_FOR_DATA_LIMITS.md)
 
 New **optional** fields. No field was renamed, removed or changed in meaning. Every check result is

@@ -11,6 +11,7 @@ which file answers which request.
     snapshot/presets.json, proof.json, health.json
     snapshot/calendar/<preset>/<variant>.json      variant = <unit>_<daynight>_<harmonized|raw>_<all|noind>
     snapshot/summary/<preset>/<variant>.json
+    snapshot/daily/<preset>/<variant>.json         /api/daily: last 30 days with data, day by day
     snapshot/layers/<yyyy>-<mm>.json               /api/grid?year=&month=&res=1 (VIIRS-equivalent, day+night)
 """
 from __future__ import annotations
@@ -44,6 +45,34 @@ def dump(path: Path, obj) -> int:
     return len(data)
 
 
+def add_daily() -> None:
+    """Only the /api/daily answers, added to an existing snapshot (and the zip rebuilt)."""
+    import api.main as A
+    from fastapi.encoders import jsonable_encoder
+    t0 = time.time()
+    A.db()
+    man = json.loads((OUT / "manifest.json").read_text(encoding="utf-8"))
+    for p in A.preset_list():
+        for v in man["variants"]:
+            unit, dn, h, ind = v.split("_")
+            q = dict(geometry=p["geometry"], start=START, unit=unit, daynight=dn, harmonized=h == "harmonized",
+                     hide_industrial=ind == "noind")
+            dump(OUT / "daily" / p["id"] / f"{v}.json", jsonable_encoder(A.daily(A.Query(**q))))
+        print(f"  daily: {p['id']}  [{time.time() - t0:.0f}s]", flush=True)
+    man["files"]["daily"] = "daily/{preset}/{variant}.json"
+    man["daily_window"] = {"days": A.DAILY_DAYS, "end": A.LAST_DAY.isoformat()}
+    dump(OUT / "manifest.json", man)
+    zip_up()
+
+
+def zip_up() -> None:
+    ZIP.unlink(missing_ok=True)
+    with zipfile.ZipFile(ZIP, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+        for f in sorted(OUT.rglob("*.json")):
+            z.write(f, Path("snapshot") / f.relative_to(OUT))
+    print(f"wrote {ZIP} ({ZIP.stat().st_size / 1e6:.1f} MB)")
+
+
 def main() -> None:
     import api.main as A
     from fastapi.encoders import jsonable_encoder
@@ -69,6 +98,7 @@ def main() -> None:
             q = dict(geometry=p["geometry"], start=START, unit=unit, daynight=dn, harmonized=harmonized, hide_industrial=hide)
             nbytes += dump(OUT / "calendar" / p["id"] / f"{v}.json", jsonable_encoder(A.calendar(A.Query(**q))))
             nbytes += dump(OUT / "summary" / p["id"] / f"{v}.json", jsonable_encoder(A.summary(A.Query(**q))))
+            nbytes += dump(OUT / "daily" / p["id"] / f"{v}.json", jsonable_encoder(A.daily(A.Query(**q))))
         variants.append(v)
         print(f"  {v}: 9 presets  [{time.time() - t0:.0f}s, {nbytes / 1e6:.0f} MB]", flush=True)
         write_manifest(presets, variants, [], tag)
@@ -85,11 +115,8 @@ def main() -> None:
     print(f"  layers: {len(months)} months at {LAYER_RES} deg  [{time.time() - t0:.0f}s, {nbytes / 1e6:.0f} MB]", flush=True)
     write_manifest(presets, variants, months, tag)
 
-    ZIP.unlink(missing_ok=True)
-    with zipfile.ZipFile(ZIP, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-        for f in sorted(OUT.rglob("*.json")):
-            z.write(f, Path("snapshot") / f.relative_to(OUT))
-    print(f"wrote {OUT} ({nbytes / 1e6:.0f} MB) and {ZIP} ({ZIP.stat().st_size / 1e6:.1f} MB)  [{time.time() - t0:.0f}s]")
+    zip_up()
+    print(f"wrote {OUT} ({nbytes / 1e6:.0f} MB)  [{time.time() - t0:.0f}s]")
 
 
 def write_manifest(presets, variants, months, tag) -> None:
@@ -105,6 +132,7 @@ def write_manifest(presets, variants, months, tag) -> None:
         "variant_pattern": "<unit>_<daynight>_<harmonized|raw>_<all|noind>, e.g. viirs_both_harmonized_all",
         "files": {"presets": "presets.json", "proof": "proof.json", "health": "health.json",
                   "calendar": "calendar/{preset}/{variant}.json", "summary": "summary/{preset}/{variant}.json",
+                  "daily": "daily/{preset}/{variant}.json",
                   "layer": "layers/{yyyy}-{mm}.json"},
         "layer": {"res_deg": LAYER_RES, "unit": "viirs", "daynight": "both", "hide_industrial": False, "months": months},
         "not_in_snapshot": ["drawn areas and searched regions (need the live API)", "CSV downloads",
@@ -113,4 +141,4 @@ def write_manifest(presets, variants, months, tag) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    add_daily() if "--daily-only" in sys.argv else main()
