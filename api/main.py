@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import calendar as _cal
 import functools
+from collections import OrderedDict
 import io
 import json
 import math
@@ -42,6 +43,7 @@ HOT = (ROOT / "data" / "hotspots" / "*.parquet").as_posix()
 DER = ROOT / "data" / "derived"
 GRID = DER / "grid.parquet"
 GRID_RECENT = DER / "grid_recent.parquet"  # years added by pipeline/fetch_recent.py
+GRID_LAYER = DER / "grid_layer.parquet"    # grid.parquet sorted by month, for the map layer
 MTD_GRID = DER / "mtd_grid.parquet"        # the month in progress: days 1..D of every year
 REGIONS = DER / "regions.parquet"
 BANDS_PATH = DER / "bands.json"
@@ -82,6 +84,11 @@ async def bad_body(request: Request, exc: RequestValidationError):
 
 _con: duckdb.DuckDBPyConnection | None = None
 _lock = threading.Lock()
+# answers are remembered until the API restarts (update_data.bat restarts it with new data), so a preset
+# or a map frame someone opened before comes back at once; numbers are exactly what was computed
+_cache: OrderedDict = OrderedDict()
+_cache_lock = threading.Lock()
+CACHE_MAX = {"calendar": 200, "summary": 200, "grid": 120, "monthly": 60}
 LAST_DAY: date | None = None            # latest day any satellite observed
 MTD_KEY: tuple[int, int] | None = None  # (month, last day) that mtd_grid.parquet covers
 # first near-real-time day per unit's reference satellites: FIRMS reprocesses NRT data into
@@ -108,6 +115,11 @@ def db() -> duckdb.DuckDBPyConnection:
                 files = [f.as_posix() for f in (GRID, GRID_RECENT) if f.exists()]
                 con.execute(f"""CREATE VIEW grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
                                 FROM read_parquet({files!r})""")
+            if GRID_LAYER.exists():
+                parts = [f"SELECT gy, gx, y, m, dn, static, v, md FROM read_parquet('{GRID_LAYER.as_posix()}')"]
+                if GRID_RECENT.exists():
+                    parts.append(f"SELECT gy, gx, y, m, dn, static, v, md FROM read_parquet('{GRID_RECENT.as_posix()}')")
+                con.execute(f"CREATE VIEW layer AS {' UNION ALL '.join(parts)}")
             if MTD_GRID.exists():
                 con.execute(f"""CREATE VIEW mtd_grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
                                 FROM read_parquet('{MTD_GRID.as_posix()}')""")
@@ -122,6 +134,56 @@ def db() -> duckdb.DuckDBPyConnection:
                 NRT_FROM = {k: v for k, v in nrt.items() if v is not None}
             _con = con
         return _con.cursor()
+
+
+# ---------------------------------------------------------------- answer cache
+
+def cached(kind: str, key: str | None, compute):
+    if key is None:
+        return compute()
+    k = (kind, key)
+    with _cache_lock:
+        if k in _cache:
+            _cache.move_to_end(k)
+            return _cache[k]
+    val = compute()
+    with _cache_lock:
+        _cache[k] = val
+        mine = [x for x in _cache if x[0] == kind]
+        for old in mine[:max(0, len(mine) - CACHE_MAX[kind])]:
+            del _cache[old]
+    return val
+
+
+def query_key(q) -> str | None:
+    """Same answer, same key: dates normalised, an end after the last day with data = that day."""
+    try:
+        db()
+        d = q.model_dump()
+        d["start"] = parse_day(q.start, False).isoformat()
+        end = parse_day(q.end, True) if q.end else LAST_DAY
+        d["end"] = min(end, LAST_DAY).isoformat()
+        return json.dumps(d, sort_keys=True, default=str)
+    except Exception:  # a bad body: let the endpoint raise its own 400
+        return None
+
+
+def warm_presets() -> None:
+    """Work out the presets in the background after start-up, the way the app asks for them."""
+    for p in preset_list():
+        for start, harmonized in [("2000-11-01", True), ("2000-11-01", False)]:
+            q = dict(geometry=p["geometry"], start=start, unit="viirs", daynight="both",
+                     hide_industrial=False, harmonized=harmonized)
+            try:
+                calendar(Query(**q))
+                summary(Query(**q))
+            except Exception:
+                pass
+
+
+@app.on_event("startup")
+def _warm() -> None:
+    threading.Thread(target=warm_presets, daemon=True).start()
 
 
 # ---------------------------------------------------------------- request
@@ -403,6 +465,12 @@ def month_flags(q: Query, y: int, count: float, raw_modis: int, from_modis: bool
 
 
 def monthly(q: Query) -> tuple[list[dict], str, dict]:
+    """The monthly table behind both /api/calendar and /api/summary; computed once per request body."""
+    months, method, cov = cached("monthly", query_key(q), lambda: _monthly(q))
+    return [dict(r) for r in months], method, cov  # callers may edit rows; the cached copy stays clean
+
+
+def _monthly(q: Query) -> tuple[list[dict], str, dict]:
     """Calendar months, the method used, and which months VIIRS was observing (for the raw view)."""
     resolve_end(q)
     cur = db()
@@ -589,6 +657,11 @@ def grid_layer(year: int, month: int | None = None, unit: Literal["viirs", "modi
         raise HTTPException(503, "grid not built yet: run pipeline/build_grid.py")
     if res not in (0.25, 0.5, 1.0, 2.0):
         raise HTTPException(400, "res must be 0.25, 0.5, 1 or 2 (degrees)")
+    key = json.dumps([year, month, unit, res, daynight, hide_industrial])
+    return cached("grid", key, lambda: _grid_layer(year, month, unit, res, daynight, hide_industrial))
+
+
+def _grid_layer(year, month, unit, res, daynight, hide_industrial):
     f = int(res * 4)
     where, params = ["y = ?"], [year]
     if month:
@@ -603,7 +676,7 @@ def grid_layer(year: int, month: int | None = None, unit: Literal["viirs", "modi
     rows = db().execute(f"""
         SELECT (floor(gy / {f}) + 0.5) * {res} AS lat, (floor(gx / {f}) + 0.5) * {res} AS lon,
                round(sum({col}), 1) AS count
-        FROM grid WHERE {' AND '.join(where)} GROUP BY 1, 2 HAVING sum({col}) > 0
+        FROM {"layer" if GRID_LAYER.exists() else "grid"} WHERE {' AND '.join(where)} GROUP BY 1, 2 HAVING sum({col}) > 0
     """, params).fetchall()
     return {"year": year, "month": month, "unit": unit, "res": res,
             "max": max((r[2] for r in rows), default=0), "cells": [list(r) for r in rows]}
@@ -611,6 +684,10 @@ def grid_layer(year: int, month: int | None = None, unit: Literal["viirs", "modi
 
 @app.post("/api/calendar")
 def calendar(q: Query):
+    return cached("calendar", query_key(q), lambda: _calendar(q))
+
+
+def _calendar(q: Query):
     months, method, _ = monthly(q)
     return {"unit": q.unit, "method": method, "months": months}
 
@@ -746,6 +823,10 @@ def season_timing(months: list[dict], full: list[int]) -> dict | None:
 
 @app.post("/api/summary")
 def summary(q: Query):
+    return cached("summary", query_key(q), lambda: _summary(q))
+
+
+def _summary(q: Query):
     months, method, viirs_cov = monthly(q)
     months = [r for r in months if r["count"] is not None]
     if not months:
@@ -871,8 +952,9 @@ def summary(q: Query):
     industrial = {"share": round(share, 3), "warning": None}
     if share >= INDUSTRIAL_WARN and not q.hide_industrial:
         industrial["warning"] = (f"{100 * share:.0f}% of this area's hotspots are industrial or persistent sources "
-                                 "(gas flares, plants, volcanoes). MODIS missed most small ones, so their numbers "
-                                 "before 2012 can't be fully reconstructed: tick 'hide industrial' for a like-for-like record.")
+                                 "(gas flares, plants, volcanoes). MODIS saw few of the small ones, so before 2012 they are "
+                                 "rebuilt from the few it saw and are rougher than the rest: tick 'hide industrial' for "
+                                 "fires only.")
 
     return {"unit": q.unit, "harmonized": q.harmonized, "method": method, "this_month": this_month,
             "industrial": industrial, "busiest_months": busiest_months, "busiest_years": busiest_years,

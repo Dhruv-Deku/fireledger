@@ -77,6 +77,12 @@ warnings are all "months[i] has extra keys", one per month: the extra fields lis
 
 ## Calling it
 
+- **Speed:** answers are kept in memory until the API restarts, so anything asked before comes back
+  in ~0.02 s.
+  - The 9 presets are worked out in the background during the first ~5 minutes after a start.
+  - A new drawn area takes ~3–8 s once.
+  - A map frame (`/api/grid`) takes ~0.3 s.
+
 - Base URL: `http://<laptop-ip>:8000` on the same Wi-Fi, or the https tunnel URL we send you
   (needed from a Vercel page: https can't call http).
 - `POST /api/calendar`, `POST /api/summary`, `POST /api/hotspots.csv` take `request_example`'s body.

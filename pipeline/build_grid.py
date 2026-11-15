@@ -89,6 +89,7 @@ def main() -> None:
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--recent", action="store_true", help="only years newer than grid.parquet")
     mode.add_argument("--mtd", action="store_true", help="days 1..D of the latest month, every year")
+    mode.add_argument("--layer", action="store_true", help="only the month-sorted copy for the map layer")
     args = ap.parse_args()
 
     t0 = time.time()
@@ -115,6 +116,9 @@ def main() -> None:
         yrs = sorted({year_of(Path(f)) for f in recent})
         print(f"grid_recent: {n:,} rows for {yrs} -> {out_recent}  [{time.time() - t0:.0f}s]", flush=True)
 
+    if args.layer:
+        build_layer(con, grid)
+        return
     if args.recent:
         last = con.execute(f"SELECT max(y) FROM read_parquet('{grid.as_posix()}')").fetchone()[0]
         if recent and last >= min(year_of(Path(f)) for f in recent):
@@ -133,6 +137,18 @@ def main() -> None:
         n = build(con, archive, grid)  # finalized archive years only
         print(f"grid: {n:,} rows from {len(archive)} archive files -> {grid}  [{time.time() - t0:.0f}s]", flush=True)
         build_recent()
+        build_layer(con, grid)
+
+
+def build_layer(con, grid: Path) -> None:
+    """The map layer asks for one month at a time; grid.parquet is sorted by place (what area
+    queries need), so the layer gets its own copy sorted by month, where a month is one row group."""
+    out = DER / "grid_layer.parquet"
+    tmp = out.with_suffix(".parquet.tmp")
+    con.execute(f"""COPY (SELECT gy, gx, y, m, dn, static, v, md FROM read_parquet('{grid.as_posix()}') ORDER BY y, m, gy, gx)
+                    TO '{tmp.as_posix()}' (FORMAT parquet, COMPRESSION zstd, ROW_GROUP_SIZE 50000)""")
+    os.replace(tmp, out)
+    print(f"grid_layer: sorted by month -> {out}", flush=True)
 
 
 if __name__ == "__main__":
