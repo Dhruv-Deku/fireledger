@@ -466,6 +466,7 @@ def month_flags(q: Query, y: int, count: float, raw_modis: int, from_modis: bool
 
 def monthly(q: Query) -> tuple[list[dict], str, dict]:
     """The monthly table behind both /api/calendar and /api/summary; computed once per request body."""
+    resolve_end(q)  # callers read q.end afterwards, even when the table comes from the cache
     months, method, cov = cached("monthly", query_key(q), lambda: _monthly(q))
     return [dict(r) for r in months], method, cov  # callers may edit rows; the cached copy stays clean
 
