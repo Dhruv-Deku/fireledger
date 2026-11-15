@@ -6,7 +6,8 @@
 
 Every area is answered from the 0.25 deg grid; the 9 presets come from the full API's saved answers
 (data/snapshot), so they match the laptop exactly. CSV downloads need the hotspot files: 503 here.
-The container sleeps after 20 idle minutes; the first request after that takes ~10-20 s.
+One copy is kept warm (min_containers=1), since a cold start copies the data to local disk (~75 s);
+set it to 0 to save credits when nobody needs it.
 """
 import sys
 from pathlib import Path
@@ -26,7 +27,8 @@ vol = modal.Volume.from_name(VOLUME, create_if_missing=True)
 app = modal.App("fireledger", image=image)
 
 
-@app.function(volumes={"/vol": vol}, cpu=1.0, memory=2048, scaledown_window=1200, timeout=300)
+@app.function(volumes={"/vol": vol}, cpu=1.0, memory=2048, scaledown_window=1200, timeout=300,
+              min_containers=1)  # always one warm copy: a cold start copies 415 MB (~75 s). Set 0 after judging.
 @modal.concurrent(max_inputs=16)
 @modal.asgi_app()
 def web():
