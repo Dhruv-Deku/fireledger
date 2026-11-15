@@ -1,0 +1,119 @@
+{
+ "unit": "viirs",
+ "cell_deg": 0.25,
+ "population_source": "WorldPop 2020, 1 km, UN-adjusted",
+ "area_population": 34020145,
+ "note": "People living in ~28 km grid cells (0.25 deg) by how many fires were seen in the cell in the period. Headline: at least about one fire a day. Where people live, not smoke exposure.",
+ "last_30_days": {
+  "from": "2026-10-15",
+  "to": "2026-11-13",
+  "headline": {
+   "min_fires": 30,
+   "people": 22535393,
+   "cells": 53,
+   "share_of_area": 0.6624,
+   "median_people": 31904330,
+   "pct_diff": -29.4,
+   "rank": 25,
+   "of_years": 27
+  },
+  "tiers": [
+   {
+    "min_fires": 1,
+    "people": 33541931,
+    "cells": 78,
+    "share_of_area": 0.9859,
+    "median_people": 33317484,
+    "pct_diff": 0.7,
+    "rank": 8,
+    "of_years": 27
+   },
+   {
+    "min_fires": 10,
+    "people": 31396120,
+    "cells": 72,
+    "share_of_area": 0.9229,
+    "median_people": 32434087,
+    "pct_diff": -3.2,
+    "rank": 19,
+    "of_years": 27
+   },
+   {
+    "min_fires": 30,
+    "people": 22535393,
+    "cells": 53,
+    "share_of_area": 0.6624,
+    "median_people": 31904330,
+    "pct_diff": -29.4,
+    "rank": 25,
+    "of_years": 27
+   },
+   {
+    "min_fires": 100,
+    "people": 3011501,
+    "cells": 8,
+    "share_of_area": 0.0885,
+    "median_people": 27150279,
+    "pct_diff": -88.9,
+    "rank": 26,
+    "of_years": 27
+   }
+  ]
+ },
+ "last_12_months": {
+  "from": "2025-11",
+  "to": "2026-10",
+  "headline": {
+   "min_fires": 365,
+   "people": 8932690,
+   "cells": 24,
+   "share_of_area": 0.2626,
+   "median_people": 27104639,
+   "pct_diff": -67.0,
+   "rank": 26,
+   "of_years": 27
+  },
+  "tiers": [
+   {
+    "min_fires": 1,
+    "people": 34020145,
+    "cells": 80,
+    "share_of_area": 1.0,
+    "median_people": 34020145,
+    "pct_diff": 0.0,
+    "rank": 1,
+    "of_years": 27
+   },
+   {
+    "min_fires": 100,
+    "people": 30745015,
+    "cells": 72,
+    "share_of_area": 0.9037,
+    "median_people": 32459519,
+    "pct_diff": -5.3,
+    "rank": 24,
+    "of_years": 27
+   },
+   {
+    "min_fires": 365,
+    "people": 8932690,
+    "cells": 24,
+    "share_of_area": 0.2626,
+    "median_people": 27104639,
+    "pct_diff": -67.0,
+    "rank": 26,
+    "of_years": 27
+   },
+   {
+    "min_fires": 1000,
+    "people": 0,
+    "cells": 0,
+    "share_of_area": 0.0,
+    "median_people": 11865650,
+    "pct_diff": -100.0,
+    "rank": 25,
+    "of_years": 27
+   }
+  ]
+ }
+}

@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "hf_space"
 DER = ROOT / "data" / "derived"
-DATA = ["grid.parquet", "grid_recent.parquet", "grid_layer.parquet", "mtd_grid.parquet", "daily_grid.parquet", "avail.parquet",
+DATA = ["grid.parquet", "grid_recent.parquet", "grid_layer.parquet", "mtd_grid.parquet", "daily_grid.parquet", "population_025.parquet", "avail.parquet",
         "calib.parquet", "regions.parquet", "persistent.parquet", "typed_static.parquet", "proof.json",
         "bands.json", "burned_area.json", "creams_check.json", "nrt_from.json"]
 

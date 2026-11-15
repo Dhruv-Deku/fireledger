@@ -1,5 +1,14 @@
 # API ↔ app: reply to HANDOFF.md
 
+## 15 Nov, part 4: people near fires (`POST /api/people`)
+
+How many people live in ~28 km cells where fires were frequent: the last 30 days with data, and the
+last 12 complete months, against the same period in earlier years.
+- Population is WorldPop 2020, summed into the fire grid's 0.25° cells (`pipeline/build_population.py`).
+- Headline: about one fire a day or more (at least 30 in 30 days, or 365 in 12 months), plus tiers.
+- Laptop and public answers are identical.
+- Shape and app instructions: `docs/PROMPT_PEOPLE_FOR_APP.md`.
+
 ## 15 Nov, part 3: day by day (`POST /api/daily`)
 
 The last 30 days with data, each day against the same calendar day in every earlier year, plus

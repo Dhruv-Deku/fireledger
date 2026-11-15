@@ -47,6 +47,7 @@ GRID = DER / "grid.parquet"
 GRID_RECENT = DER / "grid_recent.parquet"  # years added by pipeline/fetch_recent.py
 GRID_LAYER = DER / "grid_layer.parquet"    # grid.parquet sorted by month, for the map layer
 DAILY_GRID = DER / "daily_grid.parquet"    # last 30 days with data + the same days of every year, per day
+POPULATION = DER / "population_025.parquet"  # WorldPop 2020 people per 0.25 deg cell (pipeline/build_population.py)
 MTD_GRID = DER / "mtd_grid.parquet"        # the month in progress: days 1..D of every year
 REGIONS = DER / "regions.parquet"
 BANDS_PATH = DER / "bands.json"
@@ -92,7 +93,7 @@ _lock = threading.Lock()
 # or a map frame someone opened before comes back at once; numbers are exactly what was computed
 _cache: OrderedDict = OrderedDict()
 _cache_lock = threading.Lock()
-CACHE_MAX = {"calendar": 600, "summary": 600, "grid": 120, "monthly": 60, "daily": 300}
+CACHE_MAX = {"calendar": 600, "summary": 600, "grid": 120, "monthly": 60, "daily": 300, "people": 300}
 SNAPSHOT = ROOT / "data" / "snapshot"  # pipeline/snapshot.py: the full API's preset answers
 LAST_DAY: date | None = None            # latest day any satellite observed
 MTD_KEY: tuple[int, int] | None = None  # (month, last day) that mtd_grid.parquet covers
@@ -126,6 +127,9 @@ def db() -> duckdb.DuckDBPyConnection:
                 if GRID_RECENT.exists():
                     parts.append(f"SELECT gy, gx, y, m, dn, static, v, md FROM read_parquet('{GRID_RECENT.as_posix()}')")
                 con.execute(f"CREATE VIEW layer AS {' UNION ALL '.join(parts)}")
+            if POPULATION.exists():
+                con.execute(f"""CREATE VIEW popgrid AS SELECT gy, gx, pop, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
+                                FROM read_parquet('{POPULATION.as_posix()}')""")
             if DAILY_GRID.exists():
                 con.execute(f"""CREATE VIEW daily_grid AS SELECT *, (gy + 0.5) / 4.0 AS lat, (gx + 0.5) / 4.0 AS lon
                                 FROM read_parquet('{DAILY_GRID.as_posix()}')""")
@@ -1015,6 +1019,86 @@ def _daily(q: Query):
     return {"unit": q.unit, "harmonized": q.harmonized, "method": method,
             "window": {"start": window[0].isoformat(), "end": d1.isoformat(), "days": DAILY_DAYS},
             "days": days, "last_7_days": span(7), "last_30_days": span(DAILY_DAYS)}
+
+
+@app.post("/api/people")
+def people(q: Query):
+    """How many people live in the 0.25 deg cells (~28 km) where fires burned, in the last 30 days with
+    data and the last 12 complete months, against the same period in every earlier year.
+    WorldPop 2020 (1 km, UN-adjusted). A cell counts once at least one VIIRS-equivalent hotspot was
+    seen in it in the period. Same body as /api/calendar (daynight and hide_industrial apply)."""
+    return cached("people", query_key(q), lambda: _people(q))
+
+
+PEOPLE_TIERS = {"last_30_days": [1, 10, 30, 100], "last_12_months": [1, 100, 365, 1000]}
+PEOPLE_HEADLINE = {"last_30_days": 30, "last_12_months": 365}  # about one fire a day within ~28 km
+
+
+def _people(q: Query):
+    if not POPULATION.exists():
+        raise HTTPException(503, "population grid not built: run pipeline/build_population.py")
+    cur = db()
+    geom = aoi(q)
+    area_where, area_params = filters(q.model_copy(update={"daynight": "both", "hide_industrial": False}), geom, False)
+    fire_where, fire_params = filters(q, geom, False)
+    area_pop = float(cur.execute(f"SELECT coalesce(sum(pop), 0) FROM popgrid h WHERE {' AND '.join(area_where)}",
+                                 area_params).fetchone()[0])
+    col = "v" if q.unit == "viirs" else "md"
+    first_year = parse_day(q.start, False).year
+    d1 = LAST_DAY
+
+    def period(key: str, cte: str, frm: str, to: str) -> dict:
+        tiers = PEOPLE_TIERS[key]
+        sums = ", ".join(f"sum(p.pop) FILTER (WHERE c.s >= {t}), count(*) FILTER (WHERE c.s >= {t})" for t in tiers)
+        rows = cur.execute(f"""{cte}
+            SELECT c.k, {sums} FROM c JOIN popgrid p ON p.gy = c.gy AND p.gx = c.gx GROUP BY 1""",
+                           fire_params + [first_year]).fetchall()
+        by = {int(r[0]): r[1:] for r in rows}
+        n_back = d1.year - first_year
+        out_tiers = []
+        for i, t in enumerate(tiers):
+            def at(k):
+                r = by.get(k)
+                return (float(r[2 * i] or 0), int(r[2 * i + 1] or 0)) if r else (0.0, 0)
+            now_p, now_c = at(0)
+            past = [at(k)[0] for k in range(1, n_back + 1)]
+            med = float(np.median(past)) if past else None
+            out_tiers.append({"min_fires": t, "people": round(now_p), "cells": now_c,
+                              "share_of_area": round(now_p / area_pop, 4) if area_pop else None,
+                              "median_people": None if med is None else round(med),
+                              "pct_diff": round(100 * (now_p - med) / med, 1) if med else None,
+                              "rank": int(sum(p > now_p for p in past)) + 1 if past else None,
+                              "of_years": len(past) + 1})
+        head = next(x for x in out_tiers if x["min_fires"] == PEOPLE_HEADLINE[key])
+        return {"from": frm, "to": to, "headline": head, "tiers": out_tiers}
+
+    out = {"unit": q.unit, "cell_deg": 0.25, "population_source": "WorldPop 2020, 1 km, UN-adjusted",
+           "area_population": round(area_pop),
+           "note": ("People living in ~28 km grid cells (0.25 deg) by how many fires were seen in the cell in the "
+                    "period. Headline: at least about one fire a day. Where people live, not smoke exposure."),
+           "last_30_days": None, "last_12_months": None}
+
+    if DAILY_GRID.exists() and DAILY_END == d1:
+        window = [d1 - timedelta(days=i) for i in range(DAILY_DAYS)]
+        wd = ", ".join(f"({d.month}, {d.day}, {d.year})" for d in window)
+        cte = f"""WITH w(m, d, y0) AS (VALUES {wd}),
+            c AS (SELECT w.y0 - h.y AS k, h.gy, h.gx, sum({col}) AS s FROM daily_grid h JOIN w ON w.m = h.m AND w.d = h.d
+                  WHERE {' AND '.join(fire_where)} AND h.y >= ? AND h.y <= w.y0 GROUP BY ALL HAVING sum({col}) >= 1)"""
+        out["last_30_days"] = period("last_30_days", cte, window[-1].isoformat(), d1.isoformat())
+
+    # the last 12 complete months (the month in progress left out, so every year is compared alike)
+    months = []
+    y, m = d1.year, d1.month
+    for _ in range(12):
+        y, m = (y - 1, 12) if m == 1 else (y, m - 1)
+        months.append((y, m))
+    wm = ", ".join(f"({mm}, {yy})" for yy, mm in months)
+    cte = f"""WITH w(m, y0) AS (VALUES {wm}),
+        c AS (SELECT w.y0 - h.y AS k, h.gy, h.gx, sum({col}) AS s FROM grid h JOIN w ON w.m = h.m
+              WHERE {' AND '.join(fire_where)} AND h.y >= ? AND h.y <= w.y0 GROUP BY ALL HAVING sum({col}) >= 1)"""
+    out["last_12_months"] = period("last_12_months", cte, f"{months[-1][0]}-{months[-1][1]:02d}",
+                                   f"{months[0][0]}-{months[0][1]:02d}")
+    return out
 
 
 @app.post("/api/summary")
