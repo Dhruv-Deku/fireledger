@@ -78,6 +78,18 @@ PRESETS = [
 ]
 
 app = FastAPI(title="FireLedger API", version="0.1")
+@app.middleware("http")
+async def errors_as_json(request: Request, call_next):
+    """Any unhandled error becomes a JSON 500 inside the CORS middleware (added below, so it wraps this),
+    so the browser sees the 500 with CORS headers instead of a CORS failure."""
+    try:
+        return await call_next(request)
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"detail": "internal error"}, status_code=500)
+
+
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.add_middleware(GZipMiddleware, minimum_size=2000)  # map frames and calendars shrink ~5x
 
@@ -761,7 +773,7 @@ def region_geometry(region_id: str):
 @app.get("/api/grid")
 def grid_layer(year: int, month: int | None = None, unit: Literal["viirs", "modis"] = "viirs",
                res: float = 0.5, daynight: Literal["D", "N", "both"] = "both",
-               hide_industrial: bool = False):
+               hide_industrial: bool = False, bbox: str | None = None):
     """Harmonized hotspot count per grid cell for one year (or one month), for the map layer.
 
     cells: [lat, lon, count] at the cell centre, only cells with fire.
@@ -770,11 +782,18 @@ def grid_layer(year: int, month: int | None = None, unit: Literal["viirs", "modi
         raise HTTPException(503, "grid not built yet: run pipeline/build_grid.py")
     if res not in (0.25, 0.5, 1.0, 2.0):
         raise HTTPException(400, "res must be 0.25, 0.5, 1 or 2 (degrees)")
-    key = json.dumps([year, month, unit, res, daynight, hide_industrial])
-    return cached("grid", key, lambda: _grid_layer(year, month, unit, res, daynight, hide_industrial))
+    box_ = None
+    if bbox:
+        try:
+            box_ = [float(v) for v in bbox.split(",")]
+            assert len(box_) == 4 and box_[0] <= box_[2] and box_[1] <= box_[3]
+        except (ValueError, AssertionError):
+            raise HTTPException(400, "bbox must be west,south,east,north in degrees")
+    key = json.dumps([year, month, unit, res, daynight, hide_industrial, box_])
+    return cached("grid", key, lambda: _grid_layer(year, month, unit, res, daynight, hide_industrial, box_))
 
 
-def _grid_layer(year, month, unit, res, daynight, hide_industrial):
+def _grid_layer(year, month, unit, res, daynight, hide_industrial, box_=None):
     f = int(res * 4)
     where, params = ["y = ?"], [year]
     if month:
@@ -785,6 +804,9 @@ def _grid_layer(year, month, unit, res, daynight, hide_industrial):
         params.append(daynight)
     if hide_industrial:
         where.append("NOT static")
+    if box_:  # cells whose centre is inside west, south, east, north (inclusive)
+        w_, s_, e_, n_ = box_
+        where.append(f"(gy + 0.5) / 4.0 BETWEEN {s_} AND {n_} AND (gx + 0.5) / 4.0 BETWEEN {w_} AND {e_}")
     col = "v" if unit == "viirs" else "md"
     rows = db().execute(f"""
         SELECT (floor(gy / {f}) + 0.5) * {res} AS lat, (floor(gx / {f}) + 0.5) * {res} AS lon,
@@ -1103,7 +1125,7 @@ def _people(q: Query):
 
 @app.post("/api/summary")
 def summary(q: Query):
-    return cached("summary", query_key(q), lambda: _summary(q))
+    return cached("summary", query_key(q), lambda: finite(_summary(q)))
 
 
 def _summary(q: Query):
@@ -1234,12 +1256,36 @@ def _summary(q: Query):
                                  "rebuilt from the few it saw and are rougher than the rest: tick 'hide industrial' for "
                                  "fires only.")
 
+    if not any(r["count"] for r in months):  # no fire recorded in the whole range (ocean, desert, a tiny area)
+        busiest_months, busiest_years, busiest_years_no_blind, critical_next = [], [], [], []
+        this_month["anomaly_label"] = "no fires recorded"
+        rel = None
+    else:
+        rel = reliability(q, months)
     return {"unit": q.unit, "harmonized": q.harmonized, "method": method, "this_month": this_month,
             "industrial": industrial, "busiest_months": busiest_months, "busiest_years": busiest_years,
             "busiest_years_no_blind": busiest_years_no_blind,
             "season": season, "critical_next": critical_next, "trend": trend, "trend_viirs": trend_viirs,
-            "season_timing": season_timing(months, full), "climatology": clim, "annual": annual,
-            "reliability": reliability(q, months)}
+            "season_timing": safe_timing(months, full), "climatology": clim, "annual": annual,
+            "reliability": rel}
+
+
+def safe_timing(months, full):
+    try:
+        return finite(season_timing(months, full))
+    except (ValueError, ZeroDivisionError, IndexError):
+        return None
+
+
+def finite(x):
+    """JSON can't carry NaN or Infinity: replace them with None, anywhere in the structure."""
+    if isinstance(x, float):
+        return x if math.isfinite(x) else None
+    if isinstance(x, dict):
+        return {k: finite(v) for k, v in x.items()}
+    if isinstance(x, list):
+        return [finite(v) for v in x]
+    return x
 
 
 def trend_of(annual: list[dict], min_years: int) -> dict | None:
@@ -1248,8 +1294,12 @@ def trend_of(annual: list[dict], min_years: int) -> dict | None:
         return None
     yrs = np.array([a["year"] for a in annual], float)
     cnt = np.array([a["count"] for a in annual], float)
-    slope = stats.theilslopes(cnt, yrs)[0]
-    tau, p = stats.kendalltau(yrs, cnt)
+    if np.ptp(cnt) == 0:  # all years equal (e.g. no fires at all): no trend, and no NaN from the test
+        slope, p = 0.0, 1.0
+    else:
+        slope = stats.theilslopes(cnt, yrs)[0]
+        tau, p = stats.kendalltau(yrs, cnt)
+        p = 1.0 if not np.isfinite(p) else p
     mean = cnt.mean() or 1.0
     return {"sen_slope_per_year": round(float(slope), 1), "per_year": round(float(slope), 1),
             "pct_per_decade": round(float(1000 * slope / mean), 1),
