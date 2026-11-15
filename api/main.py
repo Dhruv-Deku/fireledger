@@ -423,10 +423,39 @@ def monthly_points(q: Query, geom, cur):
     """, params).df()
 
 
-def monthly_grid(q: Query, geom, cur, table: str = "grid"):
-    """Same columns as monthly_points, from the 0.25 deg grid (cell centre inside the AOI)."""
+PARTIAL_MAX_AREA = 25.0  # deg^2: below this, a grid-only server counts cells by their share inside the area
+
+
+def partial_cells(geom, cur) -> str | None:
+    """Grid-only server (no hotspot files), small area: each 0.25 deg cell touching the area with the share
+    of it inside, so an area smaller than a cell isn't empty and edges aren't all-or-nothing. Registered
+    as a table (gy, gx, f); None when the usual cell-centre test applies."""
+    if HAVE_POINTS or geom.area > PARTIAL_MAX_AREA:
+        return None
     minx, miny, maxx, maxy = geom.bounds
-    where, params = filters(q, geom, False)
+    gys = np.arange(math.floor(miny * 4), math.floor(maxy * 4) + 1)
+    gxs = np.arange(math.floor(minx * 4), math.floor(maxx * 4) + 1)
+    GX, GY = (a.ravel() for a in np.meshgrid(gxs, gys))
+    cells = shapely.box(GX / 4, GY / 4, (GX + 1) / 4, (GY + 1) / 4)
+    shapely.prepare(geom)
+    hit = shapely.intersects(geom, cells)
+    f = shapely.area(shapely.intersection(geom, cells[hit])) / 0.0625
+    name = f"frac_{uuid.uuid4().hex}"
+    cur.register(name, pd.DataFrame({"gy": GY[hit].astype("int32"), "gx": GX[hit].astype("int32"), "f": f}))
+    return name
+
+
+def monthly_grid(q: Query, geom, cur, table: str = "grid"):
+    """Same columns as monthly_points, from the 0.25 deg grid (cell centre inside the AOI; on a grid-only
+    server, small areas count each cell by its share inside instead)."""
+    minx, miny, maxx, maxy = geom.bounds
+    frac = partial_cells(geom, cur)
+    if frac:  # the shares replace the centre test, so keep every cell touching the bounds
+        where, params = filters(q, box(minx - 0.125, miny - 0.125, maxx + 0.125, maxy + 0.125), False)
+        join, f = f"JOIN {frac} fr ON fr.gy = h.gy AND fr.gx = h.gx", " * fr.f"
+    else:
+        where, params = filters(q, geom, False)
+        join, f = "", ""
     # integer cell bounds too, so DuckDB can skip parquet row groups
     where += ["h.gy BETWEEN ? AND ?", "(h.y::INT * 100 + h.m) BETWEEN ? AND ?"]
     d0, d1 = parse_day(q.start, False), parse_day(q.end, True)
@@ -436,12 +465,12 @@ def monthly_grid(q: Query, geom, cur, table: str = "grid"):
     from_snpp = "v_from_snpp" if q.unit == "viirs" else "0"
     return cur.execute(f"""
         SELECT h.y AS year, h.m AS month,
-               sum({v}) AS count, sum({v}_lo) AS lo, sum({v}_hi) AS hi,
-               sum(raw_modis) AS raw_modis, sum(raw_viirs) AS raw_viirs,
-               sum(raw_snpp) AS raw_snpp, sum(raw_noaa20) AS raw_noaa20,
-               sum({from_modis}) AS w_modis, sum({from_snpp}) AS w_snpp,
-               sum({v}) FILTER (WHERE h.static) AS w_industrial
-        FROM {table} h WHERE {' AND '.join(where)} GROUP BY ALL
+               sum({v}{f}) AS count, sum({v}_lo{f}) AS lo, sum({v}_hi{f}) AS hi,
+               round(sum(raw_modis{f})) AS raw_modis, round(sum(raw_viirs{f})) AS raw_viirs,
+               round(sum(raw_snpp{f})) AS raw_snpp, round(sum(raw_noaa20{f})) AS raw_noaa20,
+               sum({from_modis}{f}) AS w_modis, sum({from_snpp}{f}) AS w_snpp,
+               sum({v}{f}) FILTER (WHERE h.static) AS w_industrial
+        FROM {table} h {join} WHERE {' AND '.join(where)} GROUP BY ALL
     """, params).df()
 
 
@@ -985,11 +1014,18 @@ def _daily(q: Query):
     else:
         if DAILY_END != d1:
             raise HTTPException(503, "the daily grid isn't built for the latest day: run pipeline/build_grid.py --daily")
-        where, params = filters(q, geom, False)
+        frac = partial_cells(geom, cur)
+        if frac:
+            mx0, my0, mx1, my1 = geom.bounds
+            where, params = filters(q, box(mx0 - 0.125, my0 - 0.125, mx1 + 0.125, my1 + 0.125), False)
+            join, f = f"JOIN {frac} fr ON fr.gy = h.gy AND fr.gx = h.gx", " * fr.f"
+        else:
+            where, params = filters(q, geom, False)
+            join, f = "", ""
         col = "v" if q.unit == "viirs" else "md"
         df = cur.execute(f"""
-            SELECT h.y, h.m, h.d, sum({col}) AS v, sum(raw_modis) AS raw_modis, sum(raw_viirs) AS raw_viirs
-            FROM daily_grid h WHERE {' AND '.join(where)} AND h.y >= ? GROUP BY ALL""", params + [first_year]).df()
+            SELECT h.y, h.m, h.d, sum({col}{f}) AS v, round(sum(raw_modis{f})) AS raw_modis, round(sum(raw_viirs{f})) AS raw_viirs
+            FROM daily_grid h {join} WHERE {' AND '.join(where)} AND h.y >= ? GROUP BY ALL""", params + [first_year]).df()
     vals = {(int(r.y), int(r.m), int(r.d)): r for r in df.itertuples()}
     seen = {(d.year, d.month, d.day) for (d,) in cur.execute(f"""
         SELECT d FROM avail WHERE (month(d), day(d)) IN ({pairs}) AND year(d) >= ?
