@@ -49,6 +49,11 @@ python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
 
 Interactive API docs: http://localhost:8000/docs
 
+**Public copy:** https://dhruv-deku--fireledger-web.us-east.modal.run (`/docs`). It's the same code on
+Modal with the grid instead of the 11 GB of hotspot points: `deploy/modal_app.py`, data from
+`pipeline/make_space.py`. Presets are exact (saved by `pipeline/snapshot.py`). Drawn areas come
+from 0.25° cells, and there's no CSV.
+
 **Keeping it current.** FIRMS publishes a year's archive zip only after the year ends, so the
 current year comes from the FIRMS area API (free key from
 https://firms.modaps.eosdis.nasa.gov/api/map_key/, stored as `FIRMS_MAP_KEY=` in `.env`).

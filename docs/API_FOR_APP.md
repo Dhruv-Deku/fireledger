@@ -75,6 +75,25 @@ top-level layout. Drop it in place of `mock.json` to build against real numbers.
 `python -I mock/validate_mock.py docs/api-samples/api_as_mock.json` → **0 errors**. The 312
 warnings are all "months[i] has extra keys", one per month: the extra fields listed below.
 
+## Public API (works without the team laptop)
+
+**`https://dhruv-deku--fireledger-web.us-east.modal.run`** is the same API code on Modal, with docs
+at `/docs`.
+
+- **Presets:** match the laptop exactly (they come from the laptop's saved answers).
+- **Drawn areas:** answered from the 0.25° grid, so small areas can differ by a few % from the
+  laptop.
+- **No CSV:** it answers 503; hide the download when `/api/health` says `"mode": "grid-only"`.
+- **Speed:**
+  - It sleeps after 20 idle minutes; the first request then takes ~10 s, so give the health check
+    15 s.
+  - After that, presets come back in ~1 s, a drawn area in ~5 s, and a 0.25° map frame in ~2–3 s
+    from India (faster from the US/EU).
+  - For the timeline animation, use the snapshot's 1° layer files (served by Vercel), and the API
+    for the frame the user stops on.
+- **On Vercel:** set `NEXT_PUBLIC_API_URL` to this URL. It's https, so there's no mixed-content
+  problem. Keep snapshot mode as the fallback.
+
 ## Calling it
 
 - **Speed:** answers are kept in memory until the API restarts, so anything asked before comes back

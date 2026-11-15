@@ -15,6 +15,7 @@ from collections import OrderedDict
 import io
 import json
 import math
+import os
 import threading
 import uuid
 from datetime import date
@@ -30,6 +31,7 @@ import shapely
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from scipy import stats
@@ -75,6 +77,7 @@ PRESETS = [
 
 app = FastAPI(title="FireLedger API", version="0.1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(GZipMiddleware, minimum_size=2000)  # map frames and calendars shrink ~5x
 
 
 @app.exception_handler(RequestValidationError)
@@ -88,7 +91,8 @@ _lock = threading.Lock()
 # or a map frame someone opened before comes back at once; numbers are exactly what was computed
 _cache: OrderedDict = OrderedDict()
 _cache_lock = threading.Lock()
-CACHE_MAX = {"calendar": 200, "summary": 200, "grid": 120, "monthly": 60}
+CACHE_MAX = {"calendar": 600, "summary": 600, "grid": 120, "monthly": 60}
+SNAPSHOT = ROOT / "data" / "snapshot"  # pipeline/snapshot.py: the full API's preset answers
 LAST_DAY: date | None = None            # latest day any satellite observed
 MTD_KEY: tuple[int, int] | None = None  # (month, last day) that mtd_grid.parquet covers
 # first near-real-time day per unit's reference satellites: FIRMS reprocesses NRT data into
@@ -101,7 +105,7 @@ def db() -> duckdb.DuckDBPyConnection:
     with _lock:
         if _con is None:
             con = duckdb.connect()
-            con.execute("SET memory_limit = '3GB'")
+            con.execute(f"SET memory_limit = '{os.environ.get('FIRELEDGER_DUCKDB_MEMORY', '3GB')}'")
             if HAVE_POINTS:
                 con.execute(f"CREATE VIEW hot AS SELECT * FROM read_parquet('{HOT}')")
             con.execute(f"CREATE TABLE avail AS SELECT * FROM read_parquet('{(DER / 'avail.parquet').as_posix()}')")
@@ -132,6 +136,12 @@ def db() -> duckdb.DuckDBPyConnection:
                     FROM read_parquet({recent!r}) WHERE version LIKE '%NRT' AND sat IN ('Terra', 'Aqua', 'NOAA20')
                     GROUP BY 1""").fetchall())
                 NRT_FROM = {k: v for k, v in nrt.items() if v is not None}
+                try:  # for a grid-only copy of the API (no hotspot files) to know where NRT starts
+                    (DER / "nrt_from.json").write_text(json.dumps({k: str(v) for k, v in NRT_FROM.items()}))
+                except OSError:
+                    pass
+            elif (DER / "nrt_from.json").exists():
+                NRT_FROM = {k: date.fromisoformat(v) for k, v in json.loads((DER / "nrt_from.json").read_text()).items()}
             _con = con
         return _con.cursor()
 
@@ -168,8 +178,34 @@ def query_key(q) -> str | None:
         return None
 
 
+def load_snapshot() -> int:
+    """Grid-only copy (no hotspot files): load the presets' exact answers that the full API saved,
+    so presets match the full API to the digit and only newly drawn areas come from the grid."""
+    man = SNAPSHOT / "manifest.json"
+    if HAVE_POINTS or not man.exists():
+        return 0
+    m = json.loads(man.read_text(encoding="utf-8"))
+    geo = {p["id"]: p["geometry"] for p in preset_list()}
+    n = 0
+    for pid in m["presets"]:
+        for v in m["variants"]:
+            unit, dn, h, ind = v.split("_")
+            q = Query(geometry=geo[pid], start=m["request"]["start"], unit=unit, daynight=dn,
+                      harmonized=h == "harmonized", hide_industrial=ind == "noind")
+            key = query_key(q)
+            for kind in ("calendar", "summary"):
+                f = SNAPSHOT / kind / pid / f"{v}.json"
+                if key and f.exists():
+                    with _cache_lock:
+                        _cache[(kind, key)] = json.loads(f.read_text(encoding="utf-8"))
+                    n += 1
+    print(f"snapshot: {n} preset answers loaded", flush=True)
+    return n
+
+
 def warm_presets() -> None:
     """Work out the presets in the background after start-up, the way the app asks for them."""
+    load_snapshot()
     for p in preset_list():
         for start, harmonized in [("2000-11-01", True), ("2000-11-01", False)]:
             q = dict(geometry=p["geometry"], start=start, unit="viirs", daynight="both",
