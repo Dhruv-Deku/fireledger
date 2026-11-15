@@ -32,7 +32,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from scipy import stats
 from shapely.geometry import box, shape
@@ -629,6 +629,41 @@ def _monthly(q: Query) -> tuple[list[dict], str, dict]:
 
 
 # ---------------------------------------------------------------- endpoints
+
+@app.get("/", include_in_schema=False, response_class=HTMLResponse)
+def home(request: Request):
+    """A plain front page for people who open the bare link."""
+    db()
+    host = request.headers.get("host", "localhost:8000")
+    base = ("http://" if host.startswith(("localhost", "127.", "10.", "192.168.")) else "https://") + host
+    mode = "full (every hotspot)" if HAVE_POINTS else "grid-only (0.25° cells; the 9 presets are exact)"
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>FireLedger API</title>
+<style>body{{font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;color:#1d1d1f;background:#fbfaf7}}
+h1{{font-size:24px;margin:0 0 4px}}p.sub{{color:#666;margin:0 0 24px}}code,pre{{font:13px ui-monospace,Consolas,monospace;background:#f0eee8;border-radius:4px}}
+code{{padding:1px 5px}}pre{{padding:12px;overflow-x:auto}}a{{color:#9a3412}}li{{margin:4px 0}}
+@media (prefers-color-scheme:dark){{body{{background:#161514;color:#e8e6e1}}p.sub{{color:#9a968f}}code,pre{{background:#24221f}}a{{color:#fb923c}}}}</style>
+</head><body>
+<h1>FireLedger API</h1>
+<p class="sub">One fire record from MODIS and VIIRS, Nov 2000 to {LAST_DAY:%d %b %Y}. NASA Space Apps Challenge 2026,
+"Harmonization of MODIS and VIIRS Hot Spots".</p>
+<p>NASA FIRMS hotspots from MODIS (2000&ndash;) and VIIRS (2012&ndash;), converted into one VIIRS-equivalent count,
+so the record doesn't jump when VIIRS arrives in 2012. Ask for any area: monthly counts with a likely range,
+how this month compares with other years, the fire season, and how well the 2012 switch holds there.</p>
+<ul>
+<li><a href="/docs">/docs</a>: interactive documentation, try every endpoint in the browser</li>
+<li><a href="/api/health">/api/health</a>: data coverage and mode (this server: {mode})</li>
+<li><a href="/api/presets">/api/presets</a>: the 9 preset areas (Punjab, Patagonia, California, ...)</li>
+<li><a href="/api/proof">/api/proof</a>: how accurate it is: held-out tests, the 2012 jump, burned area, India's official counts</li>
+<li><a href="/api/grid?year=2024&amp;month=9&amp;res=1">/api/grid?year=2024&amp;month=9&amp;res=1</a>: a month's map layer</li>
+</ul>
+<p>Monthly calendar for an area (any GeoJSON polygon, or a <code>region</code> id from <code>/api/regions?q=punjab</code>):</p>
+<pre>curl -X POST {base}/api/calendar -H "Content-Type: application/json" \
+  -d '{{"region": "IND-3249", "start": "2010-01"}}'</pre>
+<p>Data: NASA FIRMS (MODIS C6.1, VIIRS 375 m S-NPP and NOAA-20), harmonized by FireLedger.
+Code and method: <a href="https://github.com/Dhruv-Deku/fireledger">github.com/Dhruv-Deku/fireledger</a></p>
+</body></html>"""
+
 
 @app.get("/api/health")
 def health():
