@@ -1,5 +1,5 @@
 // The only link between the app and the backend. Shapes follow the API
-// contract in docs/API_FOR_APP.md exactly. If NEXT_PUBLIC_API_URL is not set, answers
+// contract in docs/API_FOR_APP.md. If NEXT_PUBLIC_API_URL is not set, answers
 // come from lib/mock.json (fake data, same shape) instead.
 
 import mock from "@/lib/mock.json";
