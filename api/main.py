@@ -54,6 +54,12 @@ BANDS_PATH = DER / "bands.json"
 # conformal 90% bands learned from held-out years (pipeline/validate.py)
 BANDS = json.loads(BANDS_PATH.read_text()) if BANDS_PATH.exists() else None
 HAVE_POINTS = any((ROOT / "data" / "hotspots").glob("*.parquet"))
+# grid-only server: single hotspots with weights for the preset regions (pipeline/preset_points.py),
+# so the hotspot CSV still works there. {id}.json is the area each file covers.
+PRESET_POINTS = Path(os.environ.get("FIRELEDGER_PRESET_POINTS", ROOT / "data" / "preset_points"))
+PRESET_COVERS = {} if HAVE_POINTS or not PRESET_POINTS.exists() else {
+    f.stem: shape(json.loads(f.read_text(encoding="utf-8")))
+    for f in sorted(PRESET_POINTS.glob("*.json")) if f.with_suffix(".parquet").exists()}
 GRID_MIN_AREA = 50.0    # deg^2 (~7x7 deg); bigger areas are answered from the 0.25 deg grid
 CSV_MAX_ROWS = 3_000_000
 INDUSTRIAL_WARN = 0.10   # warn when this share of an area's harmonized count is industrial / persistent
@@ -722,7 +728,9 @@ def health():
     cur = db()
     lo = cur.execute("SELECT min(d) FROM avail").fetchone()[0]
     return {"ok": True, "coverage": {"start": str(lo), "end": str(LAST_DAY)},
-            "mode": "full" if HAVE_POINTS else "grid-only",
+            "mode": "full" if HAVE_POINTS else "grid+presets" if PRESET_COVERS else "grid-only",
+            "hotspot_csv": "everywhere" if HAVE_POINTS else
+                           f"inside the {len(PRESET_COVERS)} preset regions" if PRESET_COVERS else "no",
             "month_to_date": {"month": MTD_KEY[0], "through_day": MTD_KEY[1]} if MTD_KEY else None,
             "preliminary_from": {k: str(v) for k, v in NRT_FROM.items()}}
 
@@ -1465,21 +1473,41 @@ CSV_FULL = f"""
            w > 0 AS counted"""
 
 
+def preset_rows_sql(q: Query, geom, pid: str) -> tuple[str, list]:
+    """rows_sql's columns from a preset's saved hotspots (grid-only server): same rows, same weights."""
+    src = (PRESET_POINTS / f"{pid}.parquet").as_posix()
+    where, params = filters(q, geom, False)  # saved rows carry static, so the grid's industrial test applies
+    where.append("h.acq_date BETWEEN ? AND ?")
+    params += [parse_day(q.start, False), parse_day(q.end, True)]
+    w, s = ("w", "s") if q.unit == "viirs" else ("wm", "sm")
+    sql = f"""
+        SELECT h.acq_date, h.sat, h.static AS st, CAST(h.{w} AS DOUBLE) AS w, CAST(h.{s} AS DOUBLE) AS s,
+               h.latitude, h.longitude, h.acq_time, h.daynight, h.frp, h.bright_fire, h.bright_bg, h.scan,
+               h.track, h.confidence, h.modis_confidence_pct, h.type, h.persistent, h.version, h.country
+        FROM (SELECT *, latitude AS lat, longitude AS lon, daynight AS dn FROM read_parquet('{src}')) h
+        WHERE {' AND '.join(where)}
+    """
+    return sql, params
+
+
 @app.post("/api/hotspots.csv")
 def hotspots_csv(q: Query, full: bool = False):
     """Every hotspot in the area. Columns: the app's 11 (acq_date ... weight), or with ?full=true
     also brightness, pixel size, persistent flag, version, country and the weight's 90% band."""
-    if not HAVE_POINTS:
-        raise HTTPException(503, "this server runs in grid-only mode; hotspot CSV needs the full data")
     resolve_end(q)
     cur = db()
     geom = aoi(q)
+    if not HAVE_POINTS:
+        pid = next((k for k, c in PRESET_COVERS.items() if c.contains(geom)), None)
+        if pid is None:
+            raise HTTPException(503, "this server has single hotspots only inside the preset regions; "
+                                     "elsewhere the hotspot CSV needs the full data")
     if GRID.exists() and geom.area > 25:
         est = monthly_grid(q, geom, cur)[["raw_modis", "raw_snpp", "raw_noaa20"]].to_numpy().sum()
         if est > CSV_MAX_ROWS:
             raise HTTPException(413, f"about {int(est):,} hotspots match; the CSV limit is {CSV_MAX_ROWS:,}. "
                                      "Draw a smaller area or pick a shorter date range.")
-    inner, params = rows_sql(q, geom, cur, CSV_COLS)
+    inner, params = rows_sql(q, geom, cur, CSV_COLS) if HAVE_POINTS else preset_rows_sql(q, geom, pid)
     reader = cur.execute(f"""
         {CSV_FULL if full else CSV_CONTRACT}
         FROM ({inner}) ORDER BY acq_date, acq_time

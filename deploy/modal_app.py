@@ -5,7 +5,8 @@
     python -m modal deploy deploy/modal_app.py       # -> https://<workspace>--fireledger-web.modal.run
 
 Every area is answered from the 0.25 deg grid; the 9 presets come from the full API's saved answers
-(data/snapshot), so they match the laptop exactly. CSV downloads need the hotspot files: 503 here.
+(data/snapshot), so they match the laptop exactly. The hotspot CSV works inside the preset regions
+(data/preset_points, read from the volume); elsewhere it needs the hotspot files: 503 here.
 One copy is kept warm (min_containers=1), since a cold start copies the data to local disk (~75 s);
 set it to 0 to save credits when nobody needs it.
 """
@@ -20,7 +21,7 @@ VOLUME = "fireledger-data"
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install_from_requirements(str(ROOT / "deploy" / "hf_space" / "requirements.txt"))
-    .env({"FIRELEDGER_DUCKDB_MEMORY": "1GB"})
+    .env({"FIRELEDGER_DUCKDB_MEMORY": "1GB", "FIRELEDGER_PRESET_POINTS": "/vol/preset_points"})
     .add_local_dir(str(ROOT / "api"), "/root/app/api", ignore=["__pycache__"])
 )
 vol = modal.Volume.from_name(VOLUME, create_if_missing=True)
@@ -35,7 +36,8 @@ def web():
     import shutil
     # the volume is network storage; the API reads parquet many times, so work from a local copy
     if not Path("/root/app/data").exists():
-        shutil.copytree("/vol", "/root/app/data")
+        # the presets' single hotspots (~500 MB) are read once per CSV, so they stay on the volume
+        shutil.copytree("/vol", "/root/app/data", ignore=shutil.ignore_patterns("preset_points"))
     sys.path.insert(0, "/root/app")
     from api.main import app as fastapi_app
     return fastapi_app
@@ -47,6 +49,8 @@ def upload() -> None:
         for part in ["derived", "snapshot"]:
             if (src / part).exists():
                 batch.put_directory(str(src / part), f"/{part}")
+        if (ROOT / "data" / "preset_points").exists():  # pipeline/preset_points.py
+            batch.put_directory(str(ROOT / "data" / "preset_points"), "/preset_points")
     print(f"uploaded {src} to volume {VOLUME}")
 
 
