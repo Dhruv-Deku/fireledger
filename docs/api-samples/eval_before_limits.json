@@ -1,0 +1,185 @@
+{
+ "date": "2026-11-15",
+ "checks": [
+  {
+   "name": "world regions 2012 jump (vegetation)",
+   "pass": false,
+   "detail": "17/20 within 5%; off: Northern Europe +23.9%, Northern America +8.9%, Eastern Europe +6.3%"
+  },
+  {
+   "name": "preset punjab 2012 leftover",
+   "pass": true,
+   "detail": "+0.9%"
+  },
+  {
+   "name": "preset haryana 2012 leftover",
+   "pass": true,
+   "detail": "-3.7%"
+  },
+  {
+   "name": "preset patagonia 2012 leftover",
+   "pass": true,
+   "detail": "+1.1%"
+  },
+  {
+   "name": "preset cordoba 2012 leftover",
+   "pass": false,
+   "detail": "+8.0%"
+  },
+  {
+   "name": "preset mato-grosso 2012 leftover",
+   "pass": false,
+   "detail": "-5.7%"
+  },
+  {
+   "name": "preset california 2012 leftover",
+   "pass": true,
+   "detail": "+0.6%"
+  },
+  {
+   "name": "preset northern-territory 2012 leftover",
+   "pass": true,
+   "detail": "+1.4%"
+  },
+  {
+   "name": "preset yakutia 2012 leftover",
+   "pass": false,
+   "detail": "+8.0%"
+  },
+  {
+   "name": "preset central-kalimantan 2012 leftover",
+   "pass": false,
+   "detail": "+12.4%"
+  },
+  {
+   "name": "held-out error region x month",
+   "pass": true,
+   "detail": "4.03% (cell x month 17.14%, bias +0.38%)"
+  },
+  {
+   "name": "90% band coverage region x month",
+   "pass": true,
+   "detail": "89.1%"
+  },
+  {
+   "name": "preset punjab contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset haryana contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset patagonia contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset cordoba contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset mato-grosso contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset california contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset northern-territory contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset yakutia contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "preset central-kalimantan contract",
+   "pass": true,
+   "detail": "311 months clean"
+  },
+  {
+   "name": "CSV punjab 2016-11",
+   "pass": true,
+   "detail": "weights 52,518.2 vs calendar 52,517.9 (0.000%)"
+  },
+  {
+   "name": "CSV punjab 2010-10",
+   "pass": true,
+   "detail": "weights 25,280.6 vs calendar 25,280.7 (0.000%)"
+  },
+  {
+   "name": "CSV haryana 2014-04",
+   "pass": true,
+   "detail": "weights 405.7 vs calendar 405.7 (0.004%)"
+  },
+  {
+   "name": "CSV california 2008-06",
+   "pass": true,
+   "detail": "weights 65,325.1 vs calendar 65,324.9 (0.000%)"
+  },
+  {
+   "name": "CSV cordoba 2013-08",
+   "pass": true,
+   "detail": "weights 7,706.6 vs calendar 7,706.6 (0.000%)"
+  },
+  {
+   "name": "CSV patagonia 2011-01",
+   "pass": true,
+   "detail": "weights 938.5 vs calendar 938.5 (0.004%)"
+  }
+ ],
+ "leftovers": {
+  "punjab": 0.0091,
+  "haryana": -0.037,
+  "patagonia": 0.0114,
+  "cordoba": 0.0804,
+  "mato-grosso": -0.0575,
+  "california": 0.0063,
+  "northern-territory": 0.0137,
+  "yakutia": 0.0796,
+  "central-kalimantan": 0.124
+ },
+ "regions": {
+  "Middle Africa": -0.021,
+  "Eastern Africa": -0.024,
+  "South America": 0.007,
+  "Western Africa": -0.029,
+  "Eastern Europe": 0.063,
+  "Australia and New Zealand": -0.009,
+  "South-Eastern Asia": -0.038,
+  "Northern America": 0.089,
+  "Southern Asia": -0.004,
+  "Eastern Asia": 0.006,
+  "Central America": 0.006,
+  "Southern Africa": -0.049,
+  "Northern Africa": -0.024,
+  "Central Asia": -0.037,
+  "Western Asia": -0.014,
+  "Southern Europe": 0.037,
+  "Western Europe": 0.023,
+  "Caribbean": 0.013,
+  "Melanesia": 0.03,
+  "Northern Europe": 0.239
+ },
+ "heldout_region_month": 0.0403,
+ "coverage_region_month": 0.891,
+ "holdout": {
+  "Zambia": -0.005,
+  "Ukraine": -0.0363,
+  "Madhya Pradesh": -0.0629,
+  "Saskatchewan": -0.0032,
+  "Paraguay": -0.0204,
+  "Queensland": -0.0162
+ },
+ "passed": 22,
+ "total": 27
+}

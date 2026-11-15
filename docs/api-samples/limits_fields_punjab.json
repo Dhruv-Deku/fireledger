@@ -1,0 +1,61 @@
+{
+ "this_month.modis_only": 4278,
+ "this_month.industrial": 14.0,
+ "reliability": {
+  "region": "Southern Asia",
+  "leftover_2012": 0.009,
+  "verdict": "good",
+  "modis_fires": [
+   68546,
+   70276
+  ],
+  "leftover_2012_range": [
+   -0.06,
+   0.081
+  ],
+  "noise_2012": 0.017,
+  "note": "Across the 2012 switch to VIIRS, this record changes +1% more than MODIS's own count (inside the normal noise of that comparison)."
+ },
+ "trend_viirs": {
+  "sen_slope_per_year": -3374.5,
+  "per_year": -3374.5,
+  "pct_per_decade": -44.7,
+  "p_value": 0.014,
+  "significant": true,
+  "direction": "falling",
+  "years": [
+   2012,
+   2025
+  ]
+ },
+ "busiest_years_no_blind": [
+  {
+   "year": 2016,
+   "total": 107149.7
+  },
+  {
+   "year": 2020,
+   "total": 95831.0
+  },
+  {
+   "year": 2014,
+   "total": 95527.1
+  }
+ ],
+ "months[Nov 2016]": {
+  "year": 2016,
+  "month": 11,
+  "count": 52517.9,
+  "raw_modis": 9057,
+  "modis_only": 4053,
+  "industrial": 85.6
+ },
+ "months[Oct 2010]": {
+  "year": 2010,
+  "month": 10,
+  "count": 25280.7,
+  "raw_modis": 5919,
+  "modis_only": null,
+  "industrial": 7.1
+ }
+}
