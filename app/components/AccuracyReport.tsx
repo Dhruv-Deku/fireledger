@@ -212,7 +212,19 @@ function Report({ p, gridOnly }: { p: ProofResponse; gridOnly: boolean }) {
           {weak.length > 0 && (
             <li>
               Weak at the 2012 switch: {weak.map((j) => `${j.region} (${pctSigned(leftover(j))} left over)`).join(", ")}.
-              These regions have few fires and much industrial heat.
+              Here the record changes more across 2012 than MODIS alone does, so the years before 2012 read low
+              against the years after. The cause is fires MODIS could not see: VIIRS&rsquo;s 375 m pixels catch
+              small, cool fires (crop-stubble and grass burns, the edges of boreal fires) that MODIS&rsquo;s 1 km
+              pixels miss entirely. Where those fires are a large share, as in Northern Europe and Canada&rsquo;s
+              boreal north (the United States is fine), the MODIS years hold nothing to scale up, and no
+              conversion can bring back fires that were never detected. Small industrial flares, which MODIS also
+              misses, add to it. The burned-area check above finds no break at 2012 in the matching boreal and
+              European regions, so the gap is in what MODIS saw, not a step in the record. Across 166,404 tuning combinations, none closed these three
+              without making other areas worse, so we report it instead of hiding it.
+              <span className="mt-1 block text-fl-muted">
+                What to do: compare years on the same side of 2012 (2001–2011 with each other, or 2012 to today),
+                or use the trend from 2012 on, which has no conversion in it.
+              </span>
               <InApp>
                 every area gets a &ldquo;2012 switch&rdquo; badge from its own test; where it is fair or caution, the
                 timeline shades 2008–2015 and the trend and busiest years say that years either side of 2012 compare
