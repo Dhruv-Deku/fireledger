@@ -6,6 +6,10 @@ for any area you draw.
 
 NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 
+- **Live app:** https://fireledger.vercel.app
+- **Public API:** https://dhruv-deku--fireledger-web.us-east.modal.run (monthly 0.25° grid everywhere, the 9 presets exact, hotspot CSV inside the presets)
+- **30-second walkthrough:** [`docs/fireledger_30s.mp4`](docs/fireledger_30s.mp4)
+
 ## Repo layout
 
 | Path | What |
@@ -20,10 +24,12 @@ NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 | `pipeline/fetch_recent.py` | the current year (no archive zip yet) from the FIRMS area API → `data/hotspots/<product>_<year>.parquet` |
 | `pipeline/harmonize_config.json` | the shipped fitting settings, read by calibrate, flags and validate |
 | `pipeline/check_2012.py`, `pipeline/jump2012.py` | the app's accuracy checks against the live API; fast what-if runs of the factor table (`docs/experiments_2012.md`) |
+| `pipeline/preset_points.py` | the presets' single hotspots with weights → `data/preset_points/`, so the public (grid-only) server can give the hotspot CSV there |
 | `pipeline/fetch_extras.py` | context and validation data that needs no account (CREAMS bulletins, GFED5, weather, fire weather, population, GOES, protected areas, crop calendars) → `data/external/` |
 | `run_api.bat`, `update_data.bat` | Windows: start the API; download this year's hotspots and swap them in |
 | `api/` | FastAPI backend (`main.py`), shared weight logic (`weights.py`) |
-| `app/` | web app (Next.js) |
+| `app/` | web app (Next.js), see [`app/README.md`](app/README.md) |
+| `deploy/modal_app.py` | the public API on Modal |
 | `docs/api-samples/` | real responses from the API (Punjab, Córdoba) to build against |
 
 `nasa-firms-data/` and `data/` are git-ignored (11 GB raw, ~9 GB derived).

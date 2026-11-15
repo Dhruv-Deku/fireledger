@@ -8,7 +8,7 @@ import {
   getSummary,
   getGrid,
   getHealth,
-  isGridOnly,
+  hotspotsWhere,
   getCountedHotspots,
   USING_MOCK,
   type GridResponse,
@@ -56,10 +56,7 @@ const GRID_RES = 0.25;
  * `bbox` on /api/grid (docs/REQUEST_FINER_GRID.md); a size the API refuses is
  * skipped until reload, so the map falls back to the next coarser one.
  */
-const FINE_STEPS = [
-  { zoom: 7, res: 0.05 },
-  { zoom: 5, res: 0.1 },
-];
+const FINE_STEPS: { zoom: number; res: number }[] = []; // none yet: the API serves 0.25° cells only
 /** From this zoom, single detections (POST /api/hotspots.csv) replace the cells. */
 const DOTS_ZOOM = 9;
 /** Largest box, in square degrees, to fetch single detections for. A busy month
@@ -210,11 +207,11 @@ export default function Workspace() {
   const [dotsLoading, setDotsLoading] = useState(false);
   const [dotsError, setDotsError] = useState<string | null>(null);
   const dotsCache = useRef(new Map<string, DotsLayer>());
-  // a grid-only server has no single hotspots, so the map keeps its cells at every zoom
+  // a server without single hotspots keeps its cells at every zoom (the public one has them in the presets)
   const [gridOnly, setGridOnly] = useState(false);
   useEffect(() => {
-    isGridOnly()
-      .then(setGridOnly)
+    hotspotsWhere()
+      .then((w) => setGridOnly(w === "none"))
       .catch(() => {});
   }, []);
   const dotsBox = viewport && viewport.zoom >= DOTS_ZOOM ? boxKey(viewport.bounds, 0.5) : "";

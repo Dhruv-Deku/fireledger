@@ -248,7 +248,7 @@ async function errorMessage(res: Response, path: string): Promise<string> {
     return "That's too many hotspots for one file. Pick a shorter date range or a smaller area.";
   }
   if (res.status === 503) {
-    return "This server has monthly totals only, not single hotspots, so this isn't available here.";
+    return "Single hotspots aren't on this server for this area. The public server has them inside the 9 preset regions; elsewhere it has monthly totals only.";
   }
   try {
     const body = await res.json();
@@ -346,6 +346,31 @@ export type DailySummary = { count: number; median: number; pct_diff: number; ra
 export async function getDaily(body: RequestBody, signal?: AbortSignal): Promise<DailyResponse | null> {
   if (USING_MOCK) return null;
   return (await post("/api/daily", body, signal)).json() as Promise<DailyResponse>;
+}
+
+/** POST /api/people: people living in 0.25° cells by how many fires each cell had (WorldPop 2020) */
+export type PeopleTier = {
+  min_fires: number;
+  people: number;
+  cells: number;
+  share_of_area: number;
+  median_people: number;
+  pct_diff: number;
+  rank: number;
+  of_years: number;
+};
+export type PeopleWindow = { from: string; to: string; headline: PeopleTier; tiers: PeopleTier[] };
+export type PeopleResponse = {
+  area_population: number;
+  population_source: string;
+  note: string;
+  last_30_days?: PeopleWindow;
+  last_12_months?: PeopleWindow;
+};
+
+export async function getPeople(body: RequestBody, signal?: AbortSignal): Promise<PeopleResponse | null> {
+  if (USING_MOCK) return null;
+  return (await post("/api/people", body, signal)).json() as Promise<PeopleResponse>;
 }
 
 export async function getPresets(signal?: AbortSignal): Promise<Preset[]> {
@@ -484,13 +509,25 @@ export async function getHealth(signal?: AbortSignal): Promise<HealthResponse | 
 
 let healthOnce: Promise<HealthResponse | null> | null = null;
 
-/** true when the server has monthly totals only, so no hotspot CSV and no single detections */
-export async function isGridOnly(): Promise<boolean> {
+async function serverMode(): Promise<string | undefined> {
   healthOnce ??= getHealth().catch(() => {
     healthOnce = null;
     return null;
   });
-  return (await healthOnce)?.mode === "grid-only";
+  return (await healthOnce)?.mode;
+}
+
+/** true when areas are counted from 0.25° cells (the public server), so small areas' edges are approximate */
+export async function isGridOnly(): Promise<boolean> {
+  const m = await serverMode();
+  return m === "grid-only" || m === "grid+presets";
+}
+
+/** where the server has single hotspots (CSV, close-up dots): the full server everywhere, the public one in the presets */
+export type HotspotsWhere = "everywhere" | "presets" | "none";
+export async function hotspotsWhere(): Promise<HotspotsWhere> {
+  const m = await serverMode();
+  return m === "grid-only" ? "none" : m === "grid+presets" ? "presets" : "everywhere";
 }
 
 export function saveBlob(blob: Blob, filename: string) {

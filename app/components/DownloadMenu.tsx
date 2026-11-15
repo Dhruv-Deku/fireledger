@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { downloadCsv, isGridOnly, USING_MOCK } from "@/lib/api";
+import { downloadCsv, hotspotsWhere, USING_MOCK, type HotspotsWhere } from "@/lib/api";
 import { unitLabel } from "@/lib/chartTheme";
 import { downloadCalendarPng, downloadSeriesCsv, fileStem } from "@/lib/exports";
 import type { DataState } from "./Workspace";
@@ -29,12 +29,13 @@ export default function DownloadMenu({
   const [busy, setBusy] = useState<Kind | null>(null);
   const [error, setError] = useState<string | null>(null);
   // a grid-only server can't make the hotspot csv; say so instead of failing on click
-  const [gridOnly, setGridOnly] = useState(false);
+  const [where, setWhere] = useState<HotspotsWhere>("everywhere");
   useEffect(() => {
-    isGridOnly()
-      .then(setGridOnly)
+    hotspotsWhere()
+      .then(setWhere)
       .catch(() => {});
   }, []);
+  const gridOnly = where === "none";
   // the message floats over the panel, so it goes away on its own
   useEffect(() => {
     if (!error) return;
@@ -78,7 +79,9 @@ export default function DownloadMenu({
                 ? "Sample rows only"
                 : gridOnly
                   ? "Not on this server: it has monthly totals only, not single hotspots"
-                  : "Every hotspot in this area and period, with its weight"
+                  : where === "presets"
+                    ? "Every hotspot with its weight. On this server: inside the 9 preset regions"
+                    : "Every hotspot in this area and period, with its weight"
             }
             disabled={gridOnly}
             onClick={() => run("hotspots", (d) => downloadCsv(d.request, `${stem}_hotspots.csv`))}

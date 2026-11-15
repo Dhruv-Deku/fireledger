@@ -241,7 +241,8 @@ function Report({ p, gridOnly }: { p: ProofResponse; gridOnly: boolean }) {
             <li>
               This server keeps monthly totals per 0.25° grid cell (about 28 km), not single hotspots. An area is
               counted in whole cells, so its edges are approximate, and an area smaller than one cell can come back
-              empty even where fires burn. The hotspot list and single-detection map need the full-data server.
+              empty even where fires burn. The hotspot list and single-detection map work inside the 9 preset regions
+              here; elsewhere they need the full-data server.
               <InApp>small areas get this note next to their count, and an empty answer says so instead of failing.</InApp>
             </li>
           )}

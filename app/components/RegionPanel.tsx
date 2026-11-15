@@ -13,6 +13,7 @@ import type { DataState } from "./Workspace";
 import CalendarHeatmap from "./charts/CalendarHeatmap";
 import MonthlyLine from "./charts/MonthlyLine";
 import DailyCard from "./charts/DailyCard";
+import PeopleCard from "./PeopleCard";
 import { SummaryHeadline, SummaryHistory } from "./SummaryCards";
 import DownloadMenu from "./DownloadMenu";
 
@@ -268,6 +269,7 @@ function Ready({
       />
 
       <DailyCard request={request} />
+      <PeopleCard request={request} />
 
       <div className="flex flex-col gap-3 border-t border-fl-border pt-6">
         <CalendarHead
