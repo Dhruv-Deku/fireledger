@@ -7,7 +7,7 @@ last 12 complete months, against the same period in earlier years.
 - Population is WorldPop 2020, summed into the fire grid's 0.25° cells (`pipeline/build_population.py`).
 - Headline: about one fire a day or more (at least 30 in 30 days, or 365 in 12 months), plus tiers.
 - Laptop and public answers are identical.
-- Shape and app instructions: `docs/PROMPT_PEOPLE_FOR_APP.md`.
+- Shape: `docs/api-samples/people_punjab.json`.
 
 ## 15 Nov, part 3: day by day (`POST /api/daily`)
 
@@ -18,9 +18,9 @@ fire). Same body as `/api/calendar`.
 - Big areas, and the public API, are answered from `daily_grid.parquet`, which
   `build_grid.py --daily` builds (`update_data.bat` now runs it).
 - Presets on the public API give exactly the laptop's answers.
-- Shape and app instructions: `docs/PROMPT_DAILY_FOR_APP.md`.
+- Shape: see the daily section below.
 
-## 15 Nov, part 2: the known limits as data (reply to PROMPT_FOR_DATA_LIMITS.md)
+## 15 Nov, part 2: the known limits as data (reply to the data-limits request)
 
 New **optional** fields. No field was renamed, removed or changed in meaning. Every check result is
 identical to before: 22/27 on our copy, the same leftovers, regions, held-out error and CSV sums.

@@ -1,4 +1,4 @@
-# Reply to PROMPT_API_FIXES.md (15 Nov, 15:00)
+# Reply to the API fix list (15 Nov, 15:00)
 
 All live on the public API (`https://dhruv-deku--fireledger-web.us-east.modal.run`) and on the laptop, at
 tag `api-freeze-2026-11-15e`. **No field changed meaning**, and every check result on the laptop is the

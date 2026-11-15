@@ -1,4 +1,4 @@
-"""Validate mock.json against the API contract in docs/API_FOR_APP.md, and check it is
+"""Validate mock.json against the API contract (docs/API_FOR_APP.md), and check it is
 internally consistent (summary vs calendar). Usage: python -I validate_mock.py <mock.json> [<copy> ...]"""
 import hashlib
 import json
@@ -80,7 +80,7 @@ def main(path, copies):
     first, last = months[0], months[-1]
     info.append(f"calendar: {len(months)} months, {first['year']}-{first['month']:02d} .. {last['year']}-{last['month']:02d}")
     if (first["year"], first["month"]) != (2000, 11):
-        warn(f"calendar starts {first['year']}-{first['month']:02d}; the record starts Nov 2000 (docs/API_FOR_APP.md)")
+        warn(f"calendar starts {first['year']}-{first['month']:02d}; the record starts Nov 2000")
 
     # ---- summary ----
     s = m["summary"]

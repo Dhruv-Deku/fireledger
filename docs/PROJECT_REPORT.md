@@ -245,7 +245,7 @@ gate (decided 15 Nov).
   reduced-motion support, phone layouts, and the "Wolfram Devs" studio intro (Montserrat, once per
   visit, skippable).
 - **For the data person:** `docs/REQUEST_FINER_GRID.md`, `REQUEST_ACCURACY.md`,
-  `PROMPT_FIX_2012_JUMP.md`, `PROMPT_FOR_DATA_LIMITS.md`.
+  the 2012-jump and data-limits requests.
 - **Checks:** `mock/evaluate_api.py` (accuracy, consistency and data-loss checks) and
   `mock/validate_mock.py` (mock vs contract).
 
