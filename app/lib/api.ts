@@ -218,12 +218,44 @@ export type HealthResponse = {
 
 // ---------- Config ----------
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") || "";
+const SITE_API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") || "";
+const KEY_API = "fl-api-v1";
+
+/**
+ * Anyone can run the API on their own computer (`python run_local.py`, README "Run the API
+ * yourself") and open the app with `?api=http://localhost:8000`. This browser remembers it;
+ * `?api=default` goes back to the site's API. On the server there's no override.
+ */
+function pickApiUrl(): string {
+  if (typeof window === "undefined") return SITE_API_URL;
+  try {
+    const asked = new URLSearchParams(window.location.search).get("api");
+    if (asked === "default") localStorage.removeItem(KEY_API);
+    else if (asked && /^https?:\/\//.test(asked)) localStorage.setItem(KEY_API, asked.replace(/\/+$/, ""));
+    return localStorage.getItem(KEY_API) || SITE_API_URL;
+  } catch {
+    return SITE_API_URL; // storage blocked: the site's API
+  }
+}
+
+const API_URL = pickApiUrl();
 
 /** True while the app runs on fake data (no NEXT_PUBLIC_API_URL). */
 export const USING_MOCK = API_URL === "";
 
+/** The API this browser uses when it isn't the site's own (someone's `run_local.py`), else null. */
+export const OWN_API_URL = API_URL !== SITE_API_URL ? API_URL : null;
+
 export class ApiError extends Error {}
+
+function unreachable(): ApiError {
+  return new ApiError(
+    OWN_API_URL
+      ? `Can't reach your FireLedger API at ${API_URL}. Is run_local.py still running?`
+      : `Can't reach the FireLedger API at ${API_URL}. You can run it on your own computer: ` +
+          "github.com/Dhruv-Deku/fireledger, \"Run the API yourself\".",
+  );
+}
 
 async function post(path: string, body: RequestBody, signal?: AbortSignal): Promise<Response> {
   let res: Response;
@@ -236,7 +268,7 @@ async function post(path: string, body: RequestBody, signal?: AbortSignal): Prom
     });
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
-    throw new ApiError(`Can't reach the FireLedger API at ${API_URL}.`);
+    throw unreachable();
   }
   if (!res.ok) throw new ApiError(await errorMessage(res, path));
   return res;
@@ -383,7 +415,7 @@ export async function getPresets(signal?: AbortSignal): Promise<Preset[]> {
     res = await fetch(`${API_URL}/api/presets`, { signal });
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
-    throw new ApiError(`Can't reach the FireLedger API at ${API_URL}.`);
+    throw unreachable();
   }
   if (!res.ok) throw new ApiError(await errorMessage(res, "/api/presets"));
   return res.json();
@@ -395,7 +427,7 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
     res = await fetch(`${API_URL}${path}`, { signal });
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
-    throw new ApiError(`Can't reach the FireLedger API at ${API_URL}.`);
+    throw unreachable();
   }
   if (!res.ok) throw new ApiError(await errorMessage(res, path.split("?")[0]));
   return res.json() as Promise<T>;

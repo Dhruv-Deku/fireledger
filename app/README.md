@@ -17,14 +17,18 @@ November 2000 to today. MODIS and VIIRS hotspots are counted on one scale (VIIRS
 
 ```powershell
 npm ci
-# point it at an API: the laptop's full API, or the public one
-echo NEXT_PUBLIC_API_URL=https://dhruv-deku--fireledger-web.us-east.modal.run > .env.local
+# point it at an API: the laptop's full API, or your own (python run_local.py, in the repo root)
+echo NEXT_PUBLIC_API_URL=http://localhost:8000 > .env.local
 npm run build
 npm run start            # http://localhost:3000
 ```
 
 `npm run dev` works too, but only opened as `localhost` (Next.js blocks other origins in development).
 Without `NEXT_PUBLIC_API_URL` the app runs on `lib/mock.json` (sample data).
+
+Any visitor can swap the API without a rebuild: `?api=http://localhost:8000` on any page makes this
+browser use that API (remembered in localStorage, `fl-api-v1`); `?api=default` goes back to
+`NEXT_PUBLIC_API_URL`. See `pickApiUrl()` in `lib/api.ts`.
 
 Deploy: `npx vercel deploy --prod --yes` (the Vercel project has `NEXT_PUBLIC_API_URL` set).
 
