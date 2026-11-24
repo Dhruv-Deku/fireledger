@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import sys
 import urllib.error
 import urllib.request
@@ -34,6 +35,41 @@ POINTS = ("fireledger-preset-points-2026-11-13.zip",
 NEEDS = ["fastapi", "uvicorn", "duckdb", "pyarrow", "pandas", "numpy", "scipy", "shapely"]
 
 
+def download(url: str, part: Path) -> str:
+    """Download to `part`, picking up where it stopped when the connection drops. Returns the SHA-256."""
+    h = hashlib.sha256()
+    done = total = 0
+    with open(part, "wb") as f:
+        for attempt in range(6):
+            headers = {"Range": f"bytes={done}-"} if done else {}
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
+                    if done and r.status != 206:  # the server ignored the range: start over
+                        f.seek(0)
+                        f.truncate()
+                        h, done = hashlib.sha256(), 0
+                    if r.status == 200:
+                        total = int(r.headers.get("Content-Length") or 0)
+                    while chunk := r.read(1 << 20):
+                        f.write(chunk)
+                        h.update(chunk)
+                        done += len(chunk)
+                        if total:
+                            print(f"\r  {done / 1e6:.0f} of {total / 1e6:.0f} MB", end="", flush=True)
+                if not total or done >= total:
+                    break
+            except urllib.error.HTTPError:
+                raise
+            except (urllib.error.URLError, OSError, http.client.HTTPException):
+                if attempt == 5:
+                    raise
+            print(f"\n  The connection dropped at {done / 1e6:.0f} MB; picking up from there")
+    print()
+    if total and done < total:
+        raise OSError(f"stopped at {done / 1e6:.0f} of {total / 1e6:.0f} MB")
+    return h.hexdigest()
+
+
 def fetch(name: str, sha256: str, marker: Path) -> None:
     if marker.exists():
         return
@@ -41,23 +77,13 @@ def fetch(name: str, sha256: str, marker: Path) -> None:
     part = ROOT / "data" / (name + ".part")
     part.parent.mkdir(exist_ok=True)
     print(f"Downloading {url}")
-    h = hashlib.sha256()
     try:
-        with urllib.request.urlopen(url) as r, open(part, "wb") as f:
-            total = int(r.headers.get("Content-Length") or 0)
-            done = 0
-            while chunk := r.read(1 << 20):
-                f.write(chunk)
-                h.update(chunk)
-                done += len(chunk)
-                if total:
-                    print(f"\r  {done / 1e6:.0f} of {total / 1e6:.0f} MB", end="", flush=True)
-        print()
-    except (urllib.error.URLError, OSError) as e:
+        digest = download(url, part)
+    except (urllib.error.URLError, OSError, http.client.HTTPException) as e:
         part.unlink(missing_ok=True)
         sys.exit(f"Download failed ({e}). Get {name} from {RELEASE.replace('/download/', '/tag/')} "
                  f"and unzip it in {ROOT} (it holds a data/ folder), then run this again.")
-    if h.hexdigest() != sha256:
+    if digest != sha256:
         part.unlink()
         sys.exit(f"{name} came down damaged (checksum differs). Run this again.")
     print(f"Unpacking {name}")
