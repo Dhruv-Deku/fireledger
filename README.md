@@ -7,8 +7,33 @@ for any area you draw.
 NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 
 - **Live app:** https://fireledger.vercel.app
-- **Public API:** https://dhruv-deku--fireledger-web.us-east.modal.run (monthly 0.25° grid everywhere, the 9 presets exact, hotspot CSV inside the presets)
+- **API:** the live app's API isn't always on. If the app says it can't reach it, [run it yourself](#run-the-api-yourself): one command, then the live app uses your copy
 - **30-second walkthrough:** [`docs/fireledger_30s.mp4`](docs/fireledger_30s.mp4)
+
+## Run the API yourself
+
+No pipeline needed: the data comes ready-made from the
+[`data-2026-11-13` release](https://github.com/Dhruv-Deku/fireledger/releases/tag/data-2026-11-13)
+(November 2000 to 13 November 2026). Needs Python 3.10+.
+
+```bash
+git clone https://github.com/Dhruv-Deku/fireledger && cd fireledger
+pip install -r api/requirements.txt
+python run_local.py            # first run downloads 420 MB, then serves http://localhost:8000
+```
+
+Then open **https://fireledger.vercel.app/app?api=http://localhost:8000**. The app remembers it in
+this browser and shows "Your API" at the top of the map; `?api=default` switches back. Chrome may
+ask to let the site reach devices on your local network: allow it.
+
+- `--with-points` also downloads the presets' single hotspots (623 MB more), so the hotspot CSV
+  works inside the 9 preset regions.
+- `--port 8765` if something else already uses port 8000 (then `?api=http://localhost:8765`).
+- Interactive API docs: http://localhost:8000/docs
+
+It's the same grid-only copy as the public server: every area is answered from the 0.25° grid,
+the 9 presets are exact. For single hotspots everywhere, build the full data with the pipeline
+([Run it](#run-it)).
 
 ## Repo layout
 
@@ -26,8 +51,9 @@ NASA Space Apps Challenge 2026: *Harmonization of MODIS and VIIRS Hot Spots*.
 | `pipeline/check_2012.py`, `pipeline/jump2012.py` | the app's accuracy checks against the live API; fast what-if runs of the factor table (`docs/experiments_2012.md`) |
 | `pipeline/preset_points.py` | the presets' single hotspots with weights → `data/preset_points/`, so the public (grid-only) server can give the hotspot CSV there |
 | `pipeline/fetch_extras.py` | context and validation data that needs no account (CREAMS bulletins, GFED5, weather, fire weather, population, GOES, protected areas, crop calendars) → `data/external/` |
+| `run_local.py` | run the API with the release data, no pipeline ([Run the API yourself](#run-the-api-yourself)) |
 | `run_api.bat`, `update_data.bat` | Windows: start the API; download this year's hotspots and swap them in |
-| `api/` | FastAPI backend (`main.py`), shared weight logic (`weights.py`) |
+| `api/` | FastAPI backend (`main.py`), shared weight logic (`weights.py`), its packages (`requirements.txt`) |
 | `app/` | web app (Next.js), see [`app/README.md`](app/README.md) |
 | `deploy/modal_app.py` | the public API on Modal |
 | `docs/api-samples/` | real responses from the API (Punjab, Córdoba) to build against |
@@ -55,7 +81,8 @@ python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
 
 Interactive API docs: http://localhost:8000/docs
 
-**Public copy:** https://dhruv-deku--fireledger-web.us-east.modal.run (`/docs`). It's the same code on
+**Public copy:** https://dhruv-deku--fireledger-web.us-east.modal.run (`/docs`; paused since
+November 2026, see [Run the API yourself](#run-the-api-yourself)). It's the same code on
 Modal with the grid instead of the 11 GB of hotspot points: `deploy/modal_app.py`, data from
 `pipeline/make_space.py`. Presets are exact (saved by `pipeline/snapshot.py`). Drawn areas come
 from 0.25° cells, and there's no CSV.
