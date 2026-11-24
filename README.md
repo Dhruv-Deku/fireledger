@@ -26,8 +26,8 @@ Then open **https://fireledger.vercel.app/app?api=http://localhost:8000**. The a
 this browser and shows "Your API" at the top of the map; `?api=default` switches back. Chrome may
 ask to let the site reach devices on your local network: allow it.
 
-- `--with-points` also downloads the presets' single hotspots (623 MB more), so the hotspot CSV
-  works inside the 9 preset regions.
+- The hotspot CSV inside the 9 preset regions needs a second file (623 MB, `--with-points`) that
+  isn't in the release yet; everything else works.
 - `--port 8765` if something else already uses port 8000 (then `?api=http://localhost:8765`).
 - Interactive API docs: http://localhost:8000/docs
 

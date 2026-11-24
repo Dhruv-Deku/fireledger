@@ -2,7 +2,8 @@
 
     pip install -r api/requirements.txt
     python run_local.py                  # first run downloads 420 MB of data, then serves http://localhost:8000
-    python run_local.py --with-points    # also the presets' single hotspots (623 MB more), for the hotspot CSV there
+    python run_local.py --with-points    # also the presets' single hotspots (623 MB more), for the hotspot CSV
+                                         # there; that file isn't in the release yet
     python run_local.py --port 8765      # if something else already uses port 8000
 
 Then open https://fireledger.vercel.app/app?api=http://localhost:8000 : the site remembers it
